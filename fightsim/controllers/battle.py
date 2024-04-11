@@ -112,7 +112,7 @@ class Battle():
             self.enemy_attack()
         else:
             self.e.hp -= damage_dealt
-            self.view.update_einfo(self.model.enemy)
+            self.view.update_enemy_info(self.model.enemy)
             self.is_enemy_defeated()
 
     def enemy_turn(self):
@@ -268,7 +268,7 @@ class Battle():
 
         self.model.enemy["hp"] += heal_amt
         self.output.output = f'''The {self.model.enemy["name"]} casts {spell_name}! {self.model.enemy["name"]} is healed {heal_amt} hit points!'''
-        self.view.update_einfo(self.model.enemy)
+        self.view.update_enemy_info(self.model.enemy)
         self.player_turn()
 
     def enemy_casts_sleep(self):
