@@ -1,8 +1,8 @@
 '''
 controller.py - Core controller for the simulation
 '''
-from .model import ModelObserved
-from .messages import ObserverMessages
+from fightsim.models.model import ModelObserved
+from fightsim.common.messages import ObserverMessages
 
 class Controller(ModelObserved):
     ''' Main controller class'''

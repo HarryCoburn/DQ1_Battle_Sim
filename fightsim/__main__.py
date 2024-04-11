@@ -1,9 +1,9 @@
 # DQ1 Battle Simulator - App
 
 
-from fightsim.view import View
-from .controller import Controller
-from .model import Model
+from fightsim.views.view import View
+from fightsim.controllers.controller import Controller
+from fightsim.models.model import Model
 
 
 def main():

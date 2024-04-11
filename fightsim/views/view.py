@@ -3,19 +3,19 @@
 '''
 
 import tkinter as tk
-from tkinter import ttk
 import tkinter.scrolledtext as scrolledtext
 import inspect
-from .items import weapon_names, armor_names, shield_names
-from .enemy import enemy_names
+from fightsim.models.items import weapon_names, armor_names, shield_names
+from fightsim.models.enemy import enemy_names
+
 
 class View(tk.Tk):
-    '''
+    """
     View class for the application
-    '''
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs) # Using super() for a cleaner call to the parent class constructor
+    """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)  # Using super() for a cleaner call to the parent class constructor
 
         # Initialize View Variables
         self.init_variables()
@@ -24,17 +24,17 @@ class View(tk.Tk):
         self.configure_window()
 
         # Create and lay out containers
-        self.setup_containers()        
+        self.setup_containers()
 
     def init_variables(self):
-        self.name_text = tk.StringVar(value="Rollo")        
+        self.name_text = tk.StringVar(value="Rollo")
         self.level_change = tk.StringVar(value="1")
-        self.chosen_weapon = tk.StringVar(value="Unarmed")        
-        self.chosen_armor = tk.StringVar(value="Naked")                
-        self.chosen_shield = tk.StringVar(value="No Shield")        
-        self.chosen_enemy = tk.StringVar(value= "Select Enemy")        
-        self.chosen_magic = tk.StringVar(value="No spells available.")        
-        self.spell_strings = [] # To be dynamically updated
+        self.chosen_weapon = tk.StringVar(value="Unarmed")
+        self.chosen_armor = tk.StringVar(value="Naked")
+        self.chosen_shield = tk.StringVar(value="No Shield")
+        self.chosen_enemy = tk.StringVar(value="Select Enemy")
+        self.chosen_magic = tk.StringVar(value="No spells available.")
+        self.spell_strings = []  # To be dynamically updated
         self.curr_frame = None
         self.controller = None
 
@@ -42,11 +42,11 @@ class View(tk.Tk):
         self.controller = controller
         # Initialize and display frames
         self.init_frames()
-    
+
     def configure_window(self):
         """ Configure main window properties """
         self.title("DQ1 Battle Simulator")
-        self.geometry("1224x620+50+50")        
+        self.geometry("1224x620+50+50")
 
     def setup_containers(self):
         ''' Setup the main containers for control and main area'''
@@ -71,7 +71,7 @@ class View(tk.Tk):
         # Set up the main frame.
         self.main_frame = MainFrame(self.main_container, self)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
-        
+
         self.frames = {
             SetupFrame: SetupFrame(self.ctrl_container),
             BattleFrame: BattleFrame(self.ctrl_container)
@@ -79,11 +79,8 @@ class View(tk.Tk):
         for frame in self.frames.values():
             frame.set_controller(self.controller)
 
-
-        #Display initial frame
+        # Display initial frame
         self.show_frame(SetupFrame)
-
-        
 
     def show_frame(self, cont):
         '''
@@ -92,9 +89,8 @@ class View(tk.Tk):
         frame = self.frames[cont]
         if self.curr_frame is not None:
             self.curr_frame.grid_remove()
-        self.curr_frame=frame        
-        frame.grid(row=0, column=0)        
-
+        self.curr_frame = frame
+        frame.grid(row=0, column=0)
 
     def update_magic(self):
         '''
@@ -144,7 +140,7 @@ class View(tk.Tk):
             Agility: {einfo.agility}
         ''')
 
-    def update_output(self, message):        
+    def update_output(self, message):
         '''Appends output to the main output window'''
         self.main_frame.txt.configure(state='normal')  # Enable text widget for editing
         self.main_frame.txt.insert(tk.END, message + "\n")  # Append new message
@@ -156,32 +152,40 @@ class View(tk.Tk):
         self.main_frame.txt["state"] = 'normal'
         self.main_frame.txt.delete(1.0, tk.END)
 
+
 class SetupFrame(tk.Frame):
     '''
     Frame for fight setup buttons
     '''
+
     def __init__(self, parent):
         super().__init__(parent)
         self.controller = None
-        self._level_value = tk.StringVar(value=1)        
-         
+        self._level_value = tk.StringVar(value=1)
+
     def set_controller(self, controller):
         self.controller = controller
         self.create_widgets()
 
-    def create_widgets(self):        
+    def create_widgets(self):
         '''Create and layout widgets for setup'''
         # Simplified layout using grid
         tk.Label(self, text="Name:").grid(row=0, column=0, sticky="e", padx=5)
         tk.Entry(self, textvariable=self.controller.name_text, width=20).grid(row=0, column=1, sticky="w", pady=5)
-        
-        tk.Label(self, text="Level:").grid(row=1, column=0, sticky="e", padx=5)
-        tk.Spinbox(self, from_=1, to=30, width=5, textvariable=self.controller.level_change, validate='all', validatecommand=(self.register(self.level_validate), '%P')).grid(row=1, column=1, sticky="w", pady=5)
 
-        tk.OptionMenu(self, self.controller.chosen_weapon, *weapon_names).grid(row=2, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        tk.OptionMenu(self, self.controller.chosen_armor, *armor_names).grid(row=3, column=0, columnspan=2, sticky="ew", padx=5, pady=5)        
-        tk.OptionMenu(self, self.controller.chosen_shield, *shield_names).grid(row=4, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        tk.OptionMenu(self, self.controller.chosen_enemy, "Select Enemy", *enemy_names).grid(row=5, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+        tk.Label(self, text="Level:").grid(row=1, column=0, sticky="e", padx=5)
+        tk.Spinbox(self, from_=1, to=30, width=5, textvariable=self.controller.level_change, validate='all',
+                   validatecommand=(self.register(self.level_validate), '%P')).grid(row=1, column=1, sticky="w", pady=5)
+
+        tk.OptionMenu(self, self.controller.chosen_weapon, *weapon_names).grid(row=2, column=0, columnspan=2,
+                                                                               sticky="ew", padx=5, pady=5)
+        tk.OptionMenu(self, self.controller.chosen_armor, *armor_names).grid(row=3, column=0, columnspan=2, sticky="ew",
+                                                                             padx=5, pady=5)
+        tk.OptionMenu(self, self.controller.chosen_shield, *shield_names).grid(row=4, column=0, columnspan=2,
+                                                                               sticky="ew", padx=5, pady=5)
+        tk.OptionMenu(self, self.controller.chosen_enemy, "Select Enemy", *enemy_names).grid(row=5, column=0,
+                                                                                             columnspan=2, sticky="ew",
+                                                                                             padx=5, pady=5)
 
         self.buy_herb_button = tk.Button(self, text="Buy Herb", command=self.controller.buy_herb)
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
@@ -193,16 +197,18 @@ class SetupFrame(tk.Frame):
             return True
         return False
 
-    def level_validate(self, new_value):        
-        if self.on_validate(new_value):            
+    def level_validate(self, new_value):
+        if self.on_validate(new_value):
             self._level_value.set(new_value)
             self.controller.level_change.set(new_value)
-        else:                        
+        else:
             self.level_spinbox.delete(0, tk.END)
-            self.level_spinbox.insert(0, 1)    
+            self.level_spinbox.insert(0, 1)
 
-class BattleFrame(tk.Frame):   
+
+class BattleFrame(tk.Frame):
     '''Optimized frame for conducting the fight.'''
+
     def __init__(self, parent):
         super().__init__(parent)
         self.controller = None
@@ -223,7 +229,7 @@ class BattleFrame(tk.Frame):
         self.cast_btn.grid(row=3, column=0, padx=5, pady=5)
         # Note: Update the OptionMenu for magic dynamically based on available spells
         self.magic_option_var = tk.StringVar(self)
-        self.magic_option_var.set("No Spells Available") # Initial placeholder.
+        self.magic_option_var.set("No Spells Available")  # Initial placeholder.
         self.magic_menu = tk.OptionMenu(self, self.magic_option_var, "No spells available")
         self.magic_menu.grid(row=3, column=1, padx=5, pady=5)
         # self.magic = tk.OptionMenu(self, self.controller.chosen_magic, *self.controller.spell_strings).grid(row=3, column=1, padx=5, pady=5)
@@ -251,13 +257,15 @@ class BattleFrame(tk.Frame):
         print("Model stats shown.")
 
     def update_magic_menu(self, spell_list):
-        #reset menu
+        # reset menu
         self.magic_menu['menu'].delete(0, 'end')
+
 
 class MainFrame(tk.Frame):
     '''
     Main frame of the program. Holds output
     '''
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.configure(bg='purple')
@@ -265,33 +273,32 @@ class MainFrame(tk.Frame):
 
         # Player Label
         self.player_label = tk.Label(
-            master=self,            
+            master=self,
             borderwidth=1,
             relief="solid",
             anchor=tk.NW,
-            font=('consolas','12'),            
-            )
+            font=('consolas', '12'),
+        )
         self.player_label.grid(column=0, row=0, sticky="n", padx=10, ipadx=3)
 
-
-        #Enemey label
+        # Enemey label
         self.enemy_label = tk.Label(
-            master=self,            
+            master=self,
             borderwidth=1,
             relief="solid",
             anchor=tk.NW,
-            font=('consolas','12'),
-            text="Enemy not selected.",            
-            )
+            font=('consolas', '12'),
+            text="Enemy not selected.",
+        )
         self.enemy_label.grid(column=1, row=0, sticky="n", padx=10, ipadx=3)
 
-        #Output window
+        # Output window
         self.txt = scrolledtext.ScrolledText(
             master=self,
             undo=True,
-            font=('consolas','12'),
-            width=40,            
+            font=('consolas', '12'),
+            width=40,
             wrap=tk.WORD
-            )
+        )
         self.txt.grid(column=2, row=0, padx=10, ipadx=3)
         self.txt.configure(state="disabled")
