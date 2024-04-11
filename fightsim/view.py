@@ -6,8 +6,8 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.scrolledtext as scrolledtext
 import inspect
-from items import weapon_names, armor_names, shield_names
-from enemy import enemy_names
+from .items import weapon_names, armor_names, shield_names
+from .enemy import enemy_names
 
 class View(tk.Tk):
     '''
@@ -185,7 +185,7 @@ class SetupFrame(tk.Frame):
 
         self.buy_herb_button = tk.Button(self, text="Buy Herb", command=self.controller.buy_herb)
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.start_fight)
+        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_fight)
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
 
     def on_validate(self, P):

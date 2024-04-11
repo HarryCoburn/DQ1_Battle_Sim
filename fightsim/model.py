@@ -2,9 +2,9 @@
 model.py - Default model for the simulation
 '''
 
-from player import Player
-from enemy import enemy_instances
-from messages import ObserverMessages
+from .player import Player
+from .enemy import enemy_instances
+from .messages import ObserverMessages
 
 
 class ModelObserved:

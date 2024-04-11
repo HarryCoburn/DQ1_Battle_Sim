@@ -1,11 +1,8 @@
 '''
 controller.py - Core controller for the simulation
 '''
-import tkinter as tk
-import view as View
-import battle as Battle
-from model import ModelObserved
-from messages import ObserverMessages
+from .model import ModelObserved
+from .messages import ObserverMessages
 
 class Controller(ModelObserved):
     ''' Main controller class'''
@@ -36,10 +33,10 @@ class Controller(ModelObserved):
 
     def initial_update(self):
         self.view.update_player_label(self.model.player)
-        self.battle = Battle.Battle(self.model, self.view)
+        self.battle = battle.Battle(self.model, self.view)
         # self.view.frames[View.SetupFrame].buy_herb_button.bind("<Button-1>", self.herb_inc)
-        self.view.frames[View.SetupFrame].start_fight_button.bind("<Button-1>", self.start_battle)
-        self.view.frames[View.BattleFrame].show_model_btn.bind("<Button-1>", self.update_text)
+        self.view.frames[view.SetupFrame].start_fight_button.bind("<Button-1>", self.start_battle)
+        self.view.frames[view.BattleFrame].show_model_btn.bind("<Button-1>", self.update_text)
         self.battle.fight_over.trace('w', self.end_battle)
 
     def update_armor(self, *_):
@@ -82,7 +79,7 @@ class Controller(ModelObserved):
         self.view.main_frame.txt["state"] = "disabled"
         self.update_enemy()
         self.update_player_label()
-        self.view.show_frame(View.SetupFrame)
+        self.view.show_frame(view.SetupFrame)
 
     def update(self, property_name, model, data=None):
         print(f"Received property_name {property_name}")

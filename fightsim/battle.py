@@ -5,7 +5,6 @@ battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 
 import random
 import tkinter as tk
-import view as View
 
 
 class Battle():
@@ -19,10 +18,10 @@ class Battle():
         self.output = model.output
         self.player = model.player
         self.enemy = model.enemy
-        self.view.frames[View.BattleFrame].attack_btn.bind("<Button-1>", self.player_attack)
-        self.view.frames[View.BattleFrame].herb_btn.bind("<Button-1>", self.use_herb)
-        self.view.frames[View.BattleFrame].run_btn.bind("<Button-1>", self.run_away)
-        self.view.frames[View.BattleFrame].cast_btn.bind("<Button-1>", self.player_cast_magic)
+        self.view.frames[view.BattleFrame].attack_btn.bind("<Button-1>", self.player_attack)
+        self.view.frames[view.BattleFrame].herb_btn.bind("<Button-1>", self.use_herb)
+        self.view.frames[view.BattleFrame].run_btn.bind("<Button-1>", self.run_away)
+        self.view.frames[view.BattleFrame].cast_btn.bind("<Button-1>", self.player_cast_magic)
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
         self.herb_range = (23, 30)
@@ -34,7 +33,7 @@ class Battle():
         self.view.update_player_label(self.player) # Updates the player label in the view.
         self.view.update_magic()
         self.e = EnemyBattle(self.model.enemy)
-        self.view.show_frame(View.BattleFrame)
+        self.view.show_frame(self.view.BattleFrame)
         self.output.clear()
         self.do_fight()
 

@@ -4,7 +4,7 @@ Player class
 
 from dataclasses import dataclass, field
 from typing import Tuple, List
-from items import *
+from .items import *
 import math
 import random
 
