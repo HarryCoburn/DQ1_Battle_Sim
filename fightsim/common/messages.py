@@ -10,6 +10,7 @@ class ObserverMessages(Enum):
     WEAPON_CHANGE = auto()
     SHIELD_CHANGE = auto()
 
+
 # Enemy Actions
 class EnemyActions(Enum):
     ATTACK = auto()
@@ -21,4 +22,3 @@ class EnemyActions(Enum):
     HEALMORE = auto()
     HURTMORE = auto()
     STRONGFIRE = auto()
-

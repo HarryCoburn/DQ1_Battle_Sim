@@ -3,10 +3,10 @@ Player class
 """
 
 from dataclasses import field
-from typing import List
 from fightsim.models.items import *
 import math
 import random
+
 
 @dataclass
 class Player:
@@ -64,7 +64,7 @@ class Player:
         [135, 120, 200, 190],
         [140, 130, 210, 200]
         ])
-    model = None # Placeholder
+    model = None  # Placeholder
     
     def __post_init__(self):
         self.attack_num = self.strength + self.weapon.modifier         
@@ -72,40 +72,40 @@ class Player:
     # Static Classes
     @staticmethod
     def slow_prog(name_sum, stat) -> int:
-        '''
+        """
         Formula for lower stats
-        '''
+        """
         return math.floor(stat * (9 / 10) + (math.floor(name_sum / 4) % 4))
     
     @staticmethod
     def letter_stat(ltr):
-        '''
+        """
         Calculates letter values of the name for stat calculations
-        '''
+        """
         ltr_clusters = ["gwM", "hxN", "iyO", "jzP", "kAQ", "lBR", "mCS", "nDT", "oEU", "pFV", "aqGW",
-        "brHX", "csIY", "dtJZ", "euK", "fvL"]
+                        "brHX", "csIY", "dtJZ", "euK", "fvL"]
         for index, cluster in enumerate(ltr_clusters):
             if ltr in cluster:
                 return index
         return 0
 
     def set_model(self, model):
-        self.model = model # Method to inject the model dependency
+        self.model = model  # Method to inject the model dependency
     
     def progress_mods(self, name):
-        '''
-        Calcualte name_sum and the progression modifier
-        '''
+        """
+        Calculate name_sum and the progression modifier
+        """
         letters = name[0:4]        
-        return (sum(map(self.letter_stat, letters)), math.floor(self.name_sum % 4))
+        return sum(map(self.letter_stat, letters)), math.floor(self.name_sum % 4)
     
     def level_up(self):
-        '''
+        """
         Main level up function
 
         The function reads the new level, recalculates the name_sum and progression path
         Then uses the right level_base to adjust the stats of the player.
-        '''
+        """
         level_base = self.level_stats[int(self.level) - 1]
         self.name_sum, self.progression = self.progress_mods(self.name)
         # Four types of progression
@@ -133,10 +133,10 @@ class Player:
         self.curr_mp = self.max_mp
         self.build_p_magic_list()
 
-    def build_p_magic_list(self) -> List[str]:
-        '''
+    def build_p_magic_list(self):
+        """
         Create a list of available spells based on level
-        '''            
+        """
         self.player_magic = []
         if self.level >= 3:
             self.player_magic.append("Heal")
@@ -201,19 +201,19 @@ class Player:
         self.level_up()
     
     def did_crit(self):
-        return random.randint(1,32) == 1
+        return random.randint(1, 32) == 1
 
-    def damage_range(self,x,y):
-        return (((x - y // 2) // 4), ((x - y // 2) // 2))
+    def damage_range(self, x, y):
+        return ((x - y // 2) // 4), ((x - y // 2) // 2)
     
-    def crit_range(self,x):
-        return ((x//2), x)
+    def crit_range(self, x):
+        return (x // 2), x
     
     def handle_sleep(self):
         if self.is_asleep is False:
             return False
         self.sleep_count -= 1
-        if random.randint(1,2) == 2 or self.player.sleep_count <= 0:
+        if random.randint(1, 2) == 2 or self.sleep_count <= 0:
             self.is_asleep = False
             self.sleep_count = 6
             return False

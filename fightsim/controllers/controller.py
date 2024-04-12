@@ -4,7 +4,7 @@ from fightsim.models.model import ModelObserved
 from fightsim.common.messages import ObserverMessages
 
 
-class Controller(ModelObserved):
+class Controller:
     """ Main controller class"""
 
     def __init__(self, model, view):

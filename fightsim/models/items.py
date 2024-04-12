@@ -6,13 +6,16 @@ class Item:
     name: str
     modifier: int
 
+
 @dataclass
 class Weapon(Item):
     pass
 
+
 @dataclass
 class Shield(Item):
     pass
+
 
 @dataclass
 class Armor(Item):
