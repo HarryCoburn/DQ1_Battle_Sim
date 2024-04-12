@@ -3,10 +3,19 @@ from fightsim.models.items import weapon_names, armor_names, shield_names
 from fightsim.models.enemy import enemy_names
 
 
-def on_validate(p):
-    if p.isdigit() and 1 <= int(p) <= 30:
+def level_validate(p):
+    """ Validate the input to the level spinbox to see if it's within range """
+    if p == "":
         return True
-    return False
+    try:
+        val = int(p)
+        if 1 <= val <= 30:
+            return True
+        else:
+            return False
+    except ValueError:
+        # non-numeric input
+        return False
 
 
 class SetupFrame(tk.Frame):
@@ -20,7 +29,7 @@ class SetupFrame(tk.Frame):
         self.buy_herb_button = None
         self.controller = None
         self.level_spinbox = None
-        self._level_value = tk.StringVar(value="1")
+        self._level_value = tk.StringVar(value=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
@@ -36,9 +45,10 @@ class SetupFrame(tk.Frame):
         tk.Entry(self, textvariable=self.controller.name_text, width=20).grid(row=0, column=1, sticky="w", pady=5)
 
         tk.Label(self, text="Level:").grid(row=1, column=0, sticky="e", padx=5)
-        self.level_spinbox = tk.Spinbox(self, from_=1, to=30, width=5, textvariable=self.controller.level_change,
-                                        validate='all',
-                                        validatecommand=(self.register(self.level_validate), '%P'))
+        self.level_spinbox = tk.Spinbox(self, from_=1, to=30, increment=1, width=5,
+                                        textvariable=self.controller.level_change,
+                                        validate='key',
+                                        validatecommand=(self.register(level_validate), '%P'))
         self.level_spinbox.grid(row=1, column=1, sticky="w", pady=5)
 
         tk.OptionMenu(self, self.controller.chosen_weapon, *weapon_names).grid(row=2, column=0, columnspan=2,
@@ -55,11 +65,3 @@ class SetupFrame(tk.Frame):
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
         self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_battle)
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
-
-    def level_validate(self, new_value):
-        if on_validate(new_value):
-            self._level_value.set(new_value)
-            self.controller.level_change.set(new_value)
-        else:
-            self.level_spinbox.delete(0, tk.END)
-            self.level_spinbox.insert(0, 1)

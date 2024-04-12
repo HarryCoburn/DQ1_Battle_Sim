@@ -28,6 +28,7 @@ class Controller(ModelObserved):
         self.view.chosen_armor.trace('w', self.update_armor)
         self.view.chosen_shield.trace('w', self.update_shield)
         self.view.chosen_enemy.trace('w', self.update_enemy)
+        self.spell_strings = []
 
     def initial_update(self):
         self.view.update_player_info(self.model.player)
@@ -67,6 +68,9 @@ class Controller(ModelObserved):
             pass
         else:
             self.battle.setup_battle()
+
+    def chosen_magic(self, *args):
+        pass
 
     def end_battle(self, *_):
         """Cleans up after the battle is done and resets the simulator"""
@@ -119,10 +123,14 @@ class Controller(ModelObserved):
         self.view.update_player_info(self.model.player)
 
     def update_level(self, *_):
-        '''Updates stats when level spinbox changes'''
-        self.model.player.level = int(self.view.level_change.get())
-        self.model.player.level_up()
-        self.update_player_info()
+        """Updates stats when level spinbox changes"""
+        if self.view.level_change.get() == "":
+            pass
+        else:
+            self.model.player.level = int(self.view.level_change.get())
+            self.model.player.level_up()
+            self.update_player_info()
+
 
     def buy_herb(self, *_):
         if self.model.buy_herb():
