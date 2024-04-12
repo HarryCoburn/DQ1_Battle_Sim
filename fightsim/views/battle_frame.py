@@ -22,23 +22,27 @@ class BattleFrame(tk.Frame):
 
     def create_widgets(self):
         """Create and layout widgets for battle."""
-        self.attack_btn = tk.Button(self, text="Attack", command=self.attack)
+        self.attack_btn = tk.Button(self, text="Attack", command=self.controller.battle.player_attack)
         self.attack_btn.grid(row=0, column=0, padx=5, pady=5)
-        self.herb_btn = tk.Button(self, text="Use Herb", command=self.use_herb)
+        self.herb_btn = tk.Button(self, text="Use Herb", command=self.controller.battle.use_herb)
         self.herb_btn.grid(row=1, column=0, padx=5, pady=5)
-        self.run_btn = tk.Button(self, text="Run", command=self.run)
+        self.run_btn = tk.Button(self, text="Run", command=self.controller.battle.run_away)
         self.run_btn.grid(row=2, column=0, padx=5, pady=5)
-        self.cast_btn = tk.Button(self, text="Cast", command=self.cast_spell)
+        self.cast_btn = tk.Button(self, text="Cast", command=self.controller.battle.player_cast_magic)
         self.cast_btn.grid(row=3, column=0, padx=5, pady=5)
+
         # Note: Update the OptionMenu for magic dynamically based on available spells
         self.magic_option_var = tk.StringVar(self)
         self.magic_option_var.set("No Spells Available")  # Initial placeholder.
         self.magic_menu = tk.OptionMenu(self, self.magic_option_var, "No spells available")
         self.magic_menu.grid(row=3, column=1, padx=5, pady=5)
+
         # self.magic = tk.OptionMenu(self, self.controller.chosen_magic, *self.controller.spell_strings)
         # self.magic.grid(row=3, column=1, padx=5, pady=5)
-        self.show_model_btn = tk.Button(self, text="Show Model", command=self.show_model)
-        self.show_model_btn.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
+
+        # May cut
+        # self.show_model_btn = tk.Button(self, text="Show Model", command=self.show_model)
+        # self.show_model_btn.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
     def attack(self):
         """Placeholder for attack action."""

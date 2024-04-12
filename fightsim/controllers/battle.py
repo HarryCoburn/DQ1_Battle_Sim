@@ -7,10 +7,10 @@ import random
 import tkinter as tk
 
 
-class Battle():
-    '''
+class Battle:
+    """
     Main battle controller
-    '''
+    """
 
     def __init__(self, model, view):
         self.model = model
@@ -18,10 +18,6 @@ class Battle():
         self.output = model.output
         self.player = model.player
         self.enemy = model.enemy
-        self.view.frames[view.BattleFrame].attack_btn.bind("<Button-1>", self.player_attack)
-        self.view.frames[view.BattleFrame].herb_btn.bind("<Button-1>", self.use_herb)
-        self.view.frames[view.BattleFrame].run_btn.bind("<Button-1>", self.run_away)
-        self.view.frames[view.BattleFrame].cast_btn.bind("<Button-1>", self.player_cast_magic)
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
         self.herb_range = (23, 30)
@@ -29,7 +25,7 @@ class Battle():
     ## Core Fight Routines
 
     def setup_battle(self):
-        '''Performs setup tasks for the battle prior to start'''
+        """Performs setup tasks for the battle prior to start"""
         self.view.update_player_label(self.player) # Updates the player label in the view.
         self.view.update_magic()
         self.e = EnemyBattle(self.model.enemy)
@@ -38,7 +34,7 @@ class Battle():
         self.do_fight()
 
     def do_fight(self):
-        '''Starts the battle loop'''
+        """Starts the battle loop"""
         p_turn = self.p.agi * random.randint(1,255) > self.e.agi * random.randint(1, 255) * 0.25
 
         self.view.main_frame.txt["state"] = 'normal'
@@ -65,11 +61,12 @@ class Battle():
             self.enemy_turn()
 
     def end_fight(self):
-        '''Triggers the flag that tells the controller battle is over'''
+        """Triggers the flag that tells the controller battle is over"""
         self.fight_over.set(True)
 
     def player_turn(self):
-        '''Runs at the start of player turn. Checks for sleep status and updates it, then waits for user to hit a button'''
+        """Runs at the start of player turn. Checks for sleep status and updates it, then waits for user to hit a
+        button"""
         is_asleep = self.p.is_asleep()
         if is_asleep:
             self.enemy_turn()
@@ -116,7 +113,7 @@ class Battle():
             self.is_enemy_defeated()
 
     def enemy_turn(self):
-        ''' Enemy turn start'''
+        """ Enemy turn start"""
         if self.model.enemy["e_sleep"] > 0:
             self.enemy_asleep()
         elif self.model.player["strength"] > self.model.enemy["strength"] * 2 and random.randint(1,4) == 4:
@@ -185,12 +182,12 @@ class Battle():
         return choice
 
     def enemy_flees(self):
-        ''' Enemy runs away. End the combat'''
+        """ Enemy runs away. End the combat"""
         self.output.output = f'''The {self.model.enemy["name"]} flees from your superior strength!'''
         self.fight_over.set(True)
 
     def enemy_asleep(self):
-        ''' Handles the sleep logic when player puts the enemy to sleep'''
+        """ Handles the sleep logic when player puts the enemy to sleep"""
         if self.model.enemy["e_sleep"] == 2:
             self.model.enemy["e_sleep"] -= 1
             self.output.output = f'''The {self.model.enemy["name"]} is asleep'''
@@ -203,7 +200,7 @@ class Battle():
                 self.output.output = f'''The {self.model.enemy["name"]} is still asleep...'''
 
     def enemy_attack(self):
-        '''Enemy attacks normally'''
+        """Enemy attacks normally"""
         self.output.output = '''\nEnemy turn\n'''
         hero_defense = (self.model.player["agility"] + self.model.player["armor"][1] + self.model.player["shield"][1]) // 2
         low = 0
@@ -223,7 +220,7 @@ class Battle():
         self.is_player_defeated()
 
     def enemy_casts_hurt(self, more):
-        ''' Enemy handling of hurt and hurtmore'''
+        """ Enemy handling of hurt and hurtmore"""
         spell_name = "Hurtmore" if more else "Hurt"
         if self.model.enemy["e_stop"]:
             self.output.output = f'''The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!'''

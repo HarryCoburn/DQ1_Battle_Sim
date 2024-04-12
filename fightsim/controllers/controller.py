@@ -1,7 +1,7 @@
 # controller.py - Core controller for the simulation
 
-from fightsim.models.model import ModelObserved
 from fightsim.common.messages import ObserverMessages
+from .battle import Battle
 
 
 class Controller:
@@ -10,10 +10,9 @@ class Controller:
     def __init__(self, model, view):
         self.model = model
         self.view = view
+        self.battle = Battle(self.model, self.view)
 
-        # self.output = model.output
-        # self.output.attach(self)
-        # self.output.output = "DQ1 Battle Sim"
+        self.view.update_output("DQ1 Battle Sim")
 
         self.model.observed.attach(self, ObserverMessages.ENEMY_CHANGE)
         self.model.observed.attach(self, ObserverMessages.WEAPON_CHANGE)
@@ -32,10 +31,7 @@ class Controller:
 
     def initial_update(self):
         self.view.update_player_info(self.model.player)
-        # self.battle = battle.Battle(self.model, self.view)
-        # self.view.frames[View.SetupFrame].buy_herb_button.bind("<Button-1>", self.herb_inc)
-        # self.view.frames[self.view.frames.SetupFrame].start_fight_button.bind("<Button-1>", self.start_battle)
-        # self.view.frames[self.view.BattleFrame].show_model_btn.bind("<Button-1>", self.update_text)
+
         # self.battle.fight_over.trace('w', self.end_battle)
 
     def update_armor(self, *_):
@@ -59,7 +55,7 @@ class Controller:
         self.model.set_enemy(selected_enemy)
 
     def update_frame(self, *args):
-        ''' Tells view.ctrl_frame to change the frame'''
+        """ Tells view.ctrl_frame to change the frame"""
         self.view.ctrl_frame.show_frame(args[0])
 
     def start_battle(self, *_):
@@ -100,10 +96,10 @@ class Controller:
             self.view.clear_output()
 
     def update_text(self, text, *_):
-        '''
+        """
         Updates the main text box with output. When text is None, outputs the model and other
         debugging information
-        '''
+        """
         # pp = pprint.PrettyPrinter()
         # p_model = pp.pformat(self.model)
 
@@ -113,13 +109,13 @@ class Controller:
             self.view.append_output(line)
 
     def update_name(self, *_):
-        ''' Updates the player name and triggers stat recalculations '''
+        """ Updates the player name and triggers stat recalculations """
         self.model.player.name = self.view.name_text.get()
         self.model.player.level_up()
         self.update_player_info()
 
     def update_player_info(self, *_):
-        '''Tells the view to update the player label'''
+        """Tells the view to update the player label"""
         self.view.update_player_info(self.model.player)
 
     def update_level(self, *_):
@@ -130,7 +126,6 @@ class Controller:
             self.model.player.level = int(self.view.level_change.get())
             self.model.player.level_up()
             self.update_player_info()
-
 
     def buy_herb(self, *_):
         if self.model.buy_herb():
