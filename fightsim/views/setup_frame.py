@@ -29,7 +29,7 @@ class SetupFrame(tk.Frame):
         self.buy_herb_button = None
         self.controller = None
         self.level_spinbox = None
-        self._level_value = tk.StringVar(value=1)
+        self._level_value = tk.StringVar(value="1")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
