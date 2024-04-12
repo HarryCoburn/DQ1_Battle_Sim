@@ -30,7 +30,7 @@ class Controller(ModelObserved):
         self.view.chosen_enemy.trace('w', self.update_enemy)
 
     def initial_update(self):
-        self.view.update_player_label(self.model.player)
+        self.view.update_player_info(self.model.player)
         # self.battle = battle.Battle(self.model, self.view)
         # self.view.frames[View.SetupFrame].buy_herb_button.bind("<Button-1>", self.herb_inc)
         # self.view.frames[self.view.frames.SetupFrame].start_fight_button.bind("<Button-1>", self.start_battle)
@@ -76,18 +76,18 @@ class Controller(ModelObserved):
         self.model.player["herb_count"] = 0
         self.view.main_frame.txt["state"] = "disabled"
         self.update_enemy()
-        self.update_player_label()
+        self.update_player_info()
         self.view.show_frame(self.view.frames.SetupFrame)
 
     def update(self, property_name, model, data=None):
         print(f"Received property_name {property_name}")
         # React to notifications from the model
         if property_name == ObserverMessages.SHIELD_CHANGE:
-            self.view.update_player_label(self.model.player)
+            self.view.update_player_info(self.model.player)
         if property_name == ObserverMessages.WEAPON_CHANGE:
-            self.view.update_player_label(self.model.player)
+            self.view.update_player_info(self.model.player)
         if property_name == ObserverMessages.ARMOR_CHANGE:
-            self.view.update_player_label(self.model.player)
+            self.view.update_player_info(self.model.player)
         if property_name == ObserverMessages.ENEMY_CHANGE:
             self.view.update_enemy_info(self.model.enemy)
         if property_name == ObserverMessages.OUTPUT_CHANGE:
@@ -112,21 +112,21 @@ class Controller(ModelObserved):
         ''' Updates the player name and triggers stat recalculations '''
         self.model.player.name = self.view.name_text.get()
         self.model.player.level_up()
-        self.update_player_label()
+        self.update_player_info()
 
-    def update_player_label(self, *_):
+    def update_player_info(self, *_):
         '''Tells the view to update the player label'''
-        self.view.update_player_label(self.model.player)
+        self.view.update_player_info(self.model.player)
 
     def update_level(self, *_):
         '''Updates stats when level spinbox changes'''
         self.model.player.level = int(self.view.level_change.get())
         self.model.player.level_up()
-        self.update_player_label()
+        self.update_player_info()
 
     def buy_herb(self, *_):
         if self.model.buy_herb():
-            self.view.update_player_label(self.model.player)
+            self.view.update_player_info(self.model.player)
         # else:
         # self.view.show_message("Maximum herb count reached.")
 

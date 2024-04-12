@@ -6,6 +6,15 @@ class BattleFrame(tk.Frame):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.controller = None
+        self.attack_btn = None
+        self.herb_btn = None
+        self.run_btn = None
+        self.cast_btn = None
+        self.magic_option_var = None
+        self.magic_menu = None
+        self.magic = None
+        self.show_model_btn = None
 
     def set_controller(self, controller):
         self.controller = controller
@@ -26,7 +35,8 @@ class BattleFrame(tk.Frame):
         self.magic_option_var.set("No Spells Available")  # Initial placeholder.
         self.magic_menu = tk.OptionMenu(self, self.magic_option_var, "No spells available")
         self.magic_menu.grid(row=3, column=1, padx=5, pady=5)
-        # self.magic = tk.OptionMenu(self, self.controller.chosen_magic, *self.controller.spell_strings).grid(row=3, column=1, padx=5, pady=5)
+        self.magic = tk.OptionMenu(self, self.controller.chosen_magic, *self.controller.spell_strings)
+        self.magic.grid(row=3, column=1, padx=5, pady=5)
         self.show_model_btn = tk.Button(self, text="Show Model", command=self.show_model)
         self.show_model_btn.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
@@ -53,4 +63,3 @@ class BattleFrame(tk.Frame):
     def update_magic_menu(self, spell_list):
         # reset menu
         self.magic_menu['menu'].delete(0, 'end')
-

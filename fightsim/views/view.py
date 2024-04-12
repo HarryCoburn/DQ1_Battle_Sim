@@ -1,9 +1,7 @@
-'''
-    view.py - Holds the view for the MVC program
-'''
+# view.py - Holds the view for the MVC program
+
 
 import tkinter as tk
-import inspect
 from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
@@ -30,9 +28,18 @@ class View(tk.Tk):
         self.controller = None
 
         self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
+        self.ctrl_container.pack_propagate(False)
+        self.ctrl_container.pack(side="left", fill='y')
+
         self.main_container = tk.Frame(self, height=768, width=768, bg="red")
+        self.main_container.pack_propagate(False)
+        self.main_container.pack(side="right", expand=True, fill='both')
+
+        self.setup_frame = SetupFrame(self.ctrl_container, width=256, height=600, padx=20)
+        self.setup_frame.pack(expand=True)
+
         self.main_frame = MainFrame(self.main_container)
-        self.setup_frame = SetupFrame(self.ctrl_container)
+
         self.battle_frame = BattleFrame(self.ctrl_container)
 
         self.frames = {
@@ -43,47 +50,20 @@ class View(tk.Tk):
         # Configure main window
         self.configure_window()
 
-        # Create and lay out containers
-        self.setup_containers()
-
     def set_controller(self, controller):
         self.controller = controller
         self.main_frame.set_controller(controller)
         self.battle_frame.set_controller(controller)
         self.setup_frame.set_controller(controller)
         # Initialize and display frames
-        self.init_frames()
+        self.show_frame(SetupFrame)
 
     def configure_window(self):
         """ Configure main window properties """
         self.title("DQ1 Battle Simulator")
-        self.geometry("1224x620+50+50")
-
-    def setup_containers(self):
-        """ Set up the main containers for control and main area"""
-
-        # Pack it
-        self.ctrl_container.pack(side="left", fill="both", expand=True)
-        self.main_container.pack(side="right", fill="both", expand=True)
-
-        # Grid it
-        self.ctrl_container.grid_rowconfigure(0, weight=1)
-        self.ctrl_container.grid_columnconfigure(0, weight=1)
-        self.ctrl_container.grid_propagate(False)
-
-        self.main_container.grid_rowconfigure(0, weight=1)
-        self.main_container.grid_columnconfigure(0, weight=1)
-
-    def init_frames(self):
-        # Set up the main frame.
-
-        self.main_frame.grid(row=0, column=0, sticky="nsew")
-
-        for frame in self.frames.values():
-            frame.set_controller(self.controller)
-
-        # Display initial frame
-        self.show_frame(SetupFrame)
+        self.geometry("820x620+50+50")
+        self.resizable(width=False, height=False)
+        self.main_frame.pack(fill='x', expand=True)
 
     def show_frame(self, cont):
         """
@@ -91,9 +71,9 @@ class View(tk.Tk):
         """
         frame = self.frames[cont]
         if self.curr_frame is not None:
-            self.curr_frame.grid_remove()
+            self.curr_frame.pack_forget()
         self.curr_frame = frame
-        frame.grid(row=0, column=0)
+        frame.pack(fill='x', expand=True)
 
     def update_magic(self):
         """
@@ -105,53 +85,15 @@ class View(tk.Tk):
             menu.add_command(label=string,
                              command=lambda value=string: self.chosen_magic.set(value))
 
-    def update_player_label(self, pinfo):
-        """
-        Updates the player label
-        """
-        print("Trying to update the label.")
-        self.main_frame.player_label["text"] = inspect.cleandoc(f'''\
-            Name: {pinfo.name}
-            Level: {pinfo.level}
-            HP: {pinfo.curr_hp}/{pinfo.max_hp}
-            MP: {pinfo.curr_mp}
-
-            Weapon: {pinfo.weapon.name}
-            Armor: {pinfo.armor.name}
-            Shield: {pinfo.shield.name}
-
-            Strength: {pinfo.strength}
-            Agility: {pinfo.agility}
-
-            Herbs remaining: {pinfo.herb_count}
-
-            Asleep?: {pinfo.is_asleep}
-            Spells stopped?: {pinfo.is_spellstopped}
-        ''')
-        self.spell_strings = pinfo.player_magic
+    def update_player_info(self, player_info):
+        self.main_frame.update_player_label(player_info)
 
     def update_enemy_info(self, enemy_info):
-        """
-        Updates enemy label
-        """
-        print(enemy_info)
-        self.main_frame.enemy_label["text"] = inspect.cleandoc(f'''\
-            Name: {enemy_info.name}
-            HP: {enemy_info.current_hp}
-
-            Strength: {enemy_info.strength}
-            Agility: {enemy_info.agility}
-        ''')
+        self.main_frame.update_enemy_label(enemy_info)
 
     def update_output(self, message):
-        """Appends output to the main output window"""
-        self.main_frame.txt.configure(state='normal')  # Enable text widget for editing
-        self.main_frame.txt.insert(tk.END, message + "\n")  # Append new message
-        self.main_frame.txt.configure(state='disabled')  # Disable text widget to prevent editing
-        self.main_frame.txt.see(tk.END)  # Auto-scroll to the end        
+        self.main_frame.update_output(message)
 
     def clear_output(self):
-        """Erases all output in the main output"""
-        self.main_frame.txt["state"] = 'normal'
-        self.main_frame.txt.delete(1.0, tk.END)
+        self.main_frame.clear_output()
 
