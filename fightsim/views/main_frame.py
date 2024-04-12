@@ -91,16 +91,20 @@ class MainFrame(tk.Frame):
         self.parent.spell_strings = player_info.player_magic
 
     def update_enemy_label(self, enemy_info):
-        """
-        Updates enemy label
-        """
-        self.enemy_label["text"] = inspect.cleandoc(f'''\
-            Name: {enemy_info.name}
-            HP: {enemy_info.current_hp}
-
-            Strength: {enemy_info.strength}
-            Agility: {enemy_info.agility}
-        ''')
+        print(enemy_info)
+        if enemy_info is None:
+            self.enemy_label["text"] = "Enemy not selected."
+        else:
+            """
+            Updates enemy label
+            """
+            self.enemy_label["text"] = inspect.cleandoc(f'''\
+                Name: {enemy_info.name}
+                HP: {enemy_info.current_hp}
+    
+                Strength: {enemy_info.strength}
+                Agility: {enemy_info.agility}
+            ''')
 
     def update_output(self, message):
         """Appends output to the main output window"""

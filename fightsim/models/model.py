@@ -42,7 +42,7 @@ class Model:
     """ Model class for the MVC pattern """
     def __init__(self):        
         self.player = Player()  # Add a player
-        self.enemy = enemy_instances["slime"]  # Default enemy to make the rollover happy. Make a dummy enemy instead?
+        self.enemy = None  # Default enemy to make the rollover happy. Make a dummy enemy instead?
         self.clean_text = False
         self.in_battle = False  # Are we in battle mode or not? If not, we're in setup mode.
         self.initiative = False  # Do we have initiative?
@@ -66,12 +66,18 @@ class Model:
         return None
     
     def set_enemy(self, enemy_name):
-        """Set the current enemy based on a key."""
-        key = self.find_key_by_value(enemy_instances, enemy_name)
-        enemy_instance = enemy_instances.get(key)
-        if enemy_instance:          
-            self.enemy = enemy_instance            
+        if enemy_name == "Select Enemy":
+            self.enemy = None
             self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
+        else:
+            """Set the current enemy based on a key."""
+            key = self.find_key_by_value(enemy_instances, enemy_name)
+            enemy_instance = enemy_instances.get(key)
+            if enemy_instance:
+                self.enemy = enemy_instance
+                self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
+            else:
+                print("Selected an enemy that doesn't exist nor the default message. This should not happen!")
         
     def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
         """Change the player's HP by a delta amount."""
