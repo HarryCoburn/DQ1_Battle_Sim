@@ -14,7 +14,7 @@ class Enemy:
         self.sleep_resist = sleep_resist  # Enemy Sleep Resistance
         self.stopspell_resist = stopspell_resist  # Enemy Stopspell Resistance
         self.hurt_resist = hurt_resist  # Enemy Hurt Resistance
-        self.dodge = dodge  # Enemy Dodge Chance
+        self.dodge_chance = dodge  # Enemy Dodge Chance
         self.pattern = pattern  # Enemy Attack Patterns
         self.run = run  # Enemy Run Chance
         self.void_critical_hit = void_critical_hit  # Player cannot do a critical hit if true
@@ -38,6 +38,26 @@ class Enemy:
         self.current_hp = self.max_hp
         self.enemy_sleep_count = 0
         self.enemy_spell_stopped = False
+
+    def did_dodge(self):
+        return random.randint(1, 64) <= self.dodge_chance
+
+    def is_defeated(self):
+        return self.current_hp <= 0
+
+    # TODO Fix enemy_asleep function
+    def enemy_asleep(self):
+        """ Handles the sleep logic when player puts the enemy to sleep"""
+        if self.model.enemy["e_sleep"] == 2:
+            self.model.enemy["e_sleep"] -= 1
+            self.output.output = f'''The {self.model.enemy["name"]} is asleep'''
+        else:
+            if random.randint(1, 3) == 3:
+                self.output.output = f'''The {self.model.enemy["name"]} woke up!'''
+                self.model.enemy["e_sleep"] = 0
+                self.enemy_turn()
+            else:
+                self.output.output = f'''The {self.model.enemy["name"]} is still asleep...'''
 
 
 # Create enemy objects

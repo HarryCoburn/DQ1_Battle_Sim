@@ -56,7 +56,7 @@ class View(tk.Tk):
         self.battle_frame.set_controller(controller)
         self.setup_frame.set_controller(controller)
         # Initialize and display frames
-        self.show_frame(SetupFrame)
+        self.show_frame(self.setup_frame)
 
     def configure_window(self):
         """ Configure main window properties """
@@ -69,11 +69,11 @@ class View(tk.Tk):
         """
         Switches one frame for another. Assumes frames are overlapping.
         """
-        frame = self.frames[cont]
+        # frame = self.frames[cont]
         if self.curr_frame is not None:
             self.curr_frame.pack_forget()
-        self.curr_frame = frame
-        frame.pack(fill='x', expand=True)
+        self.curr_frame = cont
+        cont.pack(fill='x', expand=True)
 
     def update_magic(self):
         """
@@ -87,6 +87,7 @@ class View(tk.Tk):
 
     def update_player_info(self, player_info):
         self.main_frame.update_player_label(player_info)
+        self.battle_frame.update_player_magic_menu(player_info.player_magic)
 
     def update_enemy_info(self, enemy_info):
         self.main_frame.update_enemy_label(enemy_info)

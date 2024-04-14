@@ -44,6 +44,12 @@ class BattleFrame(tk.Frame):
         # self.show_model_btn = tk.Button(self, text="Show Model", command=self.show_model)
         # self.show_model_btn.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
+    def update_player_magic_menu(self, player_magic):
+        self.magic_menu["menu"].delete(0, "end")
+        for spell in player_magic:
+            self.magic_menu["menu"].add_command(label=spell,
+                                                command=lambda value=spell: self.magic_option_var.set(value))
+
     def attack(self):
         """Placeholder for attack action."""
         print("Attacked.")

@@ -200,24 +200,43 @@ class Player:
         self.level = new_level
         self.level_up()
     
-    def did_crit(self):
+    @staticmethod
+    def did_crit():
         return random.randint(1, 32) == 1
 
-    def damage_range(self, x, y):
-        return ((x - y // 2) // 4), ((x - y // 2) // 2)
+    @staticmethod
+    def damage_range(attack, agility):
+        return ((attack - agility // 2) // 4), ((attack - agility // 2) // 2)
     
-    def crit_range(self, x):
-        return (x // 2), x
+    @staticmethod
+    def crit_range(attack):
+        return (attack // 2), attack
     
-    def handle_sleep(self):
-        if self.is_asleep is False:
-            return False
-        self.sleep_count -= 1
-        if random.randint(1, 2) == 2 or self.sleep_count <= 0:
-            self.is_asleep = False
-            self.sleep_count = 6
+    def check_sleep(self):
+        """ Returns if the player is asleep or not. """
+        if not self.is_asleep:
             return False
         else:
-            return True
+            self.sleep_count -= 1
+            if random.randint(1, 2) == 2 or self.sleep_count <= 0:
+                self.is_asleep = False
+                self.sleep_count = 6
+                self.model.text(f"You wake up!\n")
+                return False
+            else:
+                self.model.text(f"You're still asleep...'\n")
+                return True
+
+    def player_attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
+        if did_crit:
+            self.model.text = '\nYou attack with an excellent attack!!\n'
+        else:
+            self.model.text = '''\nYou attack!\n'''
+
+        if did_dodge and not did_crit:
+            self.model.text = f'''But the {enemy_name} dodged your attack!\n'''
+        else:
+            self.model.text = f'''You hit {enemy_name} for {damage_dealt} points of damage!\n'''
+
 
     

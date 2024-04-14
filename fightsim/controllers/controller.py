@@ -10,7 +10,7 @@ class Controller:
     def __init__(self, model, view):
         self.model = model
         self.view = view
-        self.battle = Battle(self.model, self.view)
+        self.battle = Battle(self)
 
         self.view.update_output("DQ1 Battle Sim")
 
@@ -59,6 +59,7 @@ class Controller:
         self.view.ctrl_frame.show_frame(args[0])
 
     def start_battle(self, *_):
+        print(f"Entering start_battle, enemy is {self.model.enemy}")
         """ Performs the handoff to battle.py for battle control"""
         if self.model.enemy is None:
             pass
@@ -117,6 +118,9 @@ class Controller:
     def update_player_info(self, *_):
         """Tells the view to update the player label"""
         self.view.update_player_info(self.model.player)
+
+    def update_enemy_info(self, *_):
+        self.view.update_enemy_info(self.model.enemy)
 
     def update_level(self, *_):
         """Updates stats when level spinbox changes"""

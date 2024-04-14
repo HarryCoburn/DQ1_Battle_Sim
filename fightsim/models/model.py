@@ -47,7 +47,6 @@ class Model:
         self.in_battle = False  # Are we in battle mode or not? If not, we're in setup mode.
         self.initiative = False  # Do we have initiative?
         self.crit_hit = False  # Was there a critical hit?
-        self.output = []  # The data list for the output label
         self.observed = ModelObserved("Model Observers")
         self.player.set_model(self)  # Inject the model into the player for reference.
 
@@ -66,13 +65,17 @@ class Model:
         return None
     
     def set_enemy(self, enemy_name):
+        print(f"Entering model.set_enemy, receiving {enemy_name}")
         if enemy_name == "Select Enemy":
             self.enemy = None
             self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
         else:
+            print("Searching for enemy")
             """Set the current enemy based on a key."""
             key = self.find_key_by_value(enemy_instances, enemy_name)
+            print(f"The key is {key}")
             enemy_instance = enemy_instances.get(key)
+            print(f"The enemy_instance is is {enemy_instance}")
             if enemy_instance:
                 self.enemy = enemy_instance
                 self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
@@ -108,14 +111,13 @@ class Model:
         self.observed.notify(ObserverMessages.SHIELD_CHANGE)
    
     def text(self, output):
-        """ Notify there is a message for the output window. """        
+        """ Notify there is a message for the output window. """
         self.observed.notify(ObserverMessages.OUTPUT_CHANGE, output)
 
     # TODO    
 
     def clear_output(self):
         """ Clear the output var"""
-        self.output = []  # Do I Need Now?
         self.observed.notify(ObserverMessages.OUTPUT_CLEAR)
 
     def clear_and_set_output(self, output):

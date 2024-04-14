@@ -91,7 +91,6 @@ class MainFrame(tk.Frame):
         self.parent.spell_strings = player_info.player_magic
 
     def update_enemy_label(self, enemy_info):
-        print(enemy_info)
         if enemy_info is None:
             self.enemy_label["text"] = "Enemy not selected."
         else:
