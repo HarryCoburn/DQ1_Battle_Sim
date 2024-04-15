@@ -78,6 +78,7 @@ class Model:
             print(f"The enemy_instance is is {enemy_instance}")
             if enemy_instance:
                 self.enemy = enemy_instance
+                self.enemy.set_model(self)
                 self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
             else:
                 print("Selected an enemy that doesn't exist nor the default message. This should not happen!")

@@ -229,14 +229,14 @@ class Player:
 
     def player_attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
         if did_crit:
-            self.model.text = '\nYou attack with an excellent attack!!\n'
+            self.model.text(f"\nYou attack with an excellent attack!!\n")
         else:
-            self.model.text = '''\nYou attack!\n'''
+            self.model.text(f"\nYou attack!\n")
 
         if did_dodge and not did_crit:
-            self.model.text = f'''But the {enemy_name} dodged your attack!\n'''
+            self.model.text(f"But the {enemy_name} dodged your attack!\n")
         else:
-            self.model.text = f'''You hit {enemy_name} for {damage_dealt} points of damage!\n'''
+            self.model.text(f"You hit {enemy_name} for {damage_dealt} points of damage!\n")
 
 
     

@@ -99,14 +99,15 @@ class Battle:
                 self.enemy_turn()
 
     # Enemy Actions
-    # TODO Where we left off
+
     def enemy_turn(self):
         """ Enemy turn start"""
         if self.model.enemy.enemy_sleep_count > 0:
             # Enemy is asleep. Handle sleep.
-            self.enemy_asleep()
-        elif self.model.player["strength"] > self.model.enemy["strength"] * 2 and random.randint(1, 4) == 4:
-            self.enemy_flees()
+            if self.enemy.is_asleep():
+                self.player_turn()
+        elif self.model.player.strength > self.model.enemy.strenght * 2 and random.randint(1, 4) == 4:
+            self.enemy_flees() # TODO Where we left off
         else:
             chosen_attack = self.enemy_choose_attack()
             if chosen_attack == "attack":

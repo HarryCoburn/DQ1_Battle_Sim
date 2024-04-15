@@ -18,6 +18,7 @@ class Enemy:
         self.pattern = pattern  # Enemy Attack Patterns
         self.run = run  # Enemy Run Chance
         self.void_critical_hit = void_critical_hit  # Player cannot do a critical hit if true
+        self.model = None
 
         # Mutable State         
         self.max_hp = random.randint(self.base_hp[0], self.base_hp[1])
@@ -32,6 +33,9 @@ class Enemy:
                f"max_hp={self.max_hp}, current_hp={self.current_hp}, sleepCount={self.enemy_sleep_count}, " \
                f"spellStopped={self.enemy_spell_stopped})"
 
+    def set_model(self, model):
+        self.model = model  # Method to inject the model dependency
+
     def reset_battle_state(self):
         """Resets the enemy's mutable state back to default for a new battle."""
         self.max_hp = random.randint(self.base_hp[0], self.base_hp[1])
@@ -45,19 +49,19 @@ class Enemy:
     def is_defeated(self):
         return self.current_hp <= 0
 
-    # TODO Fix enemy_asleep function
-    def enemy_asleep(self):
+    def is_asleep(self):
         """ Handles the sleep logic when player puts the enemy to sleep"""
-        if self.model.enemy["e_sleep"] == 2:
-            self.model.enemy["e_sleep"] -= 1
-            self.output.output = f'''The {self.model.enemy["name"]} is asleep'''
+        if self.enemy_sleep_count == 2:
+            self.enemy_sleep_count -= 1
+            self.model.text(f"The {self.name} is asleep")
         else:
             if random.randint(1, 3) == 3:
-                self.output.output = f'''The {self.model.enemy["name"]} woke up!'''
-                self.model.enemy["e_sleep"] = 0
-                self.enemy_turn()
+                self.model.text(f"The {self.name} woke up!")
+                self.enemy_sleep_count = 0
+                return False
             else:
-                self.output.output = f'''The {self.model.enemy["name"]} is still asleep...'''
+                self.model.text(f"The {self.name} is still asleep...")
+                return True
 
 
 # Create enemy objects
