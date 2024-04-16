@@ -4,39 +4,8 @@
 from fightsim.models.player import Player
 from fightsim.models.enemy import enemy_instances
 from fightsim.common.messages import ObserverMessages
+from ..common.observer import Observer
 
-
-class ModelObserved:
-    """ Observer Class for MVC model"""
-    def __init__(self, name):
-        self._observers = {}
-        self._name = name        
-        self.__repr__()
-
-    def attach(self, observer, property_name):
-        """ Attach an observer to a specific property"""
-        if property_name not in self._observers:
-            self._observers[property_name] = []
-        self._observers[property_name].append(observer)
-
-    def notify(self, property_name, data=None):
-        """ Notify all the observers about a change to a specific property"""
-        for observer in self._observers.get(property_name, []):
-            observer.update(property_name, self, data)
-
-    def detach(self, observer, property_name=None):
-        """Detaches an observer"""
-        if property_name:
-            if property_name in self._observers and observer in self._observers[property_name]:
-                self._observers[property_name].remove(observer)
-        else:
-            for key in self._observers.keys():
-                if observer in self._observers[key]:
-                    self._observers[key].remove(observer)            
-
-    def __repr__(self):
-        return f"{self._name} contains observers {str(self._observers)}"
-        
 
 class Model:
     """ Model class for the MVC pattern """
@@ -47,7 +16,7 @@ class Model:
         self.in_battle = False  # Are we in battle mode or not? If not, we're in setup mode.
         self.initiative = False  # Do we have initiative?
         self.crit_hit = False  # Was there a critical hit?
-        self.observed = ModelObserved("Model Observers")
+        self.observed = Observer("Model Observers")
         self.player.set_model(self)  # Inject the model into the player for reference.
 
     def __repr__(self):
@@ -82,6 +51,7 @@ class Model:
                 self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
             else:
                 print("Selected an enemy that doesn't exist nor the default message. This should not happen!")
+                self.enemy = None
         
     def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
         """Change the player's HP by a delta amount."""

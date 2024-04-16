@@ -6,6 +6,9 @@ class Item:
     name: str
     modifier: int
 
+    def describe(self) -> str:
+        return f"{self.name} (Modifier: {self.modifier}"
+
 
 @dataclass
 class Weapon(Item):

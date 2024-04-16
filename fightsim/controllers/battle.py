@@ -22,7 +22,7 @@ class Battle:
         self.fight_over.set(False)
         self.herb_range = (23, 30)
 
-    ## Core Fight Routines
+    # Core Fight Routines
 
     def setup_battle(self):
         """Performs setup tasks for the battle prior to start"""
