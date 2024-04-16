@@ -31,8 +31,7 @@ class Controller:
 
     def initial_update(self):
         self.view.update_player_info(self.model.player)
-
-        # self.battle.fight_over.trace('w', self.end_battle)
+        self.battle.fight_over.trace('w', self.end_battle)
 
     def update_armor(self, *_):
         # called when armor dropdown changes
@@ -71,14 +70,14 @@ class Controller:
 
     def end_battle(self, *_):
         """Cleans up after the battle is done and resets the simulator"""
-        self.model.enemy = None
-        self.model.enemy["hp"] = self.model.player["maxhp"]
-        self.model.player["mp"] = self.model.player["maxmp"]
-        self.model.player["herb_count"] = 0
+        self.model.enemy.current_hp = self.model.enemy.max_hp
+        self.model.player.current_hp = self.model.player.max_hp
+        self.model.player.current_mp = self.model.player.max_mp
+        self.model.player.herb_count = 0
         self.view.main_frame.txt["state"] = "disabled"
         self.update_enemy()
         self.update_player_info()
-        self.view.show_frame(self.view.frames.SetupFrame)
+        self.view.show_frame(self.view.setup_frame)
 
     def update(self, property_name, model, data=None):
         print(f"Received property_name {property_name}")

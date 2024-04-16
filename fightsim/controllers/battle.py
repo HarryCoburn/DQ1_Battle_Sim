@@ -106,8 +106,8 @@ class Battle:
             # Enemy is asleep. Handle sleep.
             if self.enemy.is_asleep():
                 self.player_turn()
-        elif self.model.player.strength > self.model.enemy.strenght * 2 and random.randint(1, 4) == 4:
-            self.enemy_flees() # TODO Where we left off
+        elif self.model.player.strength > self.model.enemy.strength * 2 and random.randint(1, 4) == 4:
+            self.enemy_flees()
         else:
             chosen_attack = self.enemy_choose_attack()
             if chosen_attack == "attack":
@@ -131,13 +131,42 @@ class Battle:
             else:
                 self.output.output = "Enemy tried to attack with something not programmed yet!!"
 
+    def enemy_flees(self):
+        """ Enemy runs away. End the combat"""
+        self.model.text(f"The {self.enemy.name} flees from your superior strength!")
+        self.fight_over.set(True)
+
+    def enemy_choose_attack(self):
+        atk_list = self.model.enemy.pattern
+        choice = None
+        for item in atk_list:
+            chance = item["weight"]
+            if random.randint(1, 100) <= chance:
+                action = item["id"]
+                if action in ["attack", "hurt", "fire", "hurtmore", "strongfire"]:
+                    choice = action
+                    break
+                if action in ["heal", "healmore"] and self.enemy_heal_thresh():
+                    choice = action
+                    break
+                if action == "sleep" and not self.model.player.is_asleep:
+                    choice = action
+                    break
+                if action == "stopspell" and not self.model.player.is_spellstopped:
+                    choice = action
+                    break
+
+        return choice or "attack"
+
+
+
     def end_fight(self):
         """Triggers the flag that tells the controller battle is over"""
         self.fight_over.set(True)
 
     def is_player_defeated(self):
-        if self.p.hp <= 0:
-            self.output.output = f'''You have been defeated by the {self.enemy.name}!\n'''
+        if self.model.player.curr_hp <= 0:
+            self.model.text(f"You have been defeated by the {self.enemy.name}!\n")
             self.end_fight()
         else:
             self.player_turn()
@@ -147,79 +176,26 @@ class Battle:
     def resist(self, chance):
         return random.randint(1, 16) <= chance
 
-    def weak_range(self, x):
-        return (0, ((x + 4) // 6))
 
-    def damage_range(self, x, y):
-        return (((x - y // 2) // 4), ((x - y // 2) // 2))
 
 
     def enemy_heal_thresh(self):
         return self.model.enemy["hp"] / self.model.enemy["maxhp"] < 0.25
 
-    def enemy_choose_attack(self):
-        atk_list = self.model.enemy["pattern"]
-        choice = None
-        for item in atk_list:
-            chance = item["weight"]
-            if random.randint(1, 100) <= chance:
-                if item["id"] == "attack":
-                    choice = item["id"]
-                    break
-                if item["id"] == "hurt":
-                    choice = item["id"]
-                    break
-                if item["id"] == "heal" and self.enemy_heal_thresh():
-                    choice = item["id"]
-                    break
-                if item["id"] == "sleep" and self.model.player["p_sleep"] is False:
-                    choice = item["id"]
-                    break
-                if item["id"] == "stopspell" and self.model.player["p_stop"] is False:
-                    choice = item["id"]
-                    break
-                if item["id"] == "fire":
-                    choice = item["id"]
-                    break
-                if item["id"] == "healmore" and self.enemy_heal_thresh():
-                    choice = item["id"]
-                    break
-                if item["id"] == "hurtmore":
-                    choice = item["id"]
-                    break
-                if item["id"] == "strongfire":
-                    choice = item["id"]
-                    break
-        if choice is None:
-            choice = "attack"
-        return choice
 
-    def enemy_flees(self):
-        """ Enemy runs away. End the combat"""
-        self.output.output = f'''The {self.model.enemy["name"]} flees from your superior strength!'''
-        self.fight_over.set(True)
+
 
 
 
     def enemy_attack(self):
         """Enemy attacks normally"""
-        self.output.output = '''\nEnemy turn\n'''
-        hero_defense = (self.model.player["agility"] + self.model.player["armor"][1] + self.model.player["shield"][
-            1]) // 2
-        low = 0
-        high = 0
-        damage_dealt = 0
-        if hero_defense > self.model.enemy["strength"]:
-            low, high = self.weak_range(self.model.enemy["strength"])
-            damage_dealt = random.randint(low, high)
-        else:
-            low, high = self.damage_range(self.model.enemy["strength"], hero_defense)
-            damage_dealt = random.randint(low, high)
+        self.model.text(f"\nEnemy turn\n")
+        hero_defense = (self.model.player.agility + self.model.player.armor.modifier + self.model.player.shield.modifier) // 2
+        damage_dealt = self.enemy.attack(hero_defense)
+        self.model.player.curr_hp -= damage_dealt
+        self.controller.update_player_info()
 
-        self.model.player["hp"] -= damage_dealt
-        self.view.update_ptext(self.model.player)
-
-        self.output.output = f'''{self.model.enemy["name"]} attacks! {self.model.enemy["name"]} hits you for {damage_dealt} damage.\n'''
+        self.model.text(f"{self.model.enemy.name} attacks! {self.model.enemy.name} hits you for {damage_dealt} damage.\n")
         self.is_player_defeated()
 
     def enemy_casts_hurt(self, more):

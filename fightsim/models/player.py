@@ -227,7 +227,7 @@ class Player:
                 self.model.text(f"You're still asleep...'\n")
                 return True
 
-    def player_attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
+    def attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
         if did_crit:
             self.model.text(f"\nYou attack with an excellent attack!!\n")
         else:

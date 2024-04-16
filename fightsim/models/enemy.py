@@ -29,7 +29,7 @@ class Enemy:
     def __repr__(self):
         return f"Enemy(name={self.name}, strength={self.strength}, agility={self.agility}, base_hp={self.base_hp}, " \
                f"sleepR={self.sleep_resist}, stopR={self.stopspell_resist}, hurtR={self.hurt_resist}, " \
-               f"dodge={self.dodge}, pattern={self.pattern}, run={self.run}, voidCrit={self.void_critical_hit}, " \
+               f"dodge={self.dodge_chance}, pattern={self.pattern}, run={self.run}, voidCrit={self.void_critical_hit}, " \
                f"max_hp={self.max_hp}, current_hp={self.current_hp}, sleepCount={self.enemy_sleep_count}, " \
                f"spellStopped={self.enemy_spell_stopped})"
 
@@ -62,6 +62,21 @@ class Enemy:
             else:
                 self.model.text(f"The {self.name} is still asleep...")
                 return True
+
+    def attack(self, hero_defense):
+
+        if hero_defense > self.strength:
+            low, high = self.weak_damage_range(self.strength)
+        else:
+            low, high = self.normal_damage_range(self.strength, hero_defense)
+
+        return random.randint(low, high)
+
+    def weak_damage_range(self, x):
+        return 0, ((x + 4) // 6)
+
+    def normal_damage_range(self, x, y):
+        return ((x - y // 2) // 4), ((x - y // 2) // 2)
 
 
 # Create enemy objects
