@@ -99,7 +99,7 @@ class MainFrame(tk.Frame):
             """
             self.enemy_label["text"] = inspect.cleandoc(f'''\
                 Name: {enemy_info.name}
-                HP: {enemy_info.current_hp}
+                HP: {enemy_info.curr_hp}
     
                 Strength: {enemy_info.strength}
                 Agility: {enemy_info.agility}

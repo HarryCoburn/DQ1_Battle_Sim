@@ -22,7 +22,7 @@ class Enemy:
 
         # Mutable State         
         self.max_hp = random.randint(self.base_hp[0], self.base_hp[1])
-        self.current_hp = self.max_hp
+        self.curr_hp = self.max_hp
         self.enemy_sleep_count = 0  # was e_sleep
         self.enemy_spell_stopped = False  # was e_stop
 
@@ -30,7 +30,7 @@ class Enemy:
         return f"Enemy(name={self.name}, strength={self.strength}, agility={self.agility}, base_hp={self.base_hp}, " \
                f"sleepR={self.sleep_resist}, stopR={self.stopspell_resist}, hurtR={self.hurt_resist}, " \
                f"dodge={self.dodge_chance}, pattern={self.pattern}, run={self.run}, voidCrit={self.void_critical_hit}, " \
-               f"max_hp={self.max_hp}, current_hp={self.current_hp}, sleepCount={self.enemy_sleep_count}, " \
+               f"max_hp={self.max_hp}, current_hp={self.curr_hp}, sleepCount={self.enemy_sleep_count}, " \
                f"spellStopped={self.enemy_spell_stopped})"
 
     def set_model(self, model):
@@ -39,7 +39,7 @@ class Enemy:
     def reset_battle_state(self):
         """Resets the enemy's mutable state back to default for a new battle."""
         self.max_hp = random.randint(self.base_hp[0], self.base_hp[1])
-        self.current_hp = self.max_hp
+        self.curr_hp = self.max_hp
         self.enemy_sleep_count = 0
         self.enemy_spell_stopped = False
 
@@ -47,7 +47,7 @@ class Enemy:
         return random.randint(1, 64) <= self.dodge_chance
 
     def is_defeated(self):
-        return self.current_hp <= 0
+        return self.curr_hp <= 0
 
     def is_asleep(self):
         """ Handles the sleep logic when player puts the enemy to sleep"""

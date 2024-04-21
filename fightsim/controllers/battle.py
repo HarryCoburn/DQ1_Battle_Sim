@@ -4,6 +4,7 @@ battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 
 import random
 import tkinter as tk
+from ..common.messages import EnemyActions
 
 
 class Battle:
@@ -57,7 +58,7 @@ class Battle:
             self.enemy_turn()
 
     def player_attack(self, *_):
-        ''' Player performs an attack'''
+        """ Player performs an attack"""
 
         did_player_crit = self.player.did_crit()
         did_enemy_dodge = self.enemy.did_dodge()
@@ -90,7 +91,7 @@ class Battle:
             self.enemy_attack()
         else:
             #  Apply damage and check for defeat
-            self.enemy.current_hp -= damage_dealt
+            self.enemy.curr_hp -= damage_dealt
             self.controller.update_enemy_info()
             if self.enemy.is_defeated():
                 self.model.text(f'''You have defeated the {self.enemy.name}!\n''')
@@ -100,36 +101,52 @@ class Battle:
 
     # Enemy Actions
 
-    def enemy_turn(self):
-        """ Enemy turn start"""
-        if self.model.enemy.enemy_sleep_count > 0:
-            # Enemy is asleep. Handle sleep.
-            if self.enemy.is_asleep():
-                self.player_turn()
-        elif self.model.player.strength > self.model.enemy.strength * 2 and random.randint(1, 4) == 4:
+    def handle_enemy_sleep(self):
+        if self.enemy.is_asleep():
+            self.player_turn()
+        elif self.should_enemy_flee():
             self.enemy_flees()
         else:
-            chosen_attack = self.enemy_choose_attack()
-            if chosen_attack == "attack":
-                self.enemy_attack()
-            elif chosen_attack == "hurt":
-                self.enemy_casts_hurt(False)
-            elif chosen_attack == "hurtmore":
-                self.enemy_casts_hurt(True)
-            elif chosen_attack == "heal":
-                self.enemy_casts_heal(False)
-            elif chosen_attack == "healmore":
-                self.enemy_casts_heal(True)
-            elif chosen_attack == "sleep":
-                self.enemy_casts_sleep()
-            elif chosen_attack == "stopspell":
-                self.enemy_casts_stopspell()
-            elif chosen_attack == "fire":
-                self.enemy_breathes_fire(False)
-            elif chosen_attack == "strongfire":
-                self.enemy_breathes_fire(True)
-            else:
-                self.output.output = "Enemy tried to attack with something not programmed yet!!"
+            self.perform_enemy_action()
+
+    def should_enemy_flee(self):
+        return self.model.player.strength > self.model.enemy.strength * 2 and random.randint(1, 4) == 4
+
+    def enemy_turn(self):
+        """ Handles the Enemy's turn """
+
+        if self.model.enemy.enemy_sleep_count > 0:
+            self.handle_enemy_sleep()
+            # Enemy is asleep. Handle sleep.
+
+        elif self.should_enemy_flee():
+            # Handle fleeing
+            self.enemy_flees()
+        else:
+            # Do a combat action
+            self.perform_enemy_action()
+
+    def perform_enemy_action(self):
+        """Selects and performs an action from the enemy's set of possible actions."""
+        action_methods = {
+            EnemyActions.ATTACK: self.enemy_attack,
+            EnemyActions.HURT: lambda: self.enemy_casts_hurt(False),
+            EnemyActions.HURTMORE: lambda: self.enemy_casts_hurt(True),
+            EnemyActions.HEAL: lambda: self.enemy_casts_heal(False),
+            EnemyActions.HEALMORE: lambda: self.enemy_casts_heal(True),
+            EnemyActions.SLEEP: self.enemy_casts_sleep,
+            EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
+            EnemyActions.FIRE: lambda: self.enemy_breathes_fire(False),
+            EnemyActions.STRONGFIRE: lambda: self.enemy_breathes_fire(True)
+        }
+
+        chosen_attack = self.enemy_choose_attack()
+        action = action_methods.get(chosen_attack, self.handle_unknown_action)
+        action()
+
+    def handle_unknown_action(self):
+        """ Handles unknown enemy actions """
+        raise NotImplementedError("Enemy tried to attack with something not programmed yet!!")
 
     def enemy_flees(self):
         """ Enemy runs away. End the combat"""
@@ -143,20 +160,20 @@ class Battle:
             chance = item["weight"]
             if random.randint(1, 100) <= chance:
                 action = item["id"]
-                if action in ["attack", "hurt", "fire", "hurtmore", "strongfire"]:
+                if action in [EnemyActions.ATTACK, EnemyActions.HURT, EnemyActions.FIRE, EnemyActions.HURTMORE, EnemyActions.STRONGFIRE]:
                     choice = action
                     break
-                if action in ["heal", "healmore"] and self.enemy_heal_thresh():
+                if action in [EnemyActions.HEAL, EnemyActions.HEALMORE] and self.enemy_heal_thresh():
                     choice = action
                     break
-                if action == "sleep" and not self.model.player.is_asleep:
+                if action == EnemyActions.SLEEP and not self.model.player.is_asleep:
                     choice = action
                     break
-                if action == "stopspell" and not self.model.player.is_spellstopped:
+                if action == EnemyActions.STOPSPELL and not self.model.player.is_spellstopped:
                     choice = action
                     break
 
-        return choice or "attack"
+        return choice or EnemyActions.ATTACK
 
 
 
