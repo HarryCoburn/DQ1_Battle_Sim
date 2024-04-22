@@ -2,9 +2,11 @@
 
 
 import tkinter as tk
+import logging
 from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
+from typing import List, Optional, Dict, Union, Type
 
 
 class View(tk.Tk):
@@ -12,10 +14,30 @@ class View(tk.Tk):
     View class for the application
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)  # Using super() for a cleaner call to the parent class constructor
+    name_text: tk.StringVar
+    level_change: tk.StringVar
+    chosen_weapon: tk.StringVar
+    chosen_armor: tk.StringVar
+    chosen_shield: tk.StringVar
+    chosen_enemy: tk.StringVar
+    chosen_magic: tk.StringVar
+    spell_strings: List[str]
+    curr_frame: Optional[tk.Frame]
+    ctrl_container: Optional[tk.Frame]
+    main_container: Optional[tk.Frame]
+    setup_frame: Optional[tk.Frame]
+    battle_frame: Optional[tk.Frame]
+    main_frame: Optional[tk.Frame]
+    controller: Optional['Controller']
+    frames: Dict[Type[Union[SetupFrame, BattleFrame]], Optional[tk.Frame]]
 
-        # Initialize View Variables
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.init_vars()
+        self.setup_frames()
+        self.configure_window()
+
+    def init_vars(self):
         self.name_text = tk.StringVar(value="Rollo")
         self.level_change = tk.StringVar(value="1")
         self.chosen_weapon = tk.StringVar(value="Unarmed")
@@ -27,28 +49,44 @@ class View(tk.Tk):
         self.curr_frame = None
         self.controller = None
 
-        self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
-        self.ctrl_container.pack_propagate(False)
-        self.ctrl_container.pack(side="left", fill='y')
+    def setup_frames(self):
+        """
+        Set up the frames for the application. They are:
+        ctrl_container = Side container with the control buttons
+        main_container = Main container with the output
+        setup_frame = Pre-battle setup frame
+        battle_frame = Battle setup frame
+        main_frame = Main output with player, enemy, and output labels
+        """
+        try:
+            self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
+            self.ctrl_container.pack_propagate(False)
+            self.ctrl_container.pack(side="left", fill='y')
 
-        self.main_container = tk.Frame(self, height=768, width=768, bg="red")
-        self.main_container.pack_propagate(False)
-        self.main_container.pack(side="right", expand=True, fill='both')
+            self.main_container = tk.Frame(self, height=768, width=768, bg="red")
+            self.main_container.pack_propagate(False)
+            self.main_container.pack(side="right", expand=True, fill='both')
 
-        self.setup_frame = SetupFrame(self.ctrl_container, width=256, height=600, padx=20)
-        self.setup_frame.pack(expand=True)
+            self.setup_frame = SetupFrame(self.ctrl_container, width=256, height=600, padx=20)
+            self.setup_frame.pack(expand=True)
 
-        self.main_frame = MainFrame(self.main_container)
+            self.main_frame = MainFrame(self.main_container)
 
-        self.battle_frame = BattleFrame(self.ctrl_container)
+            self.battle_frame = BattleFrame(self.ctrl_container)
 
-        self.frames = {
-            SetupFrame: self.setup_frame,
-            BattleFrame: self.battle_frame
-        }
+            self.frames = {
+                SetupFrame: self.setup_frame,
+                BattleFrame: self.battle_frame
+            }
+        except Exception as e:
+            logging.error(f"Error setting up frames: {e}")
 
-        # Configure main window
-        self.configure_window()
+    def configure_window(self):
+        """ Configure main window properties """
+        self.title("DQ1 Battle Simulator")
+        self.geometry("820x620+50+50")
+        self.resizable(width=True, height=True) # TODO See if this messes up the frames.
+        self.main_frame.pack(fill='x', expand=True)
 
     def set_controller(self, controller):
         self.controller = controller
@@ -57,13 +95,6 @@ class View(tk.Tk):
         self.setup_frame.set_controller(controller)
         # Initialize and display frames
         self.show_frame(self.setup_frame)
-
-    def configure_window(self):
-        """ Configure main window properties """
-        self.title("DQ1 Battle Simulator")
-        self.geometry("820x620+50+50")
-        self.resizable(width=False, height=False)
-        self.main_frame.pack(fill='x', expand=True)
 
     def show_frame(self, cont):
         """
