@@ -9,7 +9,7 @@ class ObserverMessages(Enum):
     ARMOR_CHANGE = auto()
     WEAPON_CHANGE = auto()
     SHIELD_CHANGE = auto()
-
+    RESET_GAME = auto()
 
 # Enemy Actions
 class EnemyActions(Enum):

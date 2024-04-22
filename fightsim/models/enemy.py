@@ -33,6 +33,12 @@ class Enemy:
                f"max_hp={self.max_hp}, current_hp={self.curr_hp}, sleepCount={self.enemy_sleep_count}, " \
                f"spellStopped={self.enemy_spell_stopped})"
 
+    @classmethod
+    def create_dummy(cls):
+        """Creates a dummy enemy with neutral stats"""
+        return cls(name="Dummy", strength=0, agility=0, hp=[1, 1], sleep_resist=0,
+                   stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
+
     def set_model(self, model):
         self.model = model  # Method to inject the model dependency
 
