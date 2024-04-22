@@ -1,5 +1,5 @@
-import random
 from .enemy_data import enemy_dict
+from ..common.randomizer import Randomizer
 
 
 # Enemy Class
@@ -10,7 +10,7 @@ class Enemy:
         self.name = name  # Enemy Name
         self.strength = strength  # Enemy Strength
         self.agility = agility  # Enemy Agility
-        self.base_hp = hp if isinstance(hp, list) else [hp, hp]
+        self.base_hp = hp
         self.sleep_resist = sleep_resist  # Enemy Sleep Resistance
         self.stopspell_resist = stopspell_resist  # Enemy Stopspell Resistance
         self.hurt_resist = hurt_resist  # Enemy Hurt Resistance
@@ -21,7 +21,7 @@ class Enemy:
         self.model = None
 
         # Mutable State         
-        self.max_hp = random.randint(self.base_hp[0], self.base_hp[1])
+        self.max_hp = Randomizer.randint(self.base_hp[0], self.base_hp[1])
         self.curr_hp = self.max_hp
         self.enemy_sleep_count = 0  # was e_sleep
         self.enemy_spell_stopped = False  # was e_stop
@@ -44,44 +44,66 @@ class Enemy:
 
     def reset_battle_state(self):
         """Resets the enemy's mutable state back to default for a new battle."""
-        self.max_hp = random.randint(self.base_hp[0], self.base_hp[1])
+        self.max_hp = Randomizer.randint(self.base_hp[0], self.base_hp[1])
         self.curr_hp = self.max_hp
         self.enemy_sleep_count = 0
         self.enemy_spell_stopped = False
 
     def did_dodge(self):
-        return random.randint(1, 64) <= self.dodge_chance
+        """ Returns True if the enemy dodges """
+        return Randomizer.randint(1, 64) <= self.dodge_chance
 
     def is_defeated(self):
+        """ Returns True if the enemy is defeated """
         return self.curr_hp <= 0
 
     def is_asleep(self):
-        """ Handles the sleep logic when player puts the enemy to sleep"""
+        """
+        Check and update the sleep status of the enemy.
+        Returns True if the enemy remains asleep, otherwise False.
+        """
         if self.enemy_sleep_count == 2:
             self.enemy_sleep_count -= 1
             self.model.text(f"The {self.name} is asleep")
+            return True
         else:
-            if random.randint(1, 3) == 3:
-                self.model.text(f"The {self.name} woke up!")
-                self.enemy_sleep_count = 0
-                return False
-            else:
-                self.model.text(f"The {self.name} is still asleep...")
-                return True
+            return self.update_sleep_status()
+
+    def update_sleep_status(self):
+        """ Determines if the enemy wakes up or not """
+        if Randomizer.randint(1, 3) == 3:
+            return self.wake_up()
+        else:
+            return self.remain_asleep()
+
+    def wake_up(self):
+        """ Wakes up the enemy """
+        self.model.text(f"The {self.name} woke up!")
+        self.enemy_sleep_count = 0
+        return False
+
+    def remain_asleep(self):
+        """ The enemy remains asleep """
+        self.model.text(f"The {self.name} is still asleep...")
+        return True
 
     def attack(self, hero_defense):
-
+        """ Enemy makes a successful attack. Returns a damage amount. """
         if hero_defense > self.strength:
-            low, high = self.weak_damage_range(self.strength)
+            damage_range = self.weak_damage_range(self.strength)
         else:
-            low, high = self.normal_damage_range(self.strength, hero_defense)
+            damage_range = self.normal_damage_range(self.strength, hero_defense)
 
-        return random.randint(low, high)
+        return Randomizer.randint(*damage_range)
 
-    def weak_damage_range(self, x):
+    @staticmethod
+    def weak_damage_range(x):
+        """ Returns a damage tuple for a weak attack. """
         return 0, ((x + 4) // 6)
 
-    def normal_damage_range(self, x, y):
+    @staticmethod
+    def normal_damage_range(x, y):
+        """ Returns a damage tuple for a strong attack. """
         return ((x - y // 2) // 4), ((x - y // 2) // 2)
 
 
