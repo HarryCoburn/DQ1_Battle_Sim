@@ -7,7 +7,7 @@ class Item:
     modifier: int
 
     def describe(self) -> str:
-        return f"{self.name} (Modifier: {self.modifier}"
+        return f"{self.name} (Modifier: {self.modifier})"
 
 
 @dataclass
@@ -118,9 +118,14 @@ shield_dict = {
     }
 }
 
-weapon_instances = {k: Weapon(**v) for k, v in weapon_dict.items()}
-armor_instances = {k: Armor(**v) for k, v in armor_dict.items()}
-shield_instances = {k: Shield(**v) for k, v in shield_dict.items()}
+
+def create_instances(item_class, item_data):
+    return {name: item_class(**data) for name, data in item_data.items()}
+
+
+weapon_instances = create_instances(Weapon, weapon_dict)
+armor_instances = create_instances(Armor, armor_dict)
+shield_instances = create_instances(Shield, shield_dict)
 
 weapon_names = [weapon.name for weapon in weapon_instances.values()]
 armor_names = [armor.name for armor in armor_instances.values()]
