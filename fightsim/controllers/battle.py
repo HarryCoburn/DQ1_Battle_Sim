@@ -491,3 +491,5 @@ class EnemyBattle():
 
     def did_dodge(self):
         return self.dodge(self.dodge_chance)
+
+
