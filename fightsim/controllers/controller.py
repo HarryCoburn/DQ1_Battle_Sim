@@ -4,6 +4,7 @@ from fightsim.common.messages import ObserverMessages
 from .battle import Battle
 import logging
 
+
 class Controller:
     """ Main controller class"""
 

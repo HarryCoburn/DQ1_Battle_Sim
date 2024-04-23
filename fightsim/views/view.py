@@ -89,6 +89,7 @@ class View(tk.Tk):
         self.main_frame.pack(fill='x', expand=True)
 
     def set_controller(self, controller):
+        """ Attaches the controller to the frames """
         self.controller = controller
         self.main_frame.set_controller(controller)
         self.battle_frame.set_controller(controller)
@@ -96,15 +97,29 @@ class View(tk.Tk):
         # Initialize and display frames
         self.show_frame(self.setup_frame)
 
-    def show_frame(self, cont):
+    def show_frame(self, cont: Type[tk.Frame]) -> None:
         """
-        Switches one frame for another. Assumes frames are overlapping.
+        Displays the given frame, hiding the current one.
+
+        Parameters:
+        cont (tk.Frame): The Tkinter frame to be displayed.
+
+        Does not return a value but changes the visible frame in the application window.
         """
-        # frame = self.frames[cont]
+        if cont not in self.frames.values():
+            logging.error(f"Attempted to show an unmanaged frame: {cont}")
+            return
         if self.curr_frame is not None:
             self.curr_frame.pack_forget()
         self.curr_frame = cont
         cont.pack(fill='x', expand=True)
+        logging.debug(f"Switched to frame: {cont}")
+
+        # frame = self.frames[cont]
+        # if self.curr_frame is not None:
+        #     self.curr_frame.pack_forget()
+        # self.curr_frame = cont
+        # cont.pack(fill='x', expand=True)
 
     def update_magic(self):
         """
