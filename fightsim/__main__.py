@@ -23,10 +23,10 @@ def main():
     main_logger.addHandler(main_handler)
 
     try:
-        observer = EventManager("DQ1 Model Observer")
+        event_manager = EventManager("DQ1 Model Observer")
         view = View()
-        model = Model(player=player_factory(), enemy=enemy_dummy_factory(), observer=observer)
-        controller = Controller(model, view, observer)
+        model = Model(player=player_factory(), enemy=enemy_dummy_factory(), observer=event_manager)
+        controller = Controller(model, view, event_manager)
 
         view.set_controller(controller)
         controller.initial_update()

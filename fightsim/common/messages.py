@@ -14,6 +14,12 @@ class ObserverMessages(Enum):
     ARMOR_CHANGE = auto()
     RESET_GAME = auto()
 
+    def description(self):
+        descriptions = {
+
+        }
+        return descriptions.get(self, "No description available.")
+
 
 # Enemy Actions
 class EnemyActions(Enum):
@@ -29,3 +35,17 @@ class EnemyActions(Enum):
     HEALMORE = auto()
     HURTMORE = auto()
     STRONGFIRE = auto()
+
+    def description(self):
+        descriptions = {
+            EnemyActions.ATTACK: "Enemy performs a basic attack.",
+            EnemyActions.HEAL: "Enemy casts the Heal spell.",
+            EnemyActions.HURT: "Enemy casts the Hurt spell.",
+            EnemyActions.SLEEP: "Enemy casts the Sleep spell.",
+            EnemyActions.STOPSPELL: "Enemy casts the Stopspell spell.",
+            EnemyActions.FIRE: "Enemy uses a fiery breath attack.",
+            EnemyActions.HEALMORE: "Enemy casts the Healmore spell.",
+            EnemyActions.HURTMORE: "Enemy casts the Hurtmore spell.",
+            EnemyActions.STRONGFIRE: "Enemy uses a strong fiery breath attack."
+        }
+        return descriptions.get(self, "No description available.")
