@@ -256,4 +256,5 @@ class Player:
             self.model.text(f"You hit {enemy_name} for {damage_dealt} points of damage!\n")
 
 
-    
+def player_factory():
+    return Player()

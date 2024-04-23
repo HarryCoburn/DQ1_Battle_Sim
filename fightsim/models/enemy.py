@@ -121,3 +121,7 @@ enemy_instances = {k: Enemy(**v) for k, v in enemy_dict.items()}
 
 # Create enemy names
 enemy_names = [enemy.name for enemy in enemy_instances.values()]
+
+
+def enemy_dummy_factory():
+    return Enemy.create_dummy()

@@ -1,28 +1,30 @@
 # model.py - Default model for the simulation
 
-
-from fightsim.models.player import Player
-from fightsim.models.enemy import Enemy, enemy_instances
-from fightsim.common.messages import ObserverMessages
-from ..common.observer import Observer
 from typing import Optional
+from fightsim.common.messages import ObserverMessages
+from ..common.eventmanager import EventManager
+from fightsim.models.player import Player # For type checking
+from fightsim.models.enemy import Enemy, enemy_instances # For type checking
+
 
 
 class Model:
     """ Model class for the MVC pattern """
-    def __init__(self):        
-        self.player: Player = Player()  # Add a player
-        self.enemy: Optional[Enemy] = Enemy.create_dummy()
+    def __init__(self, player: Optional[Player] = None, enemy: Optional[Enemy] = None, observer: EventManager = None):
+        self.player: Player = player if player else Player()  # Add a player
+        self.enemy: Optional[Enemy] = enemy if enemy else Enemy.create_dummy()
+        self.observed: EventManager = observer if observer else EventManager("Generic Model Observer")
+
         self.clean_text: bool = False
         self.in_battle: bool = False  # Are we in battle mode or not? If not, we're in setup mode.
         self.initiative: bool = False  # Do we have initiative?
         self.crit_hit: bool = False  # Was there a critical hit?
-        self.observed: Observer = Observer("Model Observers")
+
         self.initialize_game()
 
     def initialize_game(self):
+        """ Inject the model into player, reset battle variables, and notify the observer. """
         self.player.set_model(self)
-        self.enemy = Enemy.create_dummy()
         self.in_battle = False
         self.initiative = False
         self.crit_hit = False
@@ -93,8 +95,6 @@ class Model:
     def text(self, output):
         """ Notify there is a message for the output window. """
         self.observed.notify(ObserverMessages.OUTPUT_CHANGE, output)
-
-    # TODO    
 
     def clear_output(self):
         """ Clear the output var"""

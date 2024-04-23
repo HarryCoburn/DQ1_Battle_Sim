@@ -8,7 +8,7 @@ import logging
 class Controller:
     """ Main controller class"""
 
-    def __init__(self, model, view):
+    def __init__(self, model, view, observer):
         self.logger = logging.getLogger(__name__)  # Get a module-level logger
         if not model or not view:
             self.logger.error("Model and View are required for Controller initialization.")
@@ -16,6 +16,7 @@ class Controller:
 
         self.model = model
         self.view = view
+        self.observer = observer
         self.battle = Battle(self)
         self.spell_strings = []
 
@@ -34,7 +35,7 @@ class Controller:
             ObserverMessages.OUTPUT_CLEAR
         ]
         for message in messages:
-            self.model.observed.attach(self, message)
+            self.observer.attach(self, message)
             self.logger.debug(f"Attached controller to model with message: {message}")
 
     def setup_bindings(self):
