@@ -16,7 +16,7 @@ class ObserverMessages(Enum):
 
     def description(self):
         descriptions = {
-
+            # TODO
         }
         return descriptions.get(self, "No description available.")
 
