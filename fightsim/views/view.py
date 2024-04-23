@@ -38,12 +38,6 @@ class View(tk.Tk):
         self.configure_window()
 
     def init_vars(self):
-        self.name_text = tk.StringVar(value="Rollo")
-        self.level_change = tk.StringVar(value="1")
-        self.chosen_weapon = tk.StringVar(value="Unarmed")
-        self.chosen_armor = tk.StringVar(value="Naked")
-        self.chosen_shield = tk.StringVar(value="No Shield")
-        self.chosen_enemy = tk.StringVar(value="Select Enemy")
         self.chosen_magic = tk.StringVar(value="No spells available.")
         self.spell_strings = []  # To be dynamically updated
         self.curr_frame = None

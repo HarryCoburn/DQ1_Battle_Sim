@@ -71,11 +71,11 @@ class Battle:
         # Check for Critical Hit
         if self.did_player_critical_hit():
             # Critical hit
-            low, high = self.player.crit_range(self.player.attack_num)
+            low, high = self.player.crit_range(self.player.attack_num())
             player_crit_this_turn = True
         else:
             # Normal hit
-            low, high = self.player.damage_range(self.player.attack_num, self.enemy.agility)
+            low, high = self.player.damage_range(self.player.attack_num(), self.enemy.agility)
 
         # Determine damage
         damage_dealt = Randomizer.randint(low, high)

@@ -28,7 +28,6 @@ class Player:
     herb_count: int = 0
     reduce_hurt_damage: bool = False
     reduce_fire_damage: bool = False
-    attack_num: int = 0
     is_asleep: bool = False
     is_spellstopped: bool = False
     sleep_count: int = 6
@@ -68,12 +67,14 @@ class Player:
     model: Optional = None  # Placeholder
     
     def __post_init__(self):
-        self.attack_num = self.strength + self.weapon.modifier
         if not 1 <= self.level <= 30:
             raise ValueError("Level must be within 1 to 30")
 
     def defense(self):
         return (self.agility + self.armor.modifier + self.shield.modifier) // 2
+
+    def attack_num(self): # TODO make this like defense() and just return the calculation.
+        return self.strength + self.weapon.modifier
 
     # Static Classes
     @staticmethod
@@ -104,15 +105,23 @@ class Player:
         """
         letters = name[0:4]        
         return sum(map(self.letter_stat, letters)), math.floor(self.name_sum % 4)
-    
-    def level_up(self):
+
+    def change_name(self, name):
+        self.name = name
+        self.recalculate_stats()
+
+    def level_up(self, value):
+        self.level = value
+        self.recalculate_stats()
+
+    def recalculate_stats(self):
         """
         Main level up function
 
         The function reads the new level, recalculates the name_sum and progression path
         Then uses the right level_base to adjust the stats of the player.
         """
-        level_base = self.level_stats[int(self.level) - 1]
+        level_base = self.level_stats[self.level - 1]
         self.name_sum, self.progression = self.progress_mods(self.name)
         # Four types of progression
         if self.progression == 0:
@@ -169,8 +178,6 @@ class Player:
         weapon_instance = weapon_instances.get(key)
         if weapon_instance:        
             self.weapon = weapon_instance
-            if self.model:
-                self.model.notify_weapon_change()
         else:
             print(f"Weapon {weapon_name} not found.")        
     
@@ -187,8 +194,6 @@ class Player:
                 self.reduce_fire_damage = True
             else:
                 self.reduce_fire_damage = False
-            if self.model:
-                self.model.notify_armor_change()
         else:
             print(f"Armor {armor_name} not found.")     
 
@@ -197,8 +202,6 @@ class Player:
         shield_instance = shield_instances.get(key)
         if shield_instance:        
             self.shield = shield_instance
-            if self.model:
-                self.model.notify_shield_change()
         else:
             print(f"Shield {shield_name} not found.")     
 

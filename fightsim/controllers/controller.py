@@ -21,7 +21,6 @@ class Controller:
         self.spell_strings = []
 
         self.setup_observers()
-        self.setup_bindings()
         self.initialize_view()
 
     def setup_observers(self):
@@ -38,23 +37,6 @@ class Controller:
             self.observer.attach(self, message)
             self.logger.debug(f"Attached controller to model with message: {message}")
 
-    def setup_bindings(self):
-        """Setup bindings for view changes."""
-        bindings = {
-            'w': [
-                (self.view.name_text, self.update_name),
-                (self.view.level_change, self.update_level),
-                (self.view.chosen_weapon, self.update_weapon),
-                (self.view.chosen_armor, self.update_armor),
-                (self.view.chosen_shield, self.update_shield),
-                (self.view.chosen_enemy, self.update_enemy),
-            ]
-        }
-        for event, pairs in bindings.items():
-            for (var, handler) in pairs:
-                var.trace(event, handler)
-                logging.debug(f"Bound {var} change to {handler.__name__}")
-
     def initialize_view(self):
         self.model.text("DQ1 Battle Sim")
         self.logger.info("View initialized with welcome message.")
@@ -63,25 +45,31 @@ class Controller:
         self.view.update_player_info(self.model.player)
         self.battle.fight_over.trace('w', self.end_battle)
 
-    def update_armor(self, *_):
-        # called when armor dropdown changes
-        selected_armor = self.view.chosen_armor.get()
-        self.model.player.equip_armor(selected_armor)
+    def update_player_attribute(self, attribute_type, value):
+        """ Generic method to update player attributes """
+        try:
+            if attribute_type == "weapon":
+                self.model.player.equip_weapon(value)
+            elif attribute_type == "armor":
+                self.model.player.equip_armor(value)
+            elif attribute_type == "shield":
+                self.model.player.equip_shield(value)
+            elif attribute_type == "level":
+                self.model.player.level_up(value)
+            elif attribute_type == "name":
+                self.model.player.change_name(value)
+            self.view.update_player_info(self.model.player)
+            self.logger.info(f"Updated {attribute_type} to {value}")
+        except Exception as e:
+            self.logger.error(f"Failed to update {attribute_type}: {e}")
 
-    def update_weapon(self, *_):
-        # called when armor dropdown changes
-        selected_weapon = self.view.chosen_weapon.get()
-        self.model.player.equip_weapon(selected_weapon)
-
-    def update_shield(self, *_):
-        # called when armor dropdown changes
-        selected_shield = self.view.chosen_shield.get()
-        self.model.player.equip_shield(selected_shield)
-
-    def update_enemy(self, *_):
-        # called when enemy dropdown changes
-        selected_enemy = self.view.chosen_enemy.get()
-        self.model.set_enemy(selected_enemy)
+    def update_enemy(self, value):
+        try:
+            self.model.set_enemy(value)
+            self.view.update_enemy_info(self.model.enemy)
+            self.logger.info(f"Updated enemy to {value}")
+        except Exception as e:
+            self.logger.error(f"Failed to update enemy to {value}: {e}")
 
     def update_frame(self, *args):
         """ Tells view.ctrl_frame to change the frame"""
@@ -106,7 +94,7 @@ class Controller:
         self.model.player.curr_mp = self.model.player.max_mp
         self.model.player.herb_count = 0
         self.view.main_frame.txt["state"] = "disabled"
-        self.update_enemy()
+        self.view.update_enemy_info(self.model.enemy)
         self.update_player_info()
         self.view.show_frame(self.view.setup_frame)
 
@@ -132,19 +120,8 @@ class Controller:
         Updates the main text box with output. When text is None, outputs the model and other
         debugging information
         """
-        # pp = pprint.PrettyPrinter()
-        # p_model = pp.pformat(self.model)
-
-        # self.view.clear_output()
-
         for line in text.output:
             self.view.append_output(line)
-
-    def update_name(self, *_):
-        """ Updates the player name and triggers stat recalculations """
-        self.model.player.name = self.view.name_text.get()
-        self.model.player.level_up()
-        self.update_player_info()
 
     def update_player_info(self, *_):
         """Tells the view to update the player label"""
@@ -153,41 +130,8 @@ class Controller:
     def update_enemy_info(self, *_):
         self.view.update_enemy_info(self.model.enemy)
 
-    def update_level(self, *_):
-        """Updates stats when level spinbox changes"""
-        if self.view.level_change.get() == "":
-            pass
-        else:
-            self.model.player.level = int(self.view.level_change.get())
-            self.model.player.level_up()
-            self.update_player_info()
-
     def buy_herb(self, *_):
         if self.model.buy_herb():
             self.view.update_player_info(self.model.player)
         # else:
         # self.view.show_message("Maximum herb count reached.")
-
-    @property
-    def name_text(self):
-        return self.view.name_text
-
-    @property
-    def level_change(self):
-        return self.view.level_change
-
-    @property
-    def chosen_weapon(self):
-        return self.view.chosen_weapon
-
-    @property
-    def chosen_armor(self):
-        return self.view.chosen_armor
-
-    @property
-    def chosen_shield(self):
-        return self.view.chosen_shield
-
-    @property
-    def chosen_enemy(self):
-        return self.view.chosen_enemy
