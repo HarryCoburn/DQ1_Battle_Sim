@@ -1,45 +1,39 @@
+from dataclasses import dataclass, field
+from typing import List, Optional
 from .enemy_data import enemy_dict
 from ..common.randomizer import Randomizer
+from ..common.messages import EnemyActions
 
 
 # Enemy Class
+@dataclass
 class Enemy:
-    def __init__(self, name, strength, agility, hp, sleep_resist, stopspell_resist,
-                 hurt_resist, dodge, pattern, run, void_critical_hit=False):
-        # Immutable attributes
-        self.name = name  # Enemy Name
-        self.strength = strength  # Enemy Strength
-        self.agility = agility  # Enemy Agility
-        self.base_hp = hp
-        self.sleep_resist = sleep_resist  # Enemy Sleep Resistance
-        self.stopspell_resist = stopspell_resist  # Enemy Stopspell Resistance
-        self.hurt_resist = hurt_resist  # Enemy Hurt Resistance
-        self.dodge_chance = dodge  # Enemy Dodge Chance
-        self.pattern = pattern  # Enemy Attack Patterns
-        self.run = run  # Enemy Run Chance
-        self.void_critical_hit = void_critical_hit  # Player cannot do a critical hit if true
-        self.model = None
+    name: str
+    strength: int
+    agility: int
+    base_hp: List[int]
+    dodge: int
+    sleep_resist: int = 0
+    stopspell_resist: int = 15
+    hurt_resist: int = 0
+    pattern: List[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
+    run: int = 0
+    void_critical_hit: bool = False
+    model: Optional[any] = None
 
-        # Mutable State         
+    def __post_init__(self):
         self.max_hp = Randomizer.randint(self.base_hp[0], self.base_hp[1])
         self.curr_hp = self.max_hp
         self.enemy_sleep_count = 0  # was e_sleep
         self.enemy_spell_stopped = False  # was e_stop
 
-    def __repr__(self):
-        return f"Enemy(name={self.name}, strength={self.strength}, agility={self.agility}, base_hp={self.base_hp}, " \
-               f"sleepR={self.sleep_resist}, stopR={self.stopspell_resist}, hurtR={self.hurt_resist}, " \
-               f"dodge={self.dodge_chance}, pattern={self.pattern}, run={self.run}, voidCrit={self.void_critical_hit}, " \
-               f"max_hp={self.max_hp}, current_hp={self.curr_hp}, sleepCount={self.enemy_sleep_count}, " \
-               f"spellStopped={self.enemy_spell_stopped})"
-
     @classmethod
     def create_dummy(cls):
         """Creates a dummy enemy with neutral stats"""
-        return cls(name="Dummy", strength=0, agility=0, hp=[1, 1], sleep_resist=0,
+        return cls(name="Dummy", strength=0, agility=0, base_hp=[1, 1], sleep_resist=0,
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
 
-    def is_spell_stopped(self):
+    def is_spell_stopped(self, spell_name):
         if self.enemy_spell_stopped:
             self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!""")
             return True
@@ -57,7 +51,7 @@ class Enemy:
 
     def did_dodge(self):
         """ Returns True if the enemy dodges """
-        return Randomizer.randint(1, 64) <= self.dodge_chance
+        return Randomizer.randint(1, 64) <= self.dodge
 
     def is_defeated(self):
         """ Returns True if the enemy is defeated """
