@@ -2,32 +2,60 @@
 
 from fightsim.common.messages import ObserverMessages
 from .battle import Battle
-
+import logging
 
 class Controller:
     """ Main controller class"""
 
     def __init__(self, model, view):
+        self.logger = logging.getLogger(__name__)  # Get a module-level logger
+        if not model or not view:
+            self.logger.error("Model and View are required for Controller initialization.")
+            raise ValueError("Model and View cannot be None.")
+
         self.model = model
         self.view = view
         self.battle = Battle(self)
-
-        self.view.update_output("DQ1 Battle Sim")
-
-        self.model.observed.attach(self, ObserverMessages.ENEMY_CHANGE)
-        self.model.observed.attach(self, ObserverMessages.WEAPON_CHANGE)
-        self.model.observed.attach(self, ObserverMessages.ARMOR_CHANGE)
-        self.model.observed.attach(self, ObserverMessages.SHIELD_CHANGE)
-        self.model.observed.attach(self, ObserverMessages.OUTPUT_CHANGE)
-        self.model.observed.attach(self, ObserverMessages.OUTPUT_CLEAR)
-
-        self.view.name_text.trace('w', self.update_name)
-        self.view.level_change.trace('w', self.update_level)
-        self.view.chosen_weapon.trace('w', self.update_weapon)
-        self.view.chosen_armor.trace('w', self.update_armor)
-        self.view.chosen_shield.trace('w', self.update_shield)
-        self.view.chosen_enemy.trace('w', self.update_enemy)
         self.spell_strings = []
+
+        self.setup_observers()
+        self.setup_bindings()
+        self.initialize_view()
+
+    def setup_observers(self):
+        """ Attach the controller as an observer to model events """
+        messages = [
+            ObserverMessages.ENEMY_CHANGE,
+            ObserverMessages.WEAPON_CHANGE,
+            ObserverMessages.ARMOR_CHANGE,
+            ObserverMessages.SHIELD_CHANGE,
+            ObserverMessages.OUTPUT_CHANGE,
+            ObserverMessages.OUTPUT_CLEAR
+        ]
+        for message in messages:
+            self.model.observed.attach(self, message)
+            self.logger.debug(f"Attached controller to model with message: {message}")
+
+    def setup_bindings(self):
+        """Setup bindings for view changes."""
+        bindings = {
+            'w': [
+                (self.view.name_text, self.update_name),
+                (self.view.level_change, self.update_level),
+                (self.view.chosen_weapon, self.update_weapon),
+                (self.view.chosen_armor, self.update_armor),
+                (self.view.chosen_shield, self.update_shield),
+                (self.view.chosen_enemy, self.update_enemy),
+            ]
+        }
+        for event, pairs in bindings.items():
+            for (var, handler) in pairs:
+                var.trace(event, handler)
+                logging.debug(f"Bound {var} change to {handler.__name__}")
+
+    def initialize_view(self):
+        self.view.update_output("DQ1 Battle Sim")
+        self.logger.info("View initialized with welcome message.")
 
     def initial_update(self):
         self.view.update_player_info(self.model.player)

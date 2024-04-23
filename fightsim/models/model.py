@@ -30,7 +30,7 @@ class Model:
 
     def __repr__(self):
         props = vars(self)
-        return '\n'.join(f"{key} : {value}" for key, value in props.items())
+        return '\n'.join(f"{key}: {value}" for key, value in props.items())
     
     @staticmethod
     def find_key_by_value(d, value_to_find):
