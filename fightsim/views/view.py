@@ -138,8 +138,9 @@ class View(tk.Tk):
     def update_enemy_info(self, enemy_info):
         self.main_frame.update_enemy_label(enemy_info)
 
-    def update_output(self, message):
-        self.main_frame.update_output(message)
+    def update_output(self, event_type, message):
+        print(f"event type is {event_type}, and message is {message}")
+        self.main_frame.update_output(event_type, message)
 
     def clear_output(self):
         self.main_frame.clear_output()

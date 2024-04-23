@@ -56,7 +56,7 @@ class Controller:
                 logging.debug(f"Bound {var} change to {handler.__name__}")
 
     def initialize_view(self):
-        self.view.update_output("DQ1 Battle Sim")
+        self.model.text("DQ1 Battle Sim")
         self.logger.info("View initialized with welcome message.")
 
     def initial_update(self):
@@ -110,7 +110,7 @@ class Controller:
         self.update_player_info()
         self.view.show_frame(self.view.setup_frame)
 
-    def update(self, property_name, model, data=None):
+    def update(self, property_name, data=None):
         print(f"Received property_name {property_name}")
         # React to notifications from the model
         if property_name == ObserverMessages.SHIELD_CHANGE:
@@ -122,7 +122,8 @@ class Controller:
         if property_name == ObserverMessages.ENEMY_CHANGE:
             self.view.update_enemy_info(self.model.enemy)
         if property_name == ObserverMessages.OUTPUT_CHANGE:
-            self.view.update_output(data)
+            print(f"In update, data is {data}")
+            self.view.update_output(property_name, data)
         if property_name == ObserverMessages.OUTPUT_CLEAR:
             self.view.clear_output()
 

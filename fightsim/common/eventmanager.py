@@ -22,8 +22,10 @@ class EventManager:
         self.logger.debug(f"Observer attached to {event_type}")
 
     def notify(self, event_type, data=None):
+        print(f"Entering notify, data is {data}")
         """ Notify all the observers about a change to a specific property"""
         observers = self._observers.get(event_type, [])
+        print(f"The observers are {observers}")
         if not observers:
             self.logger.warning(f"No observers registered for {event_type}")
             return
