@@ -6,6 +6,7 @@ from dataclasses import field
 from fightsim.models.items import *
 import math
 import random
+from typing import List, Optional
 
 
 @dataclass
@@ -23,15 +24,15 @@ class Player:
     weapon: Weapon = field(default_factory=lambda: weapon_instances["unarmed"])
     armor: Armor = field(default_factory=lambda: armor_instances["naked"])
     shield: Shield = field(default_factory=lambda: shield_instances["no_shield"])
-    player_magic: list = field(default_factory=list)
+    player_magic: List[str] = field(default_factory=list)
     herb_count: int = 0
     reduce_hurt_damage: bool = False
     reduce_fire_damage: bool = False
-    print(weapon)
     attack_num: int = 0
     is_asleep: bool = False
     is_spellstopped: bool = False
     sleep_count: int = 6
+    # level_stats holds the base leveling data for the player
     level_stats: list = field(default_factory=lambda: [
         [4, 4, 15, 0],
         [5, 4, 22, 0],
@@ -64,10 +65,15 @@ class Player:
         [135, 120, 200, 190],
         [140, 130, 210, 200]
         ])
-    model = None  # Placeholder
+    model: Optional = None  # Placeholder
     
     def __post_init__(self):
-        self.attack_num = self.strength + self.weapon.modifier         
+        self.attack_num = self.strength + self.weapon.modifier
+        if not 1 <= self.level <= 30:
+            raise ValueError("Level must be within 1 to 30")
+
+    def defense(self):
+        return (self.agility + self.armor.modifier + self.shield.modifier) // 2
 
     # Static Classes
     @staticmethod
@@ -206,12 +212,23 @@ class Player:
 
     @staticmethod
     def damage_range(attack, agility):
-        return ((attack - agility // 2) // 4), ((attack - agility // 2) // 2)
+        """
+        Returns a possible damage range for a normal attack as a tuple in the form (min, max)
+        min must be at least 0, max can be no lower than 1
+        """
+        return max(((attack - agility // 2) // 4), 0), max(((attack - agility // 2) // 2), 1)
     
     @staticmethod
     def crit_range(attack):
-        return (attack // 2), attack
-    
+        """
+        Returns a possible critical damage range for a normal attack as a tuple in the form (min, max)
+        min must be at least 0, max can be no lower than 1
+        """
+        return max((attack // 2), 0), max(attack, 1)
+
+    def is_defeated(self):
+        return self.curr_hp <= 0
+
     def check_sleep(self):
         """ Returns if the player is asleep or not. """
         if not self.is_asleep:

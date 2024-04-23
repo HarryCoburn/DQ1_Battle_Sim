@@ -2,26 +2,35 @@
 
 
 from fightsim.models.player import Player
-from fightsim.models.enemy import enemy_instances
+from fightsim.models.enemy import Enemy, enemy_instances
 from fightsim.common.messages import ObserverMessages
 from ..common.observer import Observer
+from typing import Optional
 
 
 class Model:
     """ Model class for the MVC pattern """
     def __init__(self):        
-        self.player = Player()  # Add a player
-        self.enemy = None  # Default enemy to make the rollover happy. Make a dummy enemy instead?
-        self.clean_text = False
-        self.in_battle = False  # Are we in battle mode or not? If not, we're in setup mode.
-        self.initiative = False  # Do we have initiative?
-        self.crit_hit = False  # Was there a critical hit?
-        self.observed = Observer("Model Observers")
-        self.player.set_model(self)  # Inject the model into the player for reference.
+        self.player: Player = Player()  # Add a player
+        self.enemy: Optional[Enemy] = Enemy.create_dummy()
+        self.clean_text: bool = False
+        self.in_battle: bool = False  # Are we in battle mode or not? If not, we're in setup mode.
+        self.initiative: bool = False  # Do we have initiative?
+        self.crit_hit: bool = False  # Was there a critical hit?
+        self.observed: Observer = Observer("Model Observers")
+        self.initialize_game()
+
+    def initialize_game(self):
+        self.player.set_model(self)
+        self.enemy = Enemy.create_dummy()
+        self.in_battle = False
+        self.initiative = False
+        self.crit_hit = False
+        self.observed.notify(ObserverMessages.RESET_GAME)
 
     def __repr__(self):
         props = vars(self)
-        return '\n'.join("%s : %s" % prop for prop in props.items())
+        return '\n'.join(f"{key} : {value}" for key, value in props.items())
     
     @staticmethod
     def find_key_by_value(d, value_to_find):
