@@ -39,6 +39,12 @@ class Enemy:
         return cls(name="Dummy", strength=0, agility=0, hp=[1, 1], sleep_resist=0,
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
 
+    def is_spell_stopped(self):
+        if self.enemy_spell_stopped:
+            self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!""")
+            return True
+        return False
+
     def set_model(self, model):
         self.model = model  # Method to inject the model dependency
 
@@ -86,6 +92,9 @@ class Enemy:
         """ The enemy remains asleep """
         self.model.text(f"The {self.name} is still asleep...")
         return True
+
+    def trigger_healing(self):
+        return self.curr_hp / self.max_hp < 0.25
 
     def attack(self, hero_defense):
         """ Enemy makes a successful attack. Returns a damage amount. """

@@ -70,7 +70,7 @@ class MainFrame(tk.Frame):
         Updates the player label
         """
         print("Trying to update the label.")
-        self.player_label["text"] = inspect.cleandoc(f'''\
+        self.player_label["text"] = inspect.cleandoc(f"""\
               Name: {player_info.name}
               Level: {player_info.level}
               HP: {player_info.curr_hp}/{player_info.max_hp}
@@ -87,7 +87,7 @@ class MainFrame(tk.Frame):
 
               Asleep?: {player_info.is_asleep}
               Spells stopped?: {player_info.is_spellstopped}
-          ''')
+          """)
         self.parent.spell_strings = player_info.player_magic
 
     def update_enemy_label(self, enemy_info):
@@ -97,13 +97,13 @@ class MainFrame(tk.Frame):
             """
             Updates enemy label
             """
-            self.enemy_label["text"] = inspect.cleandoc(f'''\
+            self.enemy_label["text"] = inspect.cleandoc(f"""\
                 Name: {enemy_info.name}
                 HP: {enemy_info.curr_hp}
     
                 Strength: {enemy_info.strength}
                 Agility: {enemy_info.agility}
-            ''')
+            """)
 
     def update_output(self, message):
         """Appends output to the main output window"""

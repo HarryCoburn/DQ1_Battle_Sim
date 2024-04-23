@@ -72,6 +72,9 @@ class Player:
         if not 1 <= self.level <= 30:
             raise ValueError("Level must be within 1 to 30")
 
+    def defense(self):
+        return (self.agility + self.armor.modifier + self.shield.modifier) // 2
+
     # Static Classes
     @staticmethod
     def slow_prog(name_sum, stat) -> int:
@@ -209,12 +212,23 @@ class Player:
 
     @staticmethod
     def damage_range(attack, agility):
-        return ((attack - agility // 2) // 4), ((attack - agility // 2) // 2)
+        """
+        Returns a possible damage range for a normal attack as a tuple in the form (min, max)
+        min must be at least 0, max can be no lower than 1
+        """
+        return max(((attack - agility // 2) // 4), 0), max(((attack - agility // 2) // 2), 1)
     
     @staticmethod
     def crit_range(attack):
-        return (attack // 2), attack
-    
+        """
+        Returns a possible critical damage range for a normal attack as a tuple in the form (min, max)
+        min must be at least 0, max can be no lower than 1
+        """
+        return max((attack // 2), 0), max(attack, 1)
+
+    def is_defeated(self):
+        return self.curr_hp <= 0
+
     def check_sleep(self):
         """ Returns if the player is asleep or not. """
         if not self.is_asleep:
