@@ -104,3 +104,37 @@ class Controller:
 
     def chosen_magic(self, *args):
         pass
+
+    def switch_battle_frame(self):
+        self.view.show_frame(self.view.battle_frame)
+
+    def clear_output(self):
+        """ Clear the output var"""
+        self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
+
+    def enable_main_frame_text(self):
+        self.view.main_frame.txt["state"] = 'normal'
+
+    def prepare_battle(self):
+        self.update_player_info()
+        self.switch_battle_frame()
+        self.clear_output()
+
+    def start_battle_interaction(self):
+        self.enable_main_frame_text()
+        self.model.text(f"""You are fighting the {self.model.enemy.name}!\n""")
+
+    def player_surprised(self):
+        self.model.text(f"""The {self.model.enemy.name} surprises you! They attack first!\n""")
+
+    def player_wins(self):
+        self.model.text(f"""You have defeated the {self.model.enemy.name}!\n""")
+
+    def no_herbs(self):
+        self.model.text(f"You have no herbs!")
+
+    def eat_herb_at_full_hp(self):
+        self.model.text(f"You eat a herb, but your hit points are already at maximum!\n")
+
+    def eat_herb(self, heal_amt):
+        self.model.text(f"""You eat a herb and regain {heal_amt} hit points!\n""")

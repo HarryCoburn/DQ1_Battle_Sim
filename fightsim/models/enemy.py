@@ -99,6 +99,9 @@ class Enemy:
 
         return Randomizer.randint(*damage_range)
 
+    def take_damage(self, damage):
+        self.curr_hp -= damage
+
     @staticmethod
     def weak_damage_range(x):
         """ Returns a damage tuple for a weak attack. """

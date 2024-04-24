@@ -27,82 +27,113 @@ class Battle:
 
     def setup_battle(self):
         """Performs setup tasks for the battle prior to start"""
-        self.controller.update_player_info(self.player)  # Make sure the player is updated. Sanity check.
         self.player = self.model.player
         self.enemy = self.model.enemy
-        # self.view.update_magic()
-        self.view.show_frame(self.view.battle_frame)
-        self.model.clear_output()
-        self.do_fight()
+        self.controller.prepare_battle()
+        self.start_fight()
 
-    def do_fight(self):
+    def start_fight(self):
         """Starts the battle loop"""
-        #  Determine who goes first
-        self.view.main_frame.txt["state"] = 'normal'
-        self.model.text(f"""You are fighting the {self.enemy.name}!\n""")
-        self.handle_surprise()
+        self.controller.start_battle_interaction()
+        surprise_check = self.does_enemy_surprise()
+        self.first_turn(surprise_check)
 
-    def handle_surprise(self):
-        """ Handles if the player is surprised. """
-        if self.does_enemy_surprise():
-            self.model.text(f"""The {self.enemy.name} surprises you! They attack first!\n""")
+    def first_turn(self, enemy_surprises):
+        """ Determines the first turn. """
+        if enemy_surprises:
+            self.controller.player_surprised()
             self.enemy_turn()
         else:
             self.player_turn()
 
     def does_enemy_surprise(self):
-        """ Returns True if the enemy surprised the player """
-        return self.player.agility * Randomizer.randint(1, 255) > self.enemy.agility * Randomizer.randint(1, 255) * 0.25
+        """ Determine if the enemy surprises the player based on agility and randomness. """
+        player_roll = Randomizer.agility_roll(self.player.agility)
+        enemy_roll = Randomizer.agility_roll(self.enemy.agility, surprise_factor=0.25)
+        return player_roll < enemy_roll
 
     # Player Actions
+
     def player_turn(self):
         """Runs at the start of player turn. Checks for sleep status and updates it, then waits for user to
         enter a command."""
         if self.player.check_sleep():  # If the player is asleep, switch to the enemy's turn.
             self.enemy_turn()
 
-    def did_player_critical_hit(self):
-        return self.player.did_crit() and self.enemy.void_critical_hit is False
-
-    def player_attack(self, *_):
-        """ Player performs an attack"""
-        player_crit_this_turn = False
-
-        # Check for Critical Hit
-        if self.did_player_critical_hit():
-            # Critical hit
-            low, high = self.player.crit_range(self.player.attack_num())
-            player_crit_this_turn = True
-        else:
-            # Normal hit
-            low, high = self.player.damage_range(self.player.attack_num(), self.enemy.agility)
-
-        # Determine damage
-        damage_dealt = Randomizer.randint(low, high)
-
-        # Does enemy dodge it?
-        enemy_dodge_this_turn = self.enemy.did_dodge()
-
-        # Print battle messages
-        self.player.attack_msg(player_crit_this_turn, enemy_dodge_this_turn, damage_dealt, self.enemy.name)
-
-        # Apply result
-        if enemy_dodge_this_turn and not player_crit_this_turn:
-            #  Enemy dodged
-            self.enemy_attack()
-        else:
-            #  Apply damage and check for defeat
-            self.enemy.curr_hp -= damage_dealt
-            self.controller.update_enemy_info()
-            self.is_enemy_defeated()
-
     def is_enemy_defeated(self):
         """ Checks if the enemy is defeated. Ends fight if true. Starts enemy turn if false. """
         if self.enemy.is_defeated():
-            self.model.text(f"""You have defeated the {self.enemy.name}!\n""")
+            self.controller.player_wins()
             self.end_fight()
         else:
             self.enemy_turn()
+
+    # Player Attack
+
+    def did_player_critical_hit(self):
+        return self.player.did_crit() and self.enemy.void_critical_hit is False
+
+    def check_for_player_critical_hit(self):
+        return self.did_player_critical_hit()
+
+    def check_for_enemy_dodge(self):
+        return self.enemy.did_dodge()
+
+    def calculate_player_critical_hit_damage(self):
+        low, high = self.player.crit_range(self.player.attack_num())
+        return Randomizer.randint(low, high)
+
+    def calculate_player_attack_damage(self, critical_hit):
+        if critical_hit:
+            return self.calculate_player_critical_hit_damage()
+        return self.calculate_player_normal_hit_damage()
+
+    def calculate_player_normal_hit_damage(self):
+        low, high = self.player.damage_range(self.player.attack_num(), self.enemy.agility)
+        return Randomizer.randint(low, high)
+
+    def player_attack(self, *_):
+        """ Orchestrates what happens when the player clicks the attack button on their turn. """
+        player_crit_this_turn = self.check_for_player_critical_hit()
+        enemy_dodge_this_turn = self.check_for_enemy_dodge()
+
+        damage_dealt = self.calculate_player_attack_damage(player_crit_this_turn)
+        self.process_player_attack_result(player_crit_this_turn, enemy_dodge_this_turn, damage_dealt)
+
+    def process_player_attack_result(self, crit, dodge, damage):
+        self.player.attack_msg(crit, dodge, damage, self.enemy.name)
+        if dodge and not crit:
+            self.enemy_attack()
+        else:
+            self.apply_attack_damage_to_enemy(damage)
+
+    def apply_attack_damage_to_enemy(self, damage):
+        self.enemy.take_damage(damage)
+        self.controller.update_enemy_info()
+        self.is_enemy_defeated()
+
+    # Player uses an herb
+
+    def use_herb(self):
+        """ Handle herb consumption by the player """
+        if self.model.player.herb_count <= 0:
+            self.controller.no_herbs()
+            return  # Use return here so player can select another option.
+
+        self.model.player.herb_count -= 1
+        if self.model.player.curr_hp >= self.model.player.max_hp:
+            self.controller.eat_herb_at_full_hp()
+            self.is_enemy_defeated()
+
+        heal_amt = self.calculate_player_herb_heal_amount()
+        self.model.player.curr_hp += heal_amt
+        self.controller.eat_herb(heal_amt)
+        self.is_enemy_defeated()
+
+    def calculate_player_herb_heal_amount(self):
+        """ Calculates the amount of health an herb will restore. """
+        heal_amt = Randomizer.randint(*self.herb_range)
+        return min(heal_amt, self.model.player.max_hp - self.model.player.curr_hp)
 
     # Enemy Actions
 
@@ -304,26 +335,7 @@ class Battle:
         self.output.output = f"""The {self.model.enemy["name"]} breathes {spell_name}! {self.model.player["name"]} is hurt for {fire_dmg} damage!"""
         self.is_player_defeated()
 
-    def use_herb(self, *_):
-        """ Handle herb consumption"""
-        if self.model.player["herb_count"] <= 0:
-            self.output.output = """You have no herbs!"""
-            return
-        else:
-            self.model.player["herb_count"] -= 1
 
-        if self.model.player["hp"] >= self.model.player["maxhp"]:
-            self.output.output = """You eat a herb, but your hit points are already at maximum!\n"""
-        else:
-            low, high = self.herb_range
-            heal_amt = random.randint(low, high)
-            heal_diff = self.model.player["maxhp"] - self.model.player["hp"]
-            if heal_diff < heal_amt:
-                heal_amt = heal_diff
-            self.model.player["hp"] += heal_amt
-            self.output.output = f"""You eat a herb and regain {heal_amt} hit points!\n"""
-
-        self.enemy_turn()
 
     def run_away(self, *_):
         """Player attempts to flee battle."""
