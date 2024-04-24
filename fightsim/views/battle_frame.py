@@ -11,13 +11,18 @@ class BattleFrame(tk.Frame):
         self.herb_btn = None
         self.run_btn = None
         self.cast_btn = None
-        self.magic_option_var = None
+        self.magic_option_var = tk.StringVar(self)
         self.magic_menu = None
         self.magic = None
         self.show_model_btn = None
 
+
     def set_controller(self, controller):
         self.controller = controller
+        self.player_magic = self.controller.model.player.player_magic
+        if not self.player_magic:
+            self.player_magic = ["No Magic Available"]
+        self.magic_option_var.set(self.player_magic[0])
         self.create_widgets()
 
     def create_widgets(self):
@@ -31,10 +36,7 @@ class BattleFrame(tk.Frame):
         self.cast_btn = tk.Button(self, text="Cast", command=self.controller.battle.player_cast_magic)
         self.cast_btn.grid(row=3, column=0, padx=5, pady=5)
 
-        # Note: Update the OptionMenu for magic dynamically based on available spells
-        self.magic_option_var = tk.StringVar(self)
-        self.magic_option_var.set("No Spells Available")  # Initial placeholder.
-        self.magic_menu = tk.OptionMenu(self, self.magic_option_var, "No spells available")
+        self.magic_menu = tk.OptionMenu(self, self.magic_option_var, *self.player_magic)
         self.magic_menu.grid(row=3, column=1, padx=5, pady=5)
 
         # self.magic = tk.OptionMenu(self, self.controller.chosen_magic, *self.controller.spell_strings)
@@ -44,11 +46,23 @@ class BattleFrame(tk.Frame):
         # self.show_model_btn = tk.Button(self, text="Show Model", command=self.show_model)
         # self.show_model_btn.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
-    def update_player_magic_menu(self, player_magic):
-        self.magic_menu["menu"].delete(0, "end")
-        for spell in player_magic:
-            self.magic_menu["menu"].add_command(label=spell,
-                                                command=lambda value=spell: self.magic_option_var.set(value))
+    def update_player_magic_menu(self):
+        player_magic = self.controller.model.player.player_magic
+
+        # Clear current entries
+        self.magic_menu['menu'].delete(0, 'end')
+
+        if not player_magic:  # If the list is empty, provide a default 'No Magic' option
+            self.magic_option_var.set("No Magic Available")
+            self.magic_menu['menu'].add_command(label="No Magic Available",
+                                                command=lambda: self.magic_option_var.set("No Magic Available"))
+        else:
+            # Set the default value to the first item in the list
+            self.magic_option_var.set(player_magic[0])
+            # Add new options to the menu
+            for magic in player_magic:
+                self.magic_menu['menu'].add_command(label=magic, command=tk._setit(self.magic_option_var, magic))
+
 
     def attack(self):
         """Placeholder for attack action."""

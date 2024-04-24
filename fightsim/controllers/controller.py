@@ -27,7 +27,8 @@ class Controller:
         """ Attach the controller as an observer to model events """
         messages = [
             ObserverMessages.OUTPUT_CHANGE,
-            ObserverMessages.OUTPUT_CLEAR
+            ObserverMessages.OUTPUT_CLEAR,
+            ObserverMessages.UPDATE_PLAYER_MAGIC
         ]
         for message in messages:
             self.observer.attach(self, message)
@@ -93,6 +94,8 @@ class Controller:
             self.view.update_output(property_name, data)
         if property_name == ObserverMessages.OUTPUT_CLEAR:
             self.view.clear_output()
+        if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
+            self.view.battle_frame.update_player_magic_menu()
 
     def update_player_info(self):
         """Updates the view with current player information from the model."""
@@ -102,8 +105,9 @@ class Controller:
     def update_enemy_info(self):
         self.view.update_enemy_info(self.model.enemy)
 
-    def chosen_magic(self, *args):
-        pass
+    def get_chosen_magic(self):
+        return self.view.battle_frame.magic_option_var.get()
+
 
     def switch_battle_frame(self):
         self.view.show_frame(self.view.battle_frame)

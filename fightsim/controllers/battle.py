@@ -154,6 +154,116 @@ class Battle:
             self.controller.fleeing(False)
             self.enemy_turn()
 
+    # Player Magic
+
+    def player_cast_magic(self):
+        spell = self.controller.get_chosen_magic()
+
+        if spell in ["Select Spell", "No Magic Available"]:
+            self.model.text(
+                "You must select a valid spell first." if spell == "Select Spell" else "Your level is too low to cast magic.")
+            return
+
+        spell_switch = {
+            "Heal": lambda: self.player_heal(False),
+            "Healmore": lambda: self.player_heal(True),
+            "Hurt": lambda: self.player_hurt(False),
+            "Hurtmore": lambda: self.player_hurt(True),
+            "Sleep": self.player_casts_sleep,
+            "Stopspell": self.player_casts_stopspell
+        }
+
+        spell_cost = {
+            "Heal": 4,
+            "Healmore": 10,
+            "Hurt": 2,
+            "Hurtmore": 5,
+            "Sleep": 2,
+            "Stopspell": 2
+        }
+
+        cost = spell_cost.get(spell, 0)
+        if self.model.player.curr_mp < cost:
+            self.model.text(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
+            self.is_enemy_defeated()  # Player loses turn if they try to cast a spell without enough mp
+
+        self.model.player.curr_mp -= cost
+        if self.model.player.is_spellstopped:
+            self.model.text(f"""Player casts {spell}, but their magic has been sealed!\n""")
+            self.is_enemy_defeated()  # Player loses turn if they try to cast a spell while stopspelled.
+
+        # Execute the spell function
+        spell_function = spell_switch.get(spell, lambda: None)
+        spell_function()
+        self.controller.update_player_info()
+        self.is_enemy_defeated()
+
+    def player_heal(self, more):
+        heal_ranges = {
+            "Heal": [10, 17],
+            "Healmore": [85,100]
+        }
+        spell_name = "Healmore" if more else "Heal"
+        heal_range = heal_ranges[spell_name]
+
+        heal_total = self.calc_heal(heal_range)
+        if heal_total == 0:
+            self.model.text(f"""Player casts {spell_name}, but their hit points were already at maximum!\n""")
+        else:
+            self.model.player.curr_hp += heal_total
+            self.model.text(f"""Player casts {spell_name}! Player is healed {str(heal_total)} hit points!\n""")
+
+    def calc_heal(self, heal_range):
+        heal_max = self.model.player.max_hp - self.model.player.curr_hp
+        heal_amount = Randomizer.randint(*heal_range)
+        return min(heal_max, heal_amount)
+
+    def player_hurt(self, more):
+        """ Handles player casting of Hurt and Hurtmore"""
+        hurt_ranges = {
+            "Hurt": [5, 12],
+            "Hurtmore": [58, 65]
+        }
+        spell_name = "Hurtmore" if more else "Hurt"
+        hurt_range = hurt_ranges[spell_name]
+        enemy_hurt_resistance = self.model.enemy.hurt_resist
+
+        hurt_total = self.calc_hurt(hurt_range)
+
+        if self.resist(enemy_hurt_resistance):
+            self.model.text(f"""Player casts {spell_name}, but the enemy resisted!\n""")
+            self.is_enemy_defeated()
+        else:
+            self.model.enemy.take_damage(hurt_total)
+            self.model.text(f"""Player casts {spell_name}! {self.model.enemy.name} is hurt by {str(hurt_total)} hit points!\n""")
+
+    @staticmethod
+    def calc_hurt(hurt_range):
+        return Randomizer.randint(*hurt_range)
+
+    def player_casts_sleep(self):
+        """ Player tries to cast Sleep on the enemy"""
+        enemy_sleep_resistance = self.model.enemy.sleep_resist
+        if self.model.enemy.enemy_sleep_count > 0:
+            self.model.text(f"""Player casts Sleep! But the {self.model.enemy.name} is already asleep!\n""")
+        elif self.resist(enemy_sleep_resistance):
+            self.model.text(f"""Player casts Sleep! But the {self.model.enemy.name} resisted!\n""")
+        else:
+            self.model.text(f"""Player casts Sleep! The {self.model.enemy.name} is now asleep!\n""")
+            self.model.enemy.enemy_sleep_count = 2
+
+    def player_casts_stopspell(self):
+        """ Player tries to cast Stopspell on the enemy"""
+        enemy_stop_resistance = self.model.enemy.stopspell_resist
+        if self.model.enemy.enemy_spell_stopped:
+            self.model.text(f"""Player casts Stopspell! But the {self.model.enemy.name}'s magic was already blocked!\n""")
+        elif self.resist(enemy_stop_resistance):
+            self.model.text(f"""Player casts Stopspell! But the {self.model.enemy.name} resisted!\n""")
+        else:
+            self.model.text(f"""Player casts Stopspell! The {self.model.enemy.name}'s magic is now blocked!!\n""")
+            self.model.enemy.enemy_spell_stopped = True
+
+
 
     # Enemy Actions
 
@@ -267,7 +377,7 @@ class Battle:
         hurtmore_high = [30, 45]
         hurtmore_low = [20, 30]
 
-        mag_def = self.model.player["mag_def"]
+        mag_def = self.model.player.reduce_hurt_damage
         hurt_dmg = 0
 
         if mag_def and more:
@@ -279,67 +389,66 @@ class Battle:
         else:
             hurt_dmg = random.randint(hurt_high[0], hurt_high[1])
 
-        self.model.player["hp"] -= hurt_dmg
-        self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}! {self.model.player["name"]} is hurt for {hurt_dmg} damage!"""
+        self.model.player.curr_hp -= hurt_dmg
+        self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.player.name} is hurt for {hurt_dmg} damage!""")
         self.is_player_defeated()
 
     def enemy_casts_heal(self, more):
         """ Enemy handling of heal and healmore"""
         spell_name = "Healmore" if more else "Heal"
-        if self.model.enemy["e_stop"]:
-            self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!"""
+        if self.model.enemy.enemy_spell_stopped:
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
             return
 
         heal_range = [20, 27]
         healmore_range = [85, 100]
 
-        heal_max = self.model.enemy["maxhp"] - self.model.enemy["hp"]
+        heal_max = self.model.enemy.max_hp - self.model.enemy.curr_hp
 
         heal_rand = random.randint(healmore_range[0], healmore_range[1]) if more else random.randint(heal_range[0],
                                                                                                      heal_range[1])
 
         heal_amt = heal_rand if heal_rand < heal_max else heal_max
 
-        self.model.enemy["hp"] += heal_amt
-        self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}! {self.model.enemy["name"]} is healed {heal_amt} hit points!"""
-        self.view.update_enemy_info(self.model.enemy)
+        self.model.enemy.curr_hp += heal_amt
+        self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}! {self.model.enemy["name"]} is healed {heal_amt} hit points!""")
+        self.controller.update_enemy_info()
         self.player_turn()
 
     def enemy_casts_sleep(self):
         """Enemy attempts to cast sleep"""
         spell_name = "Sleep"
-        if self.model.enemy["e_stop"]:
-            self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!"""
+        if self.model.enemy.enemy_spell_stopped:
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
         else:
-            self.p.asleep = True
-            self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}. You fall asleep!!"""
+            self.model.player.is_asleep = True
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}. You fall asleep!!""")
         self.player_turn()
 
     def enemy_casts_stopspell(self):
         """ Enemy attempts to cast stopspell. 50% chance of failure"""
         spell_name = "Stopspell"
-        if self.model.enemy["e_stop"]:
-            self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!"""
+        if self.model.enemy.enemy_spell_stopped:
+            self.model.text(f"The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!")
         elif random.randint(1, 2) == 2:
-            self.model.player["p_stop"] = True
-            self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}! Your magic has been blocked!"""
+            self.model.player.is_spellstopped = True
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! Your magic has been blocked!""")
         else:
-            self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}, but the spell fails!"""
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but the spell fails!""")
         self.player_turn()
 
     def enemy_breathes_fire(self, more):
         """ Enemy handling of breath attacks"""
         spell_name = "strong flames at you!" if more else "fire"
-        if self.model.enemy["e_stop"]:
-            self.output.output = f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!"""
-            return
+        if self.model.enemy.enemy_spell_stopped:
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
 
         fire_high = [16, 23]
         fire_low = [10, 14]
         strongfire_high = [65, 72]
         strongfire_low = [42, 48]
 
-        fire_def = self.model.player["fire_def"]
+        fire_def = self.model.player.reduce_fire_damage
         fire_dmg = 0
 
         if fire_def and more:
@@ -351,131 +460,6 @@ class Battle:
         else:
             fire_dmg = random.randint(fire_high[0], fire_high[1])
 
-        self.model.player["hp"] -= fire_dmg
-        self.output.output = f"""The {self.model.enemy["name"]} breathes {spell_name}! {self.model.player["name"]} is hurt for {fire_dmg} damage!"""
+        self.model.player.curr_hp -= fire_dmg
+        self.model.text(f"""The {self.model.enemy.name} breathes {spell_name}! {self.model.player.name} is hurt for {fire_dmg} damage!""")
         self.is_player_defeated()
-
-
-
-
-
-    def player_cast_magic(self, *_):
-        spell = self.view.chosen_magic.get()
-        spell_switch = {
-            "Heal": lambda: self.player_heal(False),
-            "Healmore": lambda: self.player_heal(True),
-            "Hurt": lambda: self.player_hurt(False),
-            "Hurtmore": lambda: self.player_hurt(True),
-            "Sleep": self.player_casts_sleep,
-            "Stopspell": self.player_casts_stopspell
-        }
-        spell_cost = {
-            "Heal": 4,
-            "Healmore": 10,
-            "Hurt": 2,
-            "Hurtmore": 5,
-            "Sleep": 2,
-            "Stopspell": 2
-        }
-
-        can_cast = self.model.player["mp"] > spell_cost.get(spell)
-        if not can_cast:
-            self.output.output = f"""Player tries to cast {spell}, but doesn't have enough MP!\n"""
-        else:
-            self.model.player["mp"] -= spell_cost.get(spell)
-            if self.model.player["p_stop"]:
-                self.output.output = f"""Player casts {spell}, but their magic has been sealed!\n"""
-            else:
-                spell_switch.get(spell)()
-        self.view.update_ptext(self.model.player)
-        self.is_enemy_defeated()
-
-    def player_heal(self, more):
-        player_heal_range = [10, 17]
-        player_healmore_range = [85, 100]
-        spell_name = "Healmore" if more else "Heal"
-        heal_total = 0
-
-        if more:
-            heal_total = self.calc_heal(player_healmore_range)
-        else:
-            heal_total = self.calc_heal(player_heal_range)
-
-        if heal_total == 0:
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts {spell_name}, but their hit points were already at maximum!\n"""
-            )
-        else:
-            self.model.player["hp"] += heal_total
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts {spell_name}! Player is healed {str(heal_total)} hit points!\n"""
-            )
-
-    def calc_heal(self, heal_range):
-        heal_max = self.model.player["maxhp"] - self.model.player["hp"]
-        heal_amount = random.randint(heal_range[0], heal_range[1])
-        return heal_max if heal_max < heal_amount else heal_amount
-
-    def player_hurt(self, more):
-        """ Handles player casting of Hurt and Hurtmore"""
-        player_hurt_range = [5, 12]
-        player_hurtmore_range = [58, 65]
-        enemy_hurt_resistance = self.model.enemy["hurtR"]
-        spell_name = "Hurtmore" if more else "Hurt"
-        hurt_dmg = random.randint(player_hurtmore_range[0], player_hurtmore_range[1]) if more else random.randint(
-            player_hurt_range[0], player_hurt_range[1])
-
-        if self.resist(enemy_hurt_resistance):
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts {spell_name}, but the enemy resisted!\n"""
-            )
-        else:
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts {spell_name}! {self.model.enemy["name"]} is hurt by {str(hurt_dmg)} hit points!\n"""
-            )
-            self.model.enemy["hp"] -= hurt_dmg
-
-    def player_casts_sleep(self):
-        """ Player tries to cast Sleep on the enemy"""
-        enemy_sleep_resistance = self.model.enemy["sleepR"]
-        if self.model.enemy["e_sleep"] > 0:
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts Sleep! But the {self.model.enemy["name"]} is already asleep!\n"""
-            )
-        elif self.resist(enemy_sleep_resistance):
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts Sleep! But the {self.model.enemy["name"]} resisted!\n"""
-            )
-        else:
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts Sleep! The {self.model.enemy["name"]} is now asleep!\n"""
-            )
-            self.model.enemy["e_sleep"] = 2
-        return
-
-    def player_casts_stopspell(self):
-        """ Player tries to cast Stopspell on the enemy"""
-        enemy_stop_resistance = self.model.enemy["stopR"]
-        if self.model.enemy["e_stop"]:
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts Stopspell! But the {self.model.enemy["name"]}'s magic was already blocked!\n"""
-            )
-        elif self.resist(enemy_stop_resistance):
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts Stopspell! But the {self.model.enemy["name"]} resisted!\n"""
-            )
-        else:
-            self.view.main_frame.txt.insert(
-                tk.END,
-                f"""Player casts Stopsell! The {self.model.enemy["name"]}'s magic is now blocked!!\n"""
-            )
-            self.model.enemy["e_stop"] = True

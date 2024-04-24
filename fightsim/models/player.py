@@ -4,6 +4,7 @@ Player class
 
 from dataclasses import field
 from fightsim.models.items import *
+from ..common.messages import ObserverMessages
 import math
 import random
 from typing import List, Optional
@@ -67,6 +68,7 @@ class Player:
     model: Optional = None  # Placeholder
     
     def __post_init__(self):
+        self.player_magic = []
         if not 1 <= self.level <= 30:
             raise ValueError("Level must be within 1 to 30")
 
@@ -154,6 +156,7 @@ class Player:
         """
         self.player_magic = []
         if self.level >= 3:
+            self.player_magic.append("Select Spell")
             self.player_magic.append("Heal")
         if self.level >= 4:
             self.player_magic.append("Hurt")
@@ -164,7 +167,8 @@ class Player:
         if self.level >= 17:
             self.player_magic.append("Healmore")
         if self.level >= 19:
-            self.player_magic.append("Hurtmore")        
+            self.player_magic.append("Hurtmore")
+        self.model.observed.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
 
     @staticmethod    
     def find_key_by_value(d, value_to_find):

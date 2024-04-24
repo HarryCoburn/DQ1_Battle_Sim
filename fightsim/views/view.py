@@ -127,7 +127,7 @@ class View(tk.Tk):
 
     def update_player_info(self, player_info):
         self.main_frame.update_player_label(player_info)
-        self.battle_frame.update_player_magic_menu(player_info.player_magic)
+        self.battle_frame.update_player_magic_menu()
 
     def update_enemy_info(self, enemy_info):
         self.main_frame.update_enemy_label(enemy_info)
