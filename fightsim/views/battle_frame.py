@@ -26,7 +26,7 @@ class BattleFrame(tk.Frame):
         self.attack_btn.grid(row=0, column=0, padx=5, pady=5)
         self.herb_btn = tk.Button(self, text="Use Herb", command=self.controller.battle.use_herb)
         self.herb_btn.grid(row=1, column=0, padx=5, pady=5)
-        self.run_btn = tk.Button(self, text="Run", command=self.controller.battle.run_away)
+        self.run_btn = tk.Button(self, text="Run", command=self.controller.battle.player_flees)
         self.run_btn.grid(row=2, column=0, padx=5, pady=5)
         self.cast_btn = tk.Button(self, text="Cast", command=self.controller.battle.player_cast_magic)
         self.cast_btn.grid(row=3, column=0, padx=5, pady=5)
