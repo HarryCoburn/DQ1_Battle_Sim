@@ -135,6 +135,26 @@ class Battle:
         heal_amt = Randomizer.randint(*self.herb_range)
         return min(heal_amt, self.model.player.max_hp - self.model.player.curr_hp)
 
+    # Player Flees
+
+    def is_flee_successful(self):
+        """ Return True if the player flees successfully """
+        enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
+        player_flee_chance = self.model.player.agility * Randomizer.randint(0, 254)
+        enemy_block_chance = self.model.enemy.agility * Randomizer.randint(0, 254) * enemy_run_modifiers[self.model.enemy.run]
+        return player_flee_chance > enemy_block_chance
+
+    def player_flees(self):
+        """Player attempts to flee battle."""
+
+        if self.is_flee_successful():
+            self.controller.fleeing(True)
+            self.end_fight()
+        else:
+            self.controller.fleeing(False)
+            self.enemy_turn()
+
+
     # Enemy Actions
 
     def handle_enemy_sleep(self):
@@ -337,21 +357,7 @@ class Battle:
 
 
 
-    def run_away(self, *_):
-        """Player attempts to flee battle."""
-        run_modifiers = [0.25, 0.375, 0.75, 1]
-        p_run_chance = random.randint(0, 254)
-        e_block_chance = random.randint(0, 254)
-        e_block_mod = run_modifiers[self.model.enemy["run"]]
-        self.output.output = """You attempt to run away...\n"""
-        succeed_flee = self.model.player["agility"] * p_run_chance > self.model.enemy[
-            "agility"] * e_block_chance * e_block_mod
-        if succeed_flee:
-            self.output.output = """You successfully flee!\n"""
-            self.end_fight()
-        else:
-            self.output.output = f"""...but the {self.model.enemy["name"]} blocks you from running away!\n"""
-            self.enemy_turn()
+
 
     def player_cast_magic(self, *_):
         spell = self.view.chosen_magic.get()
@@ -473,24 +479,3 @@ class Battle:
                 f"""Player casts Stopsell! The {self.model.enemy["name"]}'s magic is now blocked!!\n"""
             )
             self.model.enemy["e_stop"] = True
-
-
-
-
-class EnemyBattle():
-    """Enemy Battle Class"""
-
-    def __init__(self, e_model):
-        self.model = e_model
-        self.name = e_model["name"]
-        self.agi = e_model["agility"]
-        self.hp = e_model["hp"]
-        self.dodge_chance = e_model["dodge"]
-
-    def dodge(self, chance):
-        return random.randint(1, 64) <= chance
-
-    def did_dodge(self):
-        return self.dodge(self.dodge_chance)
-
-

@@ -138,3 +138,10 @@ class Controller:
 
     def eat_herb(self, heal_amt):
         self.model.text(f"""You eat a herb and regain {heal_amt} hit points!\n""")
+
+    def fleeing(self, succeed):
+        self.model.text(f"You attempt to run away...\n")
+        if succeed:
+            self.model.text(f"You successfully flee!\n")
+        else:
+            self.model.text(f"""...but the {self.model.enemy.name} blocks you from running away!\n""")
