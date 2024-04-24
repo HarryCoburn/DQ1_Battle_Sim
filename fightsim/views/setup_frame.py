@@ -85,7 +85,7 @@ class SetupFrame(tk.Frame):
                                                                                              columnspan=2, sticky="ew",
                                                                                              padx=5, pady=5)
 
-        self.buy_herb_button = tk.Button(self, text="Buy Herb", command=self.controller.buy_herb)
+        self.buy_herb_button = tk.Button(self, text="Buy Herb", command=lambda: self.controller.update_player_attribute("herb"))
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
         self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_battle)
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
