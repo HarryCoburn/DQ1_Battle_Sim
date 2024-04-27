@@ -88,7 +88,6 @@ class MainFrame(tk.Frame):
               Asleep?: {player_info.is_asleep}
               Spells stopped?: {player_info.is_spellstopped}
           """)
-        self.parent.spell_strings = player_info.player_magic
 
     def update_enemy_label(self, enemy_info):
         if enemy_info is None:

@@ -22,7 +22,6 @@ class View(tk.Tk):
     chosen_shield: tk.StringVar
     chosen_enemy: tk.StringVar
     chosen_magic: tk.StringVar
-    spell_strings: List[str]
     curr_frame: Optional[tk.Frame]
     ctrl_container: Optional[tk.Frame]
     main_container: Optional[tk.Frame]
@@ -40,7 +39,6 @@ class View(tk.Tk):
 
     def init_vars(self):
         self.chosen_magic = tk.StringVar(value="No spells available.")
-        self.spell_strings = []  # To be dynamically updated
         self.curr_frame = None
         self.controller = None
 

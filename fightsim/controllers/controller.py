@@ -19,7 +19,6 @@ class Controller:
         self.view = view
         self.observer = observer
         self.battle = Battle(self)
-        self.spell_strings = []
 
         self.setup_observers()
         self.initialize_view()
