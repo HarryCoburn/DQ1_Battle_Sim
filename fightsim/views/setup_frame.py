@@ -3,21 +3,6 @@ from fightsim.models.items import weapon_names, armor_names, shield_names
 from fightsim.models.enemy import enemy_names
 
 
-def level_validate(p):
-    """ Validate the input to the level spinbox to see if it's within range """
-    if p == "":
-        return True
-    try:
-        val = int(p)
-        if 1 <= val <= 30:
-            return True
-        else:
-            return False
-    except ValueError:
-        # non-numeric input
-        return False
-
-
 class SetupFrame(tk.Frame):
     """
     Frame for fight setup buttons
@@ -29,7 +14,6 @@ class SetupFrame(tk.Frame):
         self.buy_herb_button = None
         self.controller = None
         self.level_spinbox = None
-        # self._level_value = tk.StringVar(value="1")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.weapon_var = tk.StringVar(value="Unarmed")
@@ -38,6 +22,10 @@ class SetupFrame(tk.Frame):
         self.level_var = tk.IntVar(value=1)
         self.name_var = tk.StringVar(value="Rollo")
         self.enemy_var = tk.StringVar(value="Select Enemy")
+        self.weapon_menu = None
+        self.armor_menu = None
+        self.shield_menu = None
+        self.enemy_menu = None
 
     def set_controller(self, controller):
         self.controller = controller
@@ -56,40 +44,64 @@ class SetupFrame(tk.Frame):
                                         textvariable=self.level_var,
                                         wrap=True,
                                         validate='key',
-                                        validatecommand=(self.register(level_validate), '%P'))
+                                        validatecommand=(self.register(self.level_validate), '%P'))
         self.level_spinbox.grid(row=1, column=1, sticky="w", pady=5)
 
-        tk.OptionMenu(self, self.weapon_var, *weapon_names,
-                      command=lambda value: self.controller.update_player_attribute("weapon", value)).grid(row=2,
-                                                                                                           column=0,
-                                                                                                           columnspan=2,
-                                                                                                           sticky="ew",
-                                                                                                           padx=5,
-                                                                                                           pady=5)
-        tk.OptionMenu(self, self.armor_var, *armor_names,
-                      command=lambda value: self.controller.update_player_attribute("armor", value)).grid(row=3,
-                                                                                                          column=0,
-                                                                                                          columnspan=2,
-                                                                                                          sticky="ew",
-                                                                                                          padx=5,
-                                                                                                          pady=5)
-        tk.OptionMenu(self, self.shield_var, *shield_names,
-                      command=lambda value: self.controller.update_player_attribute("shield", value)).grid(row=4,
-                                                                                                           column=0,
-                                                                                                           columnspan=2,
-                                                                                                           sticky="ew",
-                                                                                                           padx=5,
-                                                                                                           pady=5)
-        tk.OptionMenu(self, self.enemy_var, "Select Enemy", *enemy_names,
-                      command=lambda value: self.controller.update_enemy(value)).grid(row=5, column=0,
-                                                                                             columnspan=2, sticky="ew",
-                                                                                             padx=5, pady=5)
+        self.weapon_menu = tk.OptionMenu(self, self.weapon_var, *weapon_names,
+                                         command=lambda value: self.controller.update_player_attribute("weapon", value))
+        self.weapon_menu.grid(row=2,
+                              column=0,
+                              columnspan=2,
+                              sticky="ew",
+                              padx=5,
+                              pady=5)
 
-        self.buy_herb_button = tk.Button(self, text="Buy Herb", command=lambda: self.controller.update_player_attribute("herb"))
+        self.armor_menu = tk.OptionMenu(self, self.armor_var, *armor_names,
+                                        command=lambda value: self.controller.update_player_attribute("armor", value))
+        self.armor_menu.grid(row=3,
+                             column=0,
+                             columnspan=2,
+                             sticky="ew",
+                             padx=5,
+                             pady=5)
+        self.shield_menu = tk.OptionMenu(self, self.shield_var, *shield_names,
+                                         command=lambda value: self.controller.update_player_attribute("shield", value))
+        self.shield_menu.grid(row=4,
+                              column=0,
+                              columnspan=2,
+                              sticky="ew",
+                              padx=5,
+                              pady=5)
+        self.enemy_menu = tk.OptionMenu(self, self.enemy_var, "Select Enemy", *enemy_names,
+                                        command=lambda value: self.controller.update_enemy(value))
+        self.enemy_menu.grid(row=5, column=0,
+                             columnspan=2, sticky="ew",
+                             padx=5, pady=5)
+
+        self.buy_herb_button = tk.Button(self, text="Buy Herb",
+                                         command=lambda: self.controller.update_player_attribute("herb"))
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
         self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_battle)
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
 
     def set_traces(self):
-        self.level_var.trace("w", lambda name, index, mode, value=self.level_var: self.controller.update_player_attribute("level", value.get()))
-        self.name_var.trace("w", lambda name, index, mode, value=self.name_var: self.controller.update_player_attribute("name", value.get()))
+        self.level_var.trace("w",
+                             lambda name, index, mode,
+                                    value=self.level_var: self.controller.update_player_attribute("level", value.get()))
+        self.name_var.trace("w", lambda name, index, mode, value=self.name_var: self.controller.update_player_attribute(
+            "name", value.get()))
+
+    @staticmethod
+    def level_validate(p):
+        """ Validate the input to the level spinbox to see if it's within range """
+        if p == "":
+            return True
+        try:
+            val = int(p)
+            if 1 <= val <= 30:
+                return True
+            else:
+                return False
+        except ValueError:
+            # non-numeric input
+            return False

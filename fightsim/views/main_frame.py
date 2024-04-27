@@ -104,7 +104,7 @@ class MainFrame(tk.Frame):
                 Agility: {enemy_info.agility}
             """)
 
-    def update_output(self, event, message):
+    def update_output(self, _, message):
         """Appends output to the main output window"""
         self.txt.configure(state='normal')  # Enable text widget for editing
         self.txt.insert(tk.END, message + "\n")  # Append new message
