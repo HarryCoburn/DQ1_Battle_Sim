@@ -3,6 +3,7 @@
 from fightsim.common.messages import ObserverMessages
 from .battle import Battle
 import logging
+from ..common.decorators import handle_errors
 
 
 class Controller:
@@ -38,33 +39,29 @@ class Controller:
         self.model.text("DQ1 Battle Sim")
         self.logger.info("View initialized with welcome message.")
 
+    @handle_errors
     def update_player_attribute(self, attribute_type, value=None):
         """ Generic method to update player attributes """
-        try:
-            if attribute_type == "weapon":
-                self.model.player.equip_weapon(value)
-            elif attribute_type == "armor":
-                self.model.player.equip_armor(value)
-            elif attribute_type == "shield":
-                self.model.player.equip_shield(value)
-            elif attribute_type == "level":
-                self.model.player.level_up(value)
-            elif attribute_type == "name":
-                self.model.player.change_name(value)
-            elif attribute_type == "herb":
-                self.model.buy_herb()
-            self.update_player_info()
-            self.logger.info(f"Updated {attribute_type} to {value}")
-        except Exception as e:
-            self.logger.error(f"Failed to update {attribute_type}: {e}")
+        if attribute_type == "weapon":
+            self.model.player.equip_weapon(value)
+        elif attribute_type == "armor":
+            self.model.player.equip_armor(value)
+        elif attribute_type == "shield":
+            self.model.player.equip_shield(value)
+        elif attribute_type == "level":
+            self.model.player.level_up(value)
+        elif attribute_type == "name":
+            self.model.player.change_name(value)
+        elif attribute_type == "herb":
+            self.model.buy_herb()
+        self.update_player_info()
+        self.logger.info(f"Updated {attribute_type} to {value}")
 
+    @handle_errors
     def update_enemy(self, value):
-        try:
-            self.model.set_enemy(value)
-            self.view.update_enemy_info(self.model.enemy)
-            self.logger.info(f"Updated enemy to {value}")
-        except Exception as e:
-            self.logger.error(f"Failed to update enemy to {value}: {e}")
+        self.model.set_enemy(value)
+        self.view.update_enemy_info(self.model.enemy)
+        self.logger.info(f"Updated enemy to {value}")
 
     def initial_update(self):
         self.update_player_info()

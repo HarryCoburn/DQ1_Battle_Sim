@@ -7,6 +7,7 @@ from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
 from typing import List, Optional, Dict, Union, Type
+from ..common.decorators import handle_errors
 
 
 class View(tk.Tk):
@@ -43,6 +44,7 @@ class View(tk.Tk):
         self.curr_frame = None
         self.controller = None
 
+    @handle_errors
     def setup_frames(self):
         """
         Set up the frames for the application. They are:
@@ -52,28 +54,27 @@ class View(tk.Tk):
         battle_frame = Battle setup frame
         main_frame = Main output with player, enemy, and output labels
         """
-        try:
-            self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
-            self.ctrl_container.pack_propagate(False)
-            self.ctrl_container.pack(side="left", fill='y')
 
-            self.main_container = tk.Frame(self, height=768, width=768, bg="red")
-            self.main_container.pack_propagate(False)
-            self.main_container.pack(side="right", expand=True, fill='both')
+        self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
+        self.ctrl_container.pack_propagate(False)
+        self.ctrl_container.pack(side="left", fill='y')
 
-            self.setup_frame = SetupFrame(self.ctrl_container, width=256, height=600, padx=20)
-            self.setup_frame.pack(expand=True)
+        self.main_container = tk.Frame(self, height=768, width=768, bg="red")
+        self.main_container.pack_propagate(False)
+        self.main_container.pack(side="right", expand=True, fill='both')
 
-            self.main_frame = MainFrame(self.main_container)
+        self.setup_frame = SetupFrame(self.ctrl_container, width=256, height=600, padx=20)
+        self.setup_frame.pack(expand=True)
 
-            self.battle_frame = BattleFrame(self.ctrl_container)
+        self.main_frame = MainFrame(self.main_container)
 
-            self.frames = {
-                SetupFrame: self.setup_frame,
-                BattleFrame: self.battle_frame
-            }
-        except Exception as e:
-            logging.error(f"Error setting up frames: {e}")
+        self.battle_frame = BattleFrame(self.ctrl_container)
+
+        self.frames = {
+            SetupFrame: self.setup_frame,
+            BattleFrame: self.battle_frame
+        }
+
 
     def configure_window(self):
         """ Configure main window properties """
