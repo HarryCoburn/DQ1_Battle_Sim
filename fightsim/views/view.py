@@ -21,26 +21,19 @@ class View(tk.Tk):
     chosen_armor: tk.StringVar
     chosen_shield: tk.StringVar
     chosen_enemy: tk.StringVar
-    chosen_magic: tk.StringVar
     curr_frame: Optional[tk.Frame]
     ctrl_container: Optional[tk.Frame]
     main_container: Optional[tk.Frame]
     setup_frame: Optional[SetupFrame]
     battle_frame: Optional[BattleFrame]
     main_frame: Optional[MainFrame]
-    controller: Optional['Controller']
+    controller: Optional['Controller'] = None
     changeable_frames: Dict[Type[Union[SetupFrame, BattleFrame]], Optional[tk.Frame]]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.init_vars()
         self.setup_frames()
         self.configure_window()
-
-    def init_vars(self):
-        self.chosen_magic = tk.StringVar(value="No spells available.")
-        self.curr_frame = None
-        self.controller = None
 
     def setup_frames(self):
         """
@@ -51,6 +44,8 @@ class View(tk.Tk):
         battle_frame = Battle setup frame
         main_frame = Main output with player, enemy, and output labels
         """
+
+        self.curr_frame = None
 
         self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
         self.ctrl_container.pack_propagate(False)
@@ -90,7 +85,7 @@ class View(tk.Tk):
         # Initialize and display frames
         self.show_frame(self.setup_frame)
 
-    def show_frame(self, cont: Union[tk.Frame, None]) -> None:
+    def show_frame(self, new_frame: Union[tk.Frame, None]) -> None:
         """
         Displays the given frame, hiding the current one.
 
@@ -100,24 +95,28 @@ class View(tk.Tk):
         Does not return a value but changes the visible frame in the application window.
         """
         # logging.debug(f"Attempting to display frame: {cont.__name__}")
-        if cont not in self.changeable_frames.values():
-            logging.error(f"Attempted to show an unmanaged frame: {cont}")
+        if new_frame not in self.changeable_frames.values():
+            logging.error(f"Attempted to show an unmanaged frame: {new_frame}")
             return
         if self.curr_frame is not None:
             self.curr_frame.pack_forget()
-        self.curr_frame = cont
-        cont.pack(fill='x', expand=True)
-        logging.debug(f"Switched to frame: {cont}")
+        self.curr_frame = new_frame
+        new_frame.pack(fill='x', expand=True)
+        logging.debug(f"Switched to frame: {new_frame}")
 
     def update_player_info(self, player_info):
+        """ Refreshes the player label in main_frame and the magic menu in battle_frame """
         self.main_frame.update_player_label(player_info)
         self.battle_frame.update_player_magic_menu()
 
     def update_enemy_info(self, enemy_info):
+        """ Refreshes the enemy label in main_frame """
         self.main_frame.update_enemy_label(enemy_info)
 
     def update_output(self, event_type, message):
+        """ Adds message to the output widget in main_frame """
         self.main_frame.update_output(event_type, message)
 
     def clear_output(self):
+        """ Clears the output widget in main_frame """
         self.main_frame.clear_output()
