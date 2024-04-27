@@ -1,13 +1,13 @@
 # view.py - Holds the view for the MVC program
 
-
+from __future__ import annotations
 import tkinter as tk
 import logging
 from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
+from fightsim.controllers.controller import Controller
 from typing import List, Optional, Dict, Union, Type
-from ..common.decorators import handle_errors
 
 
 class View(tk.Tk):
@@ -26,11 +26,11 @@ class View(tk.Tk):
     curr_frame: Optional[tk.Frame]
     ctrl_container: Optional[tk.Frame]
     main_container: Optional[tk.Frame]
-    setup_frame: Optional[tk.Frame]
-    battle_frame: Optional[tk.Frame]
-    main_frame: Optional[tk.Frame]
+    setup_frame: Optional[SetupFrame]
+    battle_frame: Optional[BattleFrame]
+    main_frame: Optional[MainFrame]
     controller: Optional['Controller']
-    frames: Dict[Type[Union[SetupFrame, BattleFrame]], Optional[tk.Frame]]
+    changeable_frames: Dict[Type[Union[SetupFrame, BattleFrame]], Optional[tk.Frame]]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,7 +44,6 @@ class View(tk.Tk):
         self.curr_frame = None
         self.controller = None
 
-    @handle_errors
     def setup_frames(self):
         """
         Set up the frames for the application. They are:
@@ -63,24 +62,25 @@ class View(tk.Tk):
         self.main_container.pack_propagate(False)
         self.main_container.pack(side="right", expand=True, fill='both')
 
+        # Fixed frame in the application
+        self.main_frame = MainFrame(self.main_container)
+
+        # Changeable frames in the application
+        self.battle_frame = BattleFrame(self.ctrl_container)
+
         self.setup_frame = SetupFrame(self.ctrl_container, width=256, height=600, padx=20)
         self.setup_frame.pack(expand=True)
 
-        self.main_frame = MainFrame(self.main_container)
-
-        self.battle_frame = BattleFrame(self.ctrl_container)
-
-        self.frames = {
+        self.changeable_frames = {
             SetupFrame: self.setup_frame,
             BattleFrame: self.battle_frame
         }
-
 
     def configure_window(self):
         """ Configure main window properties """
         self.title("DQ1 Battle Simulator")
         self.geometry("820x620+50+50")
-        self.resizable(width=True, height=True) # TODO See if this messes up the frames.
+        self.resizable(width=True, height=True)
         self.main_frame.pack(fill='x', expand=True)
 
     def set_controller(self, controller):
@@ -92,7 +92,7 @@ class View(tk.Tk):
         # Initialize and display frames
         self.show_frame(self.setup_frame)
 
-    def show_frame(self, cont: Type[tk.Frame]) -> None:
+    def show_frame(self, cont: Union[tk.Frame, None]) -> None:
         """
         Displays the given frame, hiding the current one.
 
@@ -101,7 +101,8 @@ class View(tk.Tk):
 
         Does not return a value but changes the visible frame in the application window.
         """
-        if cont not in self.frames.values():
+        # logging.debug(f"Attempting to display frame: {cont.__name__}")
+        if cont not in self.changeable_frames.values():
             logging.error(f"Attempted to show an unmanaged frame: {cont}")
             return
         if self.curr_frame is not None:
@@ -109,22 +110,6 @@ class View(tk.Tk):
         self.curr_frame = cont
         cont.pack(fill='x', expand=True)
         logging.debug(f"Switched to frame: {cont}")
-
-        # frame = self.frames[cont]
-        # if self.curr_frame is not None:
-        #     self.curr_frame.pack_forget()
-        # self.curr_frame = cont
-        # cont.pack(fill='x', expand=True)
-
-    def update_magic(self):
-        """
-        Updates the magic menu in BattleFrame
-        """
-        menu = self.frames[BattleFrame].magic["menu"]
-        menu.delete(0, "end")
-        for string in self.spell_strings:
-            menu.add_command(label=string,
-                             command=lambda value=string: self.chosen_magic.set(value))
 
     def update_player_info(self, player_info):
         self.main_frame.update_player_label(player_info)
@@ -134,9 +119,7 @@ class View(tk.Tk):
         self.main_frame.update_enemy_label(enemy_info)
 
     def update_output(self, event_type, message):
-        print(f"event type is {event_type}, and message is {message}")
         self.main_frame.update_output(event_type, message)
 
     def clear_output(self):
         self.main_frame.clear_output()
-

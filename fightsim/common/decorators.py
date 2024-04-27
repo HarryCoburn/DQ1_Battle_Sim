@@ -44,3 +44,15 @@ def measure_performance(func):
         logging.debug(f"{func.__name__} took {end_time - start_time} seconds to execute")
         return result
     return wrapper
+
+
+def handle_errors_2(log):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                log.error(f"Failed during {func.__name__} with error: {e}")
+                raise  # Re-raise the exception after logging
+        return wrapper
+    return decorator

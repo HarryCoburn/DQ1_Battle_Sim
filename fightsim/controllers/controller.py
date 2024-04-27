@@ -39,7 +39,7 @@ class Controller:
         self.model.text("DQ1 Battle Sim")
         self.logger.info("View initialized with welcome message.")
 
-    @handle_errors
+
     def update_player_attribute(self, attribute_type, value=None):
         """ Generic method to update player attributes """
         if attribute_type == "weapon":
@@ -57,7 +57,7 @@ class Controller:
         self.update_player_info()
         self.logger.info(f"Updated {attribute_type} to {value}")
 
-    @handle_errors
+
     def update_enemy(self, value):
         self.model.set_enemy(value)
         self.view.update_enemy_info(self.model.enemy)
