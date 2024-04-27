@@ -1,4 +1,5 @@
 import tkinter as tk
+from functools import partial
 
 
 class BattleFrame(tk.Frame):
@@ -13,14 +14,20 @@ class BattleFrame(tk.Frame):
         self.cast_btn = None
         self.magic_option_var = tk.StringVar(self)
         self.magic_menu = None
+        self.player_magic = []
 
     def set_controller(self, controller):
+        """ Sets controller as the controller for BattleFrame and continues setup of BattleFrame """
         self.controller = controller
+        self.set_magic_menu()
+        self.create_widgets()
+
+    def set_magic_menu(self):
+        """ Initializes self.player_magic and links it correctly with the controller. """
         self.player_magic = self.controller.model.player.player_magic
         if not self.player_magic:
             self.player_magic = ["No Magic Available"]
         self.magic_option_var.set(self.player_magic[0])
-        self.create_widgets()
 
     def create_widgets(self):
         """Create and layout widgets for battle."""
@@ -36,46 +43,18 @@ class BattleFrame(tk.Frame):
         self.magic_menu = tk.OptionMenu(self, self.magic_option_var, *self.player_magic)
         self.magic_menu.grid(row=3, column=1, padx=5, pady=5)
 
-
-
     def update_player_magic_menu(self):
-        player_magic = self.controller.model.player.player_magic
+        """ Update the options available in the magic menu based on current player magic abilities. """
+        menu = self.magic_menu['menu']
+        menu.delete(0, 'end')
 
-        # Clear current entries
-        self.magic_menu['menu'].delete(0, 'end')
+        # Ensure there's a default list of magic spells
+        player_magic = self.controller.model.player.player_magic or ["No Magic Available"]
+        self.magic_option_var.set(player_magic[0])
 
-        if not player_magic:  # If the list is empty, provide a default 'No Magic' option
-            self.magic_option_var.set("No Magic Available")
-            self.magic_menu['menu'].add_command(label="No Magic Available",
-                                                command=lambda: self.magic_option_var.set("No Magic Available"))
-        else:
-            # Set the default value to the first item in the list
-            self.magic_option_var.set(player_magic[0])
-            # Add new options to the menu
-            for magic in player_magic:
-                self.magic_menu['menu'].add_command(label=magic, command=tk._setit(self.magic_option_var, magic))
+        for magic in player_magic:
+            menu.add_command(label=magic, command=partial(self.set_magic_option, magic))
 
-
-    def attack(self):
-        """Placeholder for attack action."""
-        print("Attacked.")
-
-    def use_herb(self):
-        """Placeholder for using a herb."""
-        print("Herb used.")
-
-    def run(self):
-        """Placeholder for run action."""
-        print("Attempted to run.")
-
-    def cast_spell(self):
-        """Placeholder for casting a spell."""
-        print("Spell cast.")
-
-    def show_model(self):
-        """Placeholder for showing model stats."""
-        print("Model stats shown.")
-
-    def update_magic_menu(self, spell_list):
-        # reset menu
-        self.magic_menu['menu'].delete(0, 'end')
+    def set_magic_option(self, magic):
+        """ Set the current magic option in the OptionMenu. """
+        self.magic_option_var.set(magic)

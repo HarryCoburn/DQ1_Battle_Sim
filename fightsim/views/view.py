@@ -7,14 +7,13 @@ from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
 from fightsim.controllers.controller import Controller
-from typing import List, Optional, Dict, Union, Type
+from typing import Optional, Dict, Union, Type
 
 
 class View(tk.Tk):
     """
     View class for the application
     """
-
     name_text: tk.StringVar
     level_change: tk.StringVar
     chosen_weapon: tk.StringVar
@@ -94,7 +93,6 @@ class View(tk.Tk):
 
         Does not return a value but changes the visible frame in the application window.
         """
-        # logging.debug(f"Attempting to display frame: {cont.__name__}")
         if new_frame not in self.changeable_frames.values():
             logging.error(f"Attempted to show an unmanaged frame: {new_frame}")
             return
