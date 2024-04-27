@@ -37,9 +37,9 @@ def notify_observers(messages):
 
 def measure_performance(func):
     @wraps(func)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         start_time = time.time()
-        result = func(self, *args, **kwargs)
+        result = func(*args, **kwargs)
         end_time = time.time()
         logging.debug(f"{func.__name__} took {end_time - start_time} seconds to execute")
         return result

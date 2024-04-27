@@ -8,7 +8,7 @@ class TestObserverMessagesEnum(unittest.TestCase):
         expected_members = {
             'OUTPUT_CHANGE', 'OUTPUT_CLEAR', 'ENEMY_CHANGE',
             'PLAYER_HP_CHANGE', 'WEAPON_CHANGE', 'SHIELD_CHANGE',
-            'ARMOR_CHANGE', 'RESET_GAME'
+            'ARMOR_CHANGE', 'RESET_GAME', 'UPDATE_PLAYER_MAGIC'
         }
         actual_members = {member.name for member in ObserverMessages}
         self.assertEqual(actual_members, expected_members)
