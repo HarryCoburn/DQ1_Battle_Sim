@@ -109,16 +109,7 @@ items = {
     for item_type in ItemType
 }
 
-
-weapon_instances = [item for item in items[ItemType.WEAPON.value].values()]
-armor_instances = [item for item in items[ItemType.ARMOR.value].values()]
-shield_instances = [item for item in items[ItemType.SHIELD.value].values()]
-
 weapon_names = [item.name for item in items[ItemType.WEAPON.value].values()]
 armor_names = [item.name for item in items[ItemType.ARMOR.value].values()]
 shield_names = [item.name for item in items[ItemType.SHIELD.value].values()]
 
-
-if __name__ == "__main__":
-    print(weapon_names)
-    print(weapon_instances)

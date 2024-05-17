@@ -8,6 +8,8 @@ from ..common.messages import ObserverMessages
 import math
 import random
 from typing import List, Optional
+from .player_leveling import Levelling
+
 
 
 @dataclass
@@ -32,39 +34,7 @@ class Player:
     is_asleep: bool = False
     is_spellstopped: bool = False
     sleep_count: int = 6
-    # level_stats holds the base leveling data for the player
-    level_stats: list = field(default_factory=lambda: [
-        [4, 4, 15, 0],
-        [5, 4, 22, 0],
-        [7, 6, 24, 5],
-        [7, 8, 31, 16],
-        [12, 10, 35, 20],
-        [16, 10, 38, 24],
-        [18, 17, 40, 26],
-        [22, 20, 46, 29],
-        [30, 22, 50, 36],
-        [35, 31, 54, 40],
-        [40, 35, 62, 50],
-        [48, 40, 63, 58],
-        [52, 48, 70, 64],
-        [60, 55, 78, 70],
-        [68, 64, 86, 72],
-        [72, 70, 92, 95],
-        [72, 78, 100, 100],
-        [85, 84, 115, 108],
-        [87, 86, 130, 115],
-        [92, 88, 138, 128],
-        [95, 90, 149, 135],
-        [97, 90, 158, 146],
-        [99, 94, 165, 153],
-        [103, 98, 170, 161],
-        [113, 100, 174, 161],
-        [117, 105, 180, 168],
-        [125, 107, 189, 175],
-        [130, 115, 195, 180],
-        [135, 120, 200, 190],
-        [140, 130, 210, 200]
-        ])
+    leveler: Levelling = Levelling()
     model: Optional = None  # Placeholder
     
     def __post_init__(self):
@@ -73,79 +43,41 @@ class Player:
             raise ValueError("Level must be within 1 to 30")
 
     def defense(self):
+        """
+        Calculate and return defense value
+        """
         return (self.agility + self.armor.modifier + self.shield.modifier) // 2
 
-    def attack_num(self): # TODO make this like defense() and just return the calculation.
+    def attack_num(self):
+        """
+        Calculate and return attack number
+        """
         return self.strength + self.weapon.modifier
 
-    # Static Classes
-    @staticmethod
-    def slow_prog(name_sum, stat) -> int:
-        """
-        Formula for lower stats
-        """
-        return math.floor(stat * (9 / 10) + (math.floor(name_sum / 4) % 4))
-    
-    @staticmethod
-    def letter_stat(ltr):
-        """
-        Calculates letter values of the name for stat calculations
-        """
-        ltr_clusters = ["gwM", "hxN", "iyO", "jzP", "kAQ", "lBR", "mCS", "nDT", "oEU", "pFV", "aqGW",
-                        "brHX", "csIY", "dtJZ", "euK", "fvL"]
-        for index, cluster in enumerate(ltr_clusters):
-            if ltr in cluster:
-                return index
-        return 0
-
     def set_model(self, model):
-        self.model = model  # Method to inject the model dependency
+        """
+        Injects model dependence into Player.
+        """
+        self.model = model
     
-    def progress_mods(self, name):
-        """
-        Calculate name_sum and the progression modifier
-        """
-        letters = name[0:4]        
-        return sum(map(self.letter_stat, letters)), math.floor(self.name_sum % 4)
 
     def change_name(self, name):
+        """
+        Sets the new name and then recalculates the stats of the player based on the new name value.
+        """
         self.name = name
         self.recalculate_stats()
 
     def level_up(self, value):
+        """
+        Sets the new level and then recalculates the stats of the player based on the new level value.
+        """
         self.level = value
         self.recalculate_stats()
 
     def recalculate_stats(self):
-        """
-        Main level up function
 
-        The function reads the new level, recalculates the name_sum and progression path
-        Then uses the right level_base to adjust the stats of the player.
-        """
-        level_base = self.level_stats[self.level - 1]
-        self.name_sum, self.progression = self.progress_mods(self.name)
-        # Four types of progression
-        if self.progression == 0:
-            self.strength = self.slow_prog(self.name_sum, level_base[0])
-            self.agility = self.slow_prog(self.name_sum, level_base[1])
-            self.max_hp = level_base[2]
-            self.max_mp = level_base[3]
-        elif self.progression == 1:
-            self.strength = level_base[0]
-            self.agility = self.slow_prog(self.name_sum, level_base[1])
-            self.max_hp = level_base[2]
-            self.max_mp = self.slow_prog(self.name_sum, level_base[3])
-        elif self.progression == 2:
-            self.strength = self.slow_prog(self.name_sum, level_base[0])
-            self.agility = level_base[1]
-            self.max_hp = self.slow_prog(self.name_sum, level_base[2])
-            self.max_mp = level_base[3]
-        else:
-            self.strength = level_base[0]
-            self.agility = level_base[1]
-            self.max_hp = self.slow_prog(self.name_sum, level_base[2])
-            self.max_mp = self.slow_prog(self.name_sum, level_base[3])
+        self.strength, self.agility, self.max_hp, self.max_hp = self.leveler.adjust_stats(self.level, self.name)
         self.curr_hp = self.max_hp
         self.curr_mp = self.max_mp
         self.build_p_magic_list()
@@ -171,34 +103,30 @@ class Player:
         self.model.observed.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
 
     def equip_weapon(self, weapon_name: str):
-        weapon_instance = items[ItemType.WEAPON.value].get(weapon_name)
-        if weapon_instance:
-            self.weapon = weapon_instance
-        else:
-            print(f"Weapon {weapon_name} not found.")
+        """
+        Sets a new weapon on the player. Keeps the same weapon if it is not found.
+        """
+        self.weapon = items[ItemType.WEAPON.value].get(weapon_name, self.weapon)
 
     def equip_armor(self, armor_name: str):
-        armor_instance = items[ItemType.ARMOR.value].get(armor_name)
-        if armor_instance:
-            self.armor = armor_instance
-            self.reduce_hurt_damage = armor_instance.reduce_hurt_damage
-            self.reduce_fire_damage = armor_instance.reduce_fire_damage
-        else:
-            print(f"Armor {armor_name} not found.")
+        """
+        Sets a new armor on the player. Keeps the same armor if it is not found.
+        """
+        self.armor = items[ItemType.ARMOR.value].get(armor_name, self.armor)
+        self.reduce_hurt_damage = self.armor.reduce_hurt_damage
+        self.reduce_fire_damage = self.armor.reduce_fire_damage
 
     def equip_shield(self, shield_name: str):
-        shield_instance = items[ItemType.SHIELD.value].get(shield_name)
-        if shield_instance:
-            self.shield = shield_instance
-        else:
-            print(f"Shield {shield_name} not found.")
-
-    def change_level(self, new_level: int):
-        self.level = new_level
-        self.level_up()
+        """
+        Sets a new shield on the player. Keeps the same shield if it is not found.
+        """
+        self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
     
     @staticmethod
     def did_crit():
+        """
+        Returns if the player had a critical hit or not.
+        """
         return random.randint(1, 32) == 1
 
     @staticmethod
@@ -218,10 +146,15 @@ class Player:
         return max((attack // 2), 0), max(attack, 1)
 
     def is_defeated(self):
+        """
+        Returns if the player is defeated
+        """
         return self.curr_hp <= 0
 
     def check_sleep(self):
-        """ Returns if the player is asleep or not. """
+        """
+        Returns if the player is asleep or not.
+        """
         if not self.is_asleep:
             return False
         else:
@@ -236,6 +169,9 @@ class Player:
                 return True
 
     def attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
+        """
+        Display attack messages for the player.
+        """
         if did_crit:
             self.model.text(f"\nYou attack with an excellent attack!!\n")
         else:
@@ -248,4 +184,7 @@ class Player:
 
 
 def player_factory():
+    """
+    Returns a player
+    """
     return Player()
