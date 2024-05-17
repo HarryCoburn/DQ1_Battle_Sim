@@ -73,8 +73,8 @@ class MainFrame(tk.Frame):
         self.player_label["text"] = inspect.cleandoc(f"""\
               Name: {player_info.name}
               Level: {player_info.level}
-              HP: {player_info.curr_hp}/{player_info.max_hp}
-              MP: {player_info.curr_mp}
+              HP: {player_info.current_hp}/{player_info.max_hp}
+              MP: {player_info.current_mp}
 
               Weapon: {player_info.weapon.name}
               Armor: {player_info.armor.name}
@@ -98,7 +98,7 @@ class MainFrame(tk.Frame):
             """
             self.enemy_label["text"] = inspect.cleandoc(f"""\
                 Name: {enemy_info.name}
-                HP: {enemy_info.curr_hp}
+                HP: {enemy_info.current_hp}
     
                 Strength: {enemy_info.strength}
                 Agility: {enemy_info.agility}

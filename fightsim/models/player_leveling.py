@@ -1,7 +1,10 @@
 from math import floor
 
 
-class Levelling:
+class _Levelling:
+    """
+    Controls how the player levels up and down and recalculates stats.
+    """
     def __init__(self):
         # level_stats holds the base leveling data for the player
         self.level_stats = [

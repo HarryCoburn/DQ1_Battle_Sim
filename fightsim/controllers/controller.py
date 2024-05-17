@@ -38,7 +38,6 @@ class Controller:
         self.model.text("DQ1 Battle Sim")
         self.logger.info("View initialized with welcome message.")
 
-
     def update_player_attribute(self, attribute_type, value=None):
         """ Generic method to update player attributes """
         if attribute_type == "weapon":
@@ -76,9 +75,9 @@ class Controller:
 
     def end_battle(self, *_):
         """Cleans up after the battle is done and resets the simulator"""
-        self.model.enemy.curr_hp = self.model.enemy.max_hp
-        self.model.player.curr_hp = self.model.player.max_hp
-        self.model.player.curr_mp = self.model.player.max_mp
+        self.model.enemy.current_hp = self.model.enemy.max_hp
+        self.model.player.current_hp = self.model.player.max_hp
+        self.model.player.current_mp = self.model.player.max_mp
         self.model.player.herb_count = 0
         self.view.main_frame.txt["state"] = "disabled"
         self.update_enemy_info()
@@ -103,7 +102,6 @@ class Controller:
 
     def get_chosen_magic(self):
         return self.view.battle_frame.magic_option_var.get()
-
 
     def switch_battle_frame(self):
         self.view.show_frame(self.view.battle_frame)

@@ -66,9 +66,9 @@ class Model:
         
     def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
         """Change the player's HP by a delta amount."""
-        self.player.curr_hp += delta_hp
-        if self.player.max_hp < self.player.curr_hp:
-            self.player.curr_hp = self.player.max_hp
+        self.player.current_hp += delta_hp
+        if self.player.max_hp < self.player.current_hp:
+            self.player.current_hp = self.player.max_hp
         self.observed.notify(ObserverMessages.PLAYER_HP_CHANGE)  # Notify observers about the specific change
 
     def buy_herb(self):

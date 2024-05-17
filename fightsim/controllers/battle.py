@@ -121,19 +121,19 @@ class Battle:
             return  # Use return here so player can select another option.
 
         self.model.player.herb_count -= 1
-        if self.model.player.curr_hp >= self.model.player.max_hp:
+        if self.model.player.current_hp >= self.model.player.max_hp:
             self.controller.eat_herb_at_full_hp()
             self.is_enemy_defeated()
 
         heal_amt = self.calculate_player_herb_heal_amount()
-        self.model.player.curr_hp += heal_amt
+        self.model.player.current_hp += heal_amt
         self.controller.eat_herb(heal_amt)
         self.is_enemy_defeated()
 
     def calculate_player_herb_heal_amount(self):
         """ Calculates the amount of health an herb will restore. """
         heal_amt = Randomizer.randint(*self.herb_range)
-        return min(heal_amt, self.model.player.max_hp - self.model.player.curr_hp)
+        return min(heal_amt, self.model.player.max_hp - self.model.player.current_hp)
 
     # Player Flees
 
@@ -183,11 +183,11 @@ class Battle:
         }
 
         cost = spell_cost.get(spell, 0)
-        if self.model.player.curr_mp < cost:
+        if self.model.player.current_mp < cost:
             self.model.text(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
             self.is_enemy_defeated()  # Player loses turn if they try to cast a spell without enough mp
 
-        self.model.player.curr_mp -= cost
+        self.model.player.current_mp -= cost
         if self.model.player.is_spellstopped:
             self.model.text(f"""Player casts {spell}, but their magic has been sealed!\n""")
             self.is_enemy_defeated()  # Player loses turn if they try to cast a spell while stopspelled.
@@ -210,11 +210,11 @@ class Battle:
         if heal_total == 0:
             self.model.text(f"""Player casts {spell_name}, but their hit points were already at maximum!\n""")
         else:
-            self.model.player.curr_hp += heal_total
+            self.model.player.current_hp += heal_total
             self.model.text(f"""Player casts {spell_name}! Player is healed {str(heal_total)} hit points!\n""")
 
     def calc_heal(self, heal_range):
-        heal_max = self.model.player.max_hp - self.model.player.curr_hp
+        heal_max = self.model.player.max_hp - self.model.player.current_hp
         heal_amount = Randomizer.randint(*heal_range)
         return min(heal_max, heal_amount)
 
@@ -360,7 +360,7 @@ class Battle:
         """Enemy attacks normally"""
         self.model.text(f"\nEnemy turn\n")
         enemy_damage_dealt = self.enemy.attack(self.player.defense())
-        self.model.player.curr_hp -= enemy_damage_dealt
+        self.model.player.current_hp -= enemy_damage_dealt
         self.controller.update_player_info()
 
         self.model.text(f"{self.model.enemy.name} attacks! {self.model.enemy.name} hits you for {enemy_damage_dealt} damage.\n")
@@ -389,7 +389,7 @@ class Battle:
         else:
             hurt_dmg = random.randint(hurt_high[0], hurt_high[1])
 
-        self.model.player.curr_hp -= hurt_dmg
+        self.model.player.current_hp -= hurt_dmg
         self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.player.name} is hurt for {hurt_dmg} damage!""")
         self.is_player_defeated()
 
@@ -403,14 +403,14 @@ class Battle:
         heal_range = [20, 27]
         healmore_range = [85, 100]
 
-        heal_max = self.model.enemy.max_hp - self.model.enemy.curr_hp
+        heal_max = self.model.enemy.max_hp - self.model.enemy.current_hp
 
         heal_rand = random.randint(healmore_range[0], healmore_range[1]) if more else random.randint(heal_range[0],
                                                                                                      heal_range[1])
 
         heal_amt = heal_rand if heal_rand < heal_max else heal_max
 
-        self.model.enemy.curr_hp += heal_amt
+        self.model.enemy.current_hp += heal_amt
         self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}! {self.model.enemy["name"]} is healed {heal_amt} hit points!""")
         self.controller.update_enemy_info()
         self.player_turn()
@@ -460,6 +460,6 @@ class Battle:
         else:
             fire_dmg = random.randint(fire_high[0], fire_high[1])
 
-        self.model.player.curr_hp -= fire_dmg
+        self.model.player.current_hp -= fire_dmg
         self.model.text(f"""The {self.model.enemy.name} breathes {spell_name}! {self.model.player.name} is hurt for {fire_dmg} damage!""")
         self.is_player_defeated()

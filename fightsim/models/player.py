@@ -8,21 +8,20 @@ from ..common.messages import ObserverMessages
 import math
 import random
 from typing import List, Optional
-from .player_leveling import Levelling
+from .player_leveling import _Levelling
 
-
+CRIT_CHANCE: int = 32
+SLEEP_COUNT: int = 6
 
 @dataclass
 class Player:
     name: str = "Rollo"
-    name_sum: int = 0
-    progression: int = 0
     level: int = 1
     strength: int = 4
     agility: int = 4
-    curr_hp: int = 15
+    current_hp: int = 15
     max_hp: int = 15
-    curr_mp: int = 0
+    current_mp: int = 0
     max_mp: int = 0
     weapon: Item = field(default_factory=lambda: items[ItemType.WEAPON.value]["Unarmed"])
     armor: Item = field(default_factory=lambda: items[ItemType.ARMOR.value]["Naked"])
@@ -33,9 +32,10 @@ class Player:
     reduce_fire_damage: bool = False
     is_asleep: bool = False
     is_spellstopped: bool = False
-    sleep_count: int = 6
-    leveler: Levelling = Levelling()
+    sleep_count: int = SLEEP_COUNT
+    leveler: _Levelling = _Levelling()
     model: Optional = None  # Placeholder
+
     
     def __post_init__(self):
         self.player_magic = []
@@ -59,7 +59,6 @@ class Player:
         Injects model dependence into Player.
         """
         self.model = model
-    
 
     def change_name(self, name):
         """
@@ -78,8 +77,8 @@ class Player:
     def recalculate_stats(self):
 
         self.strength, self.agility, self.max_hp, self.max_hp = self.leveler.adjust_stats(self.level, self.name)
-        self.curr_hp = self.max_hp
-        self.curr_mp = self.max_mp
+        self.current_hp = self.max_hp
+        self.current_mp = self.max_mp
         self.build_p_magic_list()
 
     def build_p_magic_list(self):
@@ -127,7 +126,7 @@ class Player:
         """
         Returns if the player had a critical hit or not.
         """
-        return random.randint(1, 32) == 1
+        return random.randint(1, CRIT_CHANCE) == 1
 
     @staticmethod
     def damage_range(attack, agility):
@@ -149,7 +148,7 @@ class Player:
         """
         Returns if the player is defeated
         """
-        return self.curr_hp <= 0
+        return self.current_hp <= 0
 
     def check_sleep(self):
         """
