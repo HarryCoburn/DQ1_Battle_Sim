@@ -1,6 +1,7 @@
 # DQ1 Battle Simulator - App
 
 import logging
+import logging.config
 from fightsim.views.view import View
 from fightsim.controllers.controller import Controller
 from fightsim.models.model import Model
@@ -8,26 +9,34 @@ from fightsim.models.player import player_factory
 from fightsim.models.enemy import enemy_dummy_factory
 from fightsim.common.eventmanager import EventManager
 
+def create_event_manager():
+    return EventManager("DQ1 Model Observer")
 
-def main():
+def create_view():
+    return View()
+
+def create_model(event_manager):
+    return Model(player=player_factory(), enemy=enemy_dummy_factory(), observer=event_manager)
+
+def create_controller(model, view, event_manager):
+    return Controller(model, view, event_manager)
+
+def main(event_manager_factory=create_event_manager,
+         view_factory=create_view,
+         model_factory=create_model,
+         controller_factory=create_controller):
     """ Entry Point for the Application """
 
-    # Logging Setup
+    
+    logging.config.fileConfig('./fightsim/logging.ini')
     main_logger = logging.getLogger('main')
-    main_logger.setLevel(logging.INFO)
-
-    # Handler Setup
-    main_handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    main_handler.setFormatter(formatter)
-    main_logger.addHandler(main_handler)
-
+    
     try:
-        event_manager = EventManager("DQ1 Model Observer")
-        view = View()
-        model = Model(player=player_factory(), enemy=enemy_dummy_factory(), observer=event_manager)
-        controller = Controller(model, view, event_manager)
-
+        event_manager = event_manager_factory()
+        view = view_factory()
+        model = model_factory(event_manager)
+        controller = controller_factory(model, view, event_manager)
+        
         view.set_controller(controller)
         controller.initial_update()
 

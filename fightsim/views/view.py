@@ -47,7 +47,7 @@ class View(tk.Tk):
         self.curr_frame = None
 
         self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
-        self.ctrl_container.pack_propagate(False)
+        # self.ctrl_container.pack_propagate(False)
         self.ctrl_container.pack(side="left", fill='y')
 
         self.main_container = tk.Frame(self, height=768, width=768, bg="red")
@@ -60,7 +60,7 @@ class View(tk.Tk):
         # Changeable frames in the application
         self.battle_frame = BattleFrame(self.ctrl_container)
 
-        self.setup_frame = SetupFrame(self.ctrl_container, width=256, height=600, padx=20)
+        self.setup_frame = SetupFrame(self.ctrl_container, width=240, height=600, padx=20)
         self.setup_frame.pack(expand=True)
 
         self.changeable_frames = {
