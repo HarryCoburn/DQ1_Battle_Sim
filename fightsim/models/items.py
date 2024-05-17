@@ -1,132 +1,124 @@
 from dataclasses import dataclass
+from enum import Enum
 
+
+class ItemType(Enum):
+    WEAPON = "weapon"
+    SHIELD = "shield"
+    ARMOR = "armor"
 
 @dataclass
 class Item:
     name: str
     modifier: int
+    item_type: ItemType
+    reduce_hurt_damage: bool = False
+    reduce_fire_damage: bool = False
 
     def describe(self) -> str:
         return f"{self.name} (Modifier: {self.modifier})"
 
 
-@dataclass
-class Weapon(Item):
-    pass
+def create_item(item_type: ItemType, item_name: str, item_data: dict) -> Item:
+    return Item(
+        name=item_name,
+        modifier=item_data["modifier"],
+        item_type=item_type,
+        reduce_hurt_damage=item_data.get("reduce_hurt_damage", False),
+        reduce_fire_damage=item_data.get("reduce_fire_damage", False)
+    )
 
 
-@dataclass
-class Shield(Item):
-    pass
-
-
-@dataclass
-class Armor(Item):
-    reduce_hurt_damage: bool = False
-    reduce_fire_damage: bool = False
-
-
-weapon_dict = {
-    "unarmed": {
-        "name": "Unarmed",
-        "modifier": 0
+item_data = {
+    "weapons": {
+        "Unarmed": {
+            "modifier": 0
+        },
+        "Bamboo Pole": {
+            "modifier": 2
+        },
+        "Club": {
+            "modifier": 4
+        },
+        "Copper Sword": {
+            "modifier": 10
+        },
+        "Hand Axe": {
+            "modifier": 15
+        },
+        "Broad Sword": {
+            "modifier": 20
+        },
+        "Flame Sword": {
+            "modifier": 28
+        },
+        "Edrick's Sword": {
+            "modifier": 40
+        }
     },
-    "bamboo_pole": {
-        "name": "Bamboo Pole",
-        "modifier": 2
+    "armors": {
+        "Naked": {
+            "modifier": 0
+        },
+        "Clothes": {
+            "modifier": 2
+        },
+        "Leather Armor": {
+            "modifier": 4
+        },
+        "Chain Mail": {
+            "modifier": 10
+        },
+        "Half Plate": {
+            "modifier": 16
+        },
+        "Full Plate": {
+            "modifier": 24
+        },
+        "Magic Armor": {
+            "modifier": 2,
+            "reduce_hurt_damage": True
+        },
+        "Edrick's Armor": {
+            "modifier": 2,
+            "reduce_hurt_damage": True,
+            "reduce_fire_damage": True
+        }
     },
-    "club": {
-        "name": "Club",
-        "modifier": 4
-    },
-    "copper_sword": {
-        "name": "Copper Sword",
-        "modifier": 10
-    },
-    "hand_axe": {
-        "name": "Hand Axe",
-        "modifier": 15
-    },
-    "broad_sword": {
-        "name": "Broad Sword",
-        "modifier": 20
-    },
-    "flame_sword": {
-        "name": "Flame Sword",
-        "modifier": 28
-    },
-    "edricks-sword": {
-        "name": "Edrick's Sword",
-        "modifier": 40
-    }
-}
-
-armor_dict = {
-    "naked": {
-        "name": "Naked",
-        "modifier": 0
-    },
-    "clothes": {
-        "name": "Clothes",
-        "modifier": 2
-    },
-    "leather_armor": {
-        "name": "Leather Armor",
-        "modifier": 4
-    },
-    "chain_mail": {
-        "name": "Chain Mail",
-        "modifier": 10
-    },
-    "half_plate": {
-        "name": "Half Plate",
-        "modifier": 16
-    },
-    "full_plate": {
-        "name": "Full Plate",
-        "modifier": 24
-    },
-    "magic_armor": {
-        "name": "Magic Armor",
-        "modifier": 2,
-        "reduce_hurt_damage": True
-    },
-    "edricks_armor": {
-        "name": "Edrick's Armor",
-        "modifier": 2,
-        "reduce_hurt_damage": True,
-        "reduce_fire_damage": True
-    }
-}
-
-shield_dict = {
-    "no_shield": {
-        "name": "No Shield",
-        "modifier": 0
-    },
-    "small_shield": {
-        "name": "Small Shield",
-        "modifier": 4
-    },
-    "large_shield": {
-        "name": "Large Shield",
-        "modifier": 10
-    },
-    "silver_shield": {
-        "name": "Silver Shield",
-        "modifier": 25
+    "shields": {
+        "No Shield": {
+            "modifier": 0
+        },
+        "Small Shield": {
+            "modifier": 4
+        },
+        "Large Shield": {
+            "modifier": 10
+        },
+        "Silver Shield": {
+            "modifier": 25
+        }
     }
 }
 
 
-def create_instances(item_class, item_data):
-    return {name: item_class(**data) for name, data in item_data.items()}
+items = {
+    item_type.value: {
+        name: create_item(item_type, name, data) for name, data in item_data[item_type.value + "s"].items()
+    }
+    for item_type in ItemType
+}
 
 
-weapon_instances = create_instances(Weapon, weapon_dict)
-armor_instances = create_instances(Armor, armor_dict)
-shield_instances = create_instances(Shield, shield_dict)
+weapon_instances = [item for item in items[ItemType.WEAPON.value].values()]
+armor_instances = [item for item in items[ItemType.ARMOR.value].values()]
+shield_instances = [item for item in items[ItemType.SHIELD.value].values()]
 
-weapon_names = [weapon.name for weapon in weapon_instances.values()]
-armor_names = [armor.name for armor in armor_instances.values()]
-shield_names = [shield.name for shield in shield_instances.values()]
+weapon_names = [item.name for item in items[ItemType.WEAPON.value].values()]
+armor_names = [item.name for item in items[ItemType.ARMOR.value].values()]
+shield_names = [item.name for item in items[ItemType.SHIELD.value].values()]
+
+
+if __name__ == "__main__":
+    print(weapon_names)
+    print(weapon_instances)

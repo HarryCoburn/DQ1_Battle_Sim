@@ -2,8 +2,8 @@
 Player class
 """
 
-from dataclasses import field
-from fightsim.models.items import *
+from dataclasses import dataclass, field
+from fightsim.models.items import Item, ItemType, items
 from ..common.messages import ObserverMessages
 import math
 import random
@@ -22,9 +22,9 @@ class Player:
     max_hp: int = 15
     curr_mp: int = 0
     max_mp: int = 0
-    weapon: Weapon = field(default_factory=lambda: weapon_instances["unarmed"])
-    armor: Armor = field(default_factory=lambda: armor_instances["naked"])
-    shield: Shield = field(default_factory=lambda: shield_instances["no_shield"])
+    weapon: Item = field(default_factory=lambda: items[ItemType.WEAPON.value]["Unarmed"])
+    armor: Item = field(default_factory=lambda: items[ItemType.ARMOR.value]["Naked"])
+    shield: Item = field(default_factory=lambda: items[ItemType.SHIELD.value]["No Shield"])
     player_magic: List[str] = field(default_factory=list)
     herb_count: int = 0
     reduce_hurt_damage: bool = False
@@ -170,44 +170,28 @@ class Player:
             self.player_magic.append("Hurtmore")
         self.model.observed.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
 
-    @staticmethod    
-    def find_key_by_value(d, value_to_find):
-        for key, value in d.items():            
-            if value.name == value_to_find:
-                return key
-        return None
-
     def equip_weapon(self, weapon_name: str):
-        key = self.find_key_by_value(weapon_instances, weapon_name)
-        weapon_instance = weapon_instances.get(key)
-        if weapon_instance:        
+        weapon_instance = items[ItemType.WEAPON.value].get(weapon_name)
+        if weapon_instance:
             self.weapon = weapon_instance
         else:
-            print(f"Weapon {weapon_name} not found.")        
-    
+            print(f"Weapon {weapon_name} not found.")
+
     def equip_armor(self, armor_name: str):
-        key = self.find_key_by_value(armor_instances, armor_name)
-        armor_instance = armor_instances.get(key)
+        armor_instance = items[ItemType.ARMOR.value].get(armor_name)
         if armor_instance:
             self.armor = armor_instance
-            if self.armor.reduce_hurt_damage:
-                self.reduce_hurt_damage = True
-            else:
-                self.reduce_hurt_damage = False
-            if self.armor.reduce_fire_damage:
-                self.reduce_fire_damage = True
-            else:
-                self.reduce_fire_damage = False
+            self.reduce_hurt_damage = armor_instance.reduce_hurt_damage
+            self.reduce_fire_damage = armor_instance.reduce_fire_damage
         else:
-            print(f"Armor {armor_name} not found.")     
+            print(f"Armor {armor_name} not found.")
 
     def equip_shield(self, shield_name: str):
-        key = self.find_key_by_value(shield_instances, shield_name)
-        shield_instance = shield_instances.get(key)
-        if shield_instance:        
+        shield_instance = items[ItemType.SHIELD.value].get(shield_name)
+        if shield_instance:
             self.shield = shield_instance
         else:
-            print(f"Shield {shield_name} not found.")     
+            print(f"Shield {shield_name} not found.")
 
     def change_level(self, new_level: int):
         self.level = new_level
