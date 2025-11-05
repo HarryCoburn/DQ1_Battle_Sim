@@ -40,8 +40,8 @@ class Enemy:
             EnemyActions.ATTACK: self.attack(player),
             EnemyActions.HURT: lambda: self.casts_hurt(False, player),
             EnemyActions.HURTMORE: lambda: self.casts_hurt(True, player),
-            EnemyActions.HEAL: lambda: self.enemy_casts_heal(False),
-            EnemyActions.HEALMORE: lambda: self.enemy_casts_heal(True),
+            EnemyActions.HEAL: lambda: self.casts_heal(False),
+            EnemyActions.HEALMORE: lambda: self.casts_heal(True),
             EnemyActions.SLEEP: self.enemy_casts_sleep,
             EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
             EnemyActions.FIRE: lambda: self.breathes_fire(False, player),
@@ -66,7 +66,7 @@ class Enemy:
                 if action in [EnemyActions.ATTACK, EnemyActions.HURT, EnemyActions.FIRE, EnemyActions.HURTMORE, EnemyActions.STRONGFIRE]:
                     choice = action
                     break
-                if action in [EnemyActions.HEAL, EnemyActions.HEALMORE] and self.enemy.trigger_healing():
+                if action in [EnemyActions.HEAL, EnemyActions.HEALMORE] and self.trigger_healing(): # Won't always heal
                     choice = action
                     break
                 if action == EnemyActions.SLEEP and not self.model.player.is_asleep:
@@ -84,8 +84,7 @@ class Enemy:
         return enemy_damage_dealt
 
     def casts_hurt(self, more, player):
-        """ Enemy handling of hurt and hurtmore"""
-        spell_name = "Hurtmore" if more else "Hurt"
+        """ Enemy handling of hurt and hurtmore"""        
         hurt_high = [3, 10]
         hurt_low = [2, 6]
         hurtmore_high = [30, 45]
@@ -136,6 +135,22 @@ class Enemy:
             damage_range = self.normal_damage_range(self.strength, hero_defense)
 
         return Randomizer.randint(*damage_range)
+
+    def casts_heal(self, more):
+        if self.enemy_spell_stopped is True:
+            return "enemy_spellstopped"
+        
+        heal_range = [20, 27]
+        healmore_range = [85, 100]
+        heal_max = self.max_hp - self.current_hp
+
+        heal_rand = random.randint(healmore_range[0], healmore_range[1]) if more else random.randint(heal_range[0],
+                                                                                                     heal_range[1])
+
+        heal_amt = heal_rand if heal_rand < heal_max else heal_max
+
+        self.current_hp += heal_amt
+        return heal_amt
 
     def set_model(self, model):
         self.model = model  # Method to inject the model dependency

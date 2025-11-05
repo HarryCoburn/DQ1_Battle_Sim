@@ -175,6 +175,12 @@ class BattleController:
         if result[0] in [EnemyActions.FIRE, EnemyActions.STRONGFIRE]:
             self.battle_presenter.enemy_breathes_fire(self.enemy.name, result, self.player.name)
 
+        if result[0] in [EnemyActions.HEAL, EnemyActions.HEALMORE]:
+            if self.enemy.enemy_spell_stopped:
+                self.battle_presenter.enemy_casts_while_spellstopped(self.enemy.name, result[0])
+            else:
+                self.battle_presenter.enemy_casts_heal(self.enemy.name, result)
+
         self.is_player_defeated()    
 
 

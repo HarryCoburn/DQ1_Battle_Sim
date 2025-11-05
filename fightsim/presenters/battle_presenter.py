@@ -141,3 +141,12 @@ class BattlePresenter:
         if result[0] == EnemyActions.STRONGFIRE:
             spell_name = "strong flames at you!"
         self.view.update_output(f"""The {enemy_name} breathes {spell_name}! {player_name} is hurt for {damage} damage!""")
+
+    def enemy_casts_heal(self, enemy_name, result):
+        spell_name = ""
+        heal_amt = result[1]
+        if result[0] == EnemyActions.HEAL:
+            spell_name = "Heal"
+        if result[0] == EnemyActions.HEALMORE:
+            spell_name = "Healmore"
+        self.view.update_output(f"""The {enemy_name} casts {spell_name}! {enemy_name} is healed {heal_amt} hit points!""")
