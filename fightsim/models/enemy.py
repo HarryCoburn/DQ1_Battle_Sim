@@ -35,6 +35,47 @@ class Enemy:
         return cls(name="Dummy", strength=0, agility=0, base_hp=[1, 1], sleep_resist=0,
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
 
+    def perform_enemy_action(self, player):
+        action_methods = {
+            EnemyActions.ATTACK: self.enemy_attack,
+            EnemyActions.HURT: lambda: self.enemy_casts_hurt(False),
+            EnemyActions.HURTMORE: lambda: self.enemy_casts_hurt(True),
+            EnemyActions.HEAL: lambda: self.enemy_casts_heal(False),
+            EnemyActions.HEALMORE: lambda: self.enemy_casts_heal(True),
+            EnemyActions.SLEEP: self.enemy_casts_sleep,
+            EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
+            EnemyActions.FIRE: lambda: self.enemy_breathes_fire(False),
+            EnemyActions.STRONGFIRE: lambda: self.enemy_breathes_fire(True)
+        }
+
+        chosen_action = self.choose_enemy_action(player)
+        action = action_methods.get(chosen_action, self.handle_unknown_action)
+        action()
+
+    def handle_unknown_action(self):
+        """ Handles unknown enemy actions """
+        raise NotImplementedError("Enemy tried to attack with something not programmed yet!!")
+
+    def choose_enemy_action(self, player):
+        choice = None
+        for item in self.pattern:
+            chance = item["weight"]
+            if random.randint(1, 100) <= chance:
+                action = item["id"]
+                if action in [EnemyActions.ATTACK, EnemyActions.HURT, EnemyActions.FIRE, EnemyActions.HURTMORE, EnemyActions.STRONGFIRE]:
+                    choice = action
+                    break
+                if action in [EnemyActions.HEAL, EnemyActions.HEALMORE] and self.enemy.trigger_healing():
+                    choice = action
+                    break
+                if action == EnemyActions.SLEEP and not self.model.player.is_asleep:
+                    choice = action
+                    break
+                if action == EnemyActions.STOPSPELL and not self.model.player.is_spellstopped:
+                    choice = action
+                    break
+        return choice or EnemyActions.ATTACK
+    
     def is_spell_stopped(self, spell_name):
         if self.enemy_spell_stopped:
             self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!""")

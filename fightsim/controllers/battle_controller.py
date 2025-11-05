@@ -1,9 +1,8 @@
 """ Controller for the battle system """
-import random
+
 from ..models.battle import BattleEngine
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
-
 
 class BattleController:
     def __init__(self, model, view):
@@ -159,7 +158,13 @@ class BattleController:
         if self.enemy.does_flee(self.player.strength):
             self.battle_presenter.enemy_flees(self.enemy.name)
             self.end_fight() #    self.fight_over.set(True)
+        result = self.enemy.perform_enemy_action(self.player)
+
+    def perform_enemy_action(self):
         
+
+        chosen_action = self.enemy_choose_action()
+
         
 
 

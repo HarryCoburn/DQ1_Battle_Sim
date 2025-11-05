@@ -4,7 +4,7 @@ battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 
 import random
 import tkinter as tk
-from ..common.messages import EnemyActions
+
 
 class BattleEngine:
     """
@@ -22,52 +22,6 @@ class BattleEngine:
     def enemy_turn(self):
             # Do a combat action
             self.perform_enemy_action()
-
-    def perform_enemy_action(self):
-        """Selects and performs an action from the enemy's set of possible actions."""
-        action_methods = {
-            EnemyActions.ATTACK: self.enemy_attack,
-            EnemyActions.HURT: lambda: self.enemy_casts_hurt(False),
-            EnemyActions.HURTMORE: lambda: self.enemy_casts_hurt(True),
-            EnemyActions.HEAL: lambda: self.enemy_casts_heal(False),
-            EnemyActions.HEALMORE: lambda: self.enemy_casts_heal(True),
-            EnemyActions.SLEEP: self.enemy_casts_sleep,
-            EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
-            EnemyActions.FIRE: lambda: self.enemy_breathes_fire(False),
-            EnemyActions.STRONGFIRE: lambda: self.enemy_breathes_fire(True)
-        }
-
-        chosen_attack = self.enemy_choose_attack()
-        action = action_methods.get(chosen_attack, self.handle_unknown_action)
-        action()
-
-    def handle_unknown_action(self):
-        """ Handles unknown enemy actions """
-        raise NotImplementedError("Enemy tried to attack with something not programmed yet!!")
-
-
-
-    def enemy_choose_attack(self):
-        atk_list = self.model.enemy.pattern
-        choice = None
-        for item in atk_list:
-            chance = item["weight"]
-            if random.randint(1, 100) <= chance:
-                action = item["id"]
-                if action in [EnemyActions.ATTACK, EnemyActions.HURT, EnemyActions.FIRE, EnemyActions.HURTMORE, EnemyActions.STRONGFIRE]:
-                    choice = action
-                    break
-                if action in [EnemyActions.HEAL, EnemyActions.HEALMORE] and self.enemy.trigger_healing():
-                    choice = action
-                    break
-                if action == EnemyActions.SLEEP and not self.model.player.is_asleep:
-                    choice = action
-                    break
-                if action == EnemyActions.STOPSPELL and not self.model.player.is_spellstopped:
-                    choice = action
-                    break
-
-        return choice or EnemyActions.ATTACK
 
     def end_fight(self):
         """Triggers the flag that tells the controller battle is over"""
