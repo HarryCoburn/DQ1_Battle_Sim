@@ -2,14 +2,9 @@
 battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 """
 
-from dataclasses import dataclass
 import random
 import tkinter as tk
 from ..common.messages import EnemyActions
-from ..common.randomizer import Randomizer
-
-
-
 
 class BattleEngine:
     """
@@ -24,65 +19,6 @@ class BattleEngine:
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
    
-    # Player Magic
-
-    def player_cast_magic(self):
-        spell = self.controller.get_chosen_magic()
-
-        # Execute the spell function
-        spell_function = spell_switch.get(spell, lambda: None)
-        spell_function()
-        self.controller.update_player_info()
-        self.is_enemy_defeated()
-
- 
-    def player_hurt(self, more):
-        """ Handles player casting of Hurt and Hurtmore"""
-        hurt_ranges = {
-            "Hurt": [5, 12],
-            "Hurtmore": [58, 65]
-        }
-        spell_name = "Hurtmore" if more else "Hurt"
-        hurt_range = hurt_ranges[spell_name]
-        enemy_hurt_resistance = self.model.enemy.hurt_resist
-
-        hurt_total = self.calc_hurt(hurt_range)
-
-        if self.resist(enemy_hurt_resistance):
-            self.model.text(f"""Player casts {spell_name}, but the enemy resisted!\n""")
-            self.is_enemy_defeated()
-        else:
-            self.model.enemy.take_damage(hurt_total)
-            self.model.text(f"""Player casts {spell_name}! {self.model.enemy.name} is hurt by {str(hurt_total)} hit points!\n""")
-
-    @staticmethod
-    def calc_hurt(hurt_range):
-        return Randomizer.randint(*hurt_range)
-
-    def player_casts_sleep(self):
-        """ Player tries to cast Sleep on the enemy"""
-        enemy_sleep_resistance = self.model.enemy.sleep_resist
-        if self.model.enemy.enemy_sleep_count > 0:
-            self.model.text(f"""Player casts Sleep! But the {self.model.enemy.name} is already asleep!\n""")
-        elif self.resist(enemy_sleep_resistance):
-            self.model.text(f"""Player casts Sleep! But the {self.model.enemy.name} resisted!\n""")
-        else:
-            self.model.text(f"""Player casts Sleep! The {self.model.enemy.name} is now asleep!\n""")
-            self.model.enemy.enemy_sleep_count = 2
-
-    def player_casts_stopspell(self):
-        """ Player tries to cast Stopspell on the enemy"""
-        enemy_stop_resistance = self.model.enemy.stopspell_resist
-        if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"""Player casts Stopspell! But the {self.model.enemy.name}'s magic was already blocked!\n""")
-        elif self.resist(enemy_stop_resistance):
-            self.model.text(f"""Player casts Stopspell! But the {self.model.enemy.name} resisted!\n""")
-        else:
-            self.model.text(f"""Player casts Stopspell! The {self.model.enemy.name}'s magic is now blocked!!\n""")
-            self.model.enemy.enemy_spell_stopped = True
-
-
-
     # Enemy Actions
 
     def handle_enemy_sleep(self):
@@ -170,10 +106,7 @@ class BattleEngine:
         else:
             self.player_turn()
 
-    @staticmethod
-    def resist(chance):
-        return Randomizer.randint(1, 16) <= chance
-
+  
     def enemy_attack(self):
         """Enemy attacks normally"""
         self.model.text(f"\nEnemy turn\n")

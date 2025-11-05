@@ -229,14 +229,14 @@ class Player:
         enemy_block_chance = enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
         return player_flee_chance > enemy_block_chance
 
-    def cast_magic(self, spell):
+    def cast_magic(self, spell, enemy):
         spell_switch = {
             "Heal": lambda: self.player_heal(False),
             "Healmore": lambda: self.player_heal(True),
-            "Hurt": lambda: self.player_hurt(False),
-            "Hurtmore": lambda: self.player_hurt(True),
-            "Sleep": self.player_casts_sleep,
-            "Stopspell": self.player_casts_stopspell
+            "Hurt": lambda: self.player_hurt(False, enemy),
+            "Hurtmore": lambda: self.player_hurt(True, enemy),
+            "Sleep": self.player_casts_sleep(enemy),
+            "Stopspell": self.player_casts_stopspell(enemy)
         }
 
         spell_cost = {
@@ -276,6 +276,46 @@ class Player:
         heal_max = self.max_hp - self.current_hp
         heal_amount = Randomizer.randint(*heal_range)
         return min(heal_max, heal_amount)
+    
+    def player_hurt(self, more, enemy):
+        hurt_ranges = {
+            "Hurt": [5, 12],
+            "Hurtmore": [58, 65]
+        }
+        spell_name = "Hurtmore" if more else "Hurt"
+        hurt_range = hurt_ranges[spell_name]
+        enemy_hurt_resistance = self.model.enemy.hurt_resist
+        if self.resist(enemy_hurt_resistance):
+            return "resist_hurt"
+
+        hurt_total = self.calc_hurt(hurt_range)
+        enemy.take_damage(hurt_total)
+        return hurt_total
+
+    def calc_hurt(self, hurt_range):
+        return Randomizer.randint(*hurt_range)
+    
+    def resist(self, chance):
+        return Randomizer.randint(1, 16) <= chance        
+
+    def player_casts_sleep(self, enemy):
+        enemy_sleep_resistance = enemy.sleep_resist
+        if enemy.enemy_sleep_count > 0: # enemy already asleep
+            return "enemy_already_asleep"
+        if self.resist(enemy_sleep_resistance): # enemy resists sleep
+            return "enemy_resists_sleep"
+        enemy.enemy_sleep_count = 2
+        return "success" # dummy string
+
+    def player_casts_stopspell(self, enemy):
+        enemy_stop_resistance = enemy.stopspell_resist
+        if enemy.enemy.spell_stopped:
+            return "enemy_already_spellstopped"
+        if self.resist(enemy_stop_resistance):
+            return "enemy_resists_spellstop"
+        enemy.enemy_spell_stopped = True
+        return "success" # dummy string
+
 
 def player_factory():
     """

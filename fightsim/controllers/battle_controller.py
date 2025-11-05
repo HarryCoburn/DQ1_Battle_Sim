@@ -95,19 +95,48 @@ class BattleController:
             self.battle_presenter.no_spell_selected(spell)
             return
         
-        result = self.player.cast_magic(spell)
+        result = self.player.cast_magic(spell, self.enemy)
         if result == "not_enough_mp":
             self.battle_presenter.not_enough_mp(spell)
-            self.is_enemy_defeated() #player loses turn here
+        
         if result == "player_spellstopped":
             self.battle_presenter.player_spellstopped(spell)
-            self.is_enemy_defeated()  #player loses turn here
+        
         if result == "heal_when_at_max_hp":
-            self.battle_presenter.player_healed_when_full(spell)
-            self.is_enemy_defeated()
+            self.battle_presenter.player_casts_heal_when_full(spell)
+        
+        if result == "resist_hurt":
+            self.battle_presenter.enemy_resists_hurt(spell)
+        
+        if result == "enemy_already_asleep":
+            self.battle_presenter.enemy_already_asleep(self.enemy.name)
+        
+        if result == "enemy_resists_sleep":
+            self.battle_presenter.enemy_resists_sleep(self.enemy.name)
+        
+        if result == "enemy_already_spellstopped":
+            self.battle_presenter.enemy_already_stopped(self.enemy.name)
+        
+        if result == "enemy_resists_spellstop":
+            self.battle_presenter.enemy_resists_stopped(self.enemy.name)
+        
+        # From here, spells are successful
         if spell in ["Heal", "Healmore"]:
-            self.battle_presenter.player_healed(spell, result)
-            self.is_enemy_defeated()
+            self.battle_presenter.player_casts_heal(spell, result)
+        
+        if spell in ["Hurt", "Hurtmore"]:
+            self.battle_presenter.player_casts_hurt(spell, self.enemy.name, result)
+            
+        if spell == "Sleep":
+            self.battle_presenter.enemy_now_asleep(self.enemy.name)
+            
+        if spell == "Stopspell":
+            self.battle_presenter.enemy_now_spell_stopped(self.enemy.name)
+        
+        self.is_enemy_defeated()
+
+
+        
         
 
 
