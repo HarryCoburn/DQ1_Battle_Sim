@@ -23,55 +23,7 @@ class BattleEngine:
         self.enemy = self.model.enemy
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
-        self.herb_range = (23, 30)
-
-    # Player Actions
-
-    def is_enemy_defeated(self):
-        """ Checks if the enemy is defeated. Ends fight if true. Starts enemy turn if false. """
-        if self.enemy.is_defeated():
-            self.controller.player_wins()
-            self.end_fight()
-        else:
-            self.enemy_turn()
-
-           
-
-    def process_player_attack_result(self, crit, dodge, damage):
-        self.player.attack_msg(crit, dodge, damage, self.enemy.name)
-        if dodge and not crit:
-            self.enemy_attack()
-        else:
-            self.apply_attack_damage_to_enemy(damage)
-
-    def apply_attack_damage_to_enemy(self, damage):
-        self.enemy.take_damage(damage)
-        self.controller.update_enemy_info()
-        self.is_enemy_defeated()
-
-    # Player uses an herb
-
-    def use_herb(self):
-        """ Handle herb consumption by the player """
-        if self.model.player.herb_count <= 0:
-            self.controller.no_herbs()
-            return  # Use return here so player can select another option.
-
-        self.model.player.herb_count -= 1
-        if self.model.player.current_hp >= self.model.player.max_hp:
-            self.controller.eat_herb_at_full_hp()
-            self.is_enemy_defeated()
-
-        heal_amt = self.calculate_player_herb_heal_amount()
-        self.model.player.current_hp += heal_amt
-        self.controller.eat_herb(heal_amt)
-        self.is_enemy_defeated()
-
-    def calculate_player_herb_heal_amount(self):
-        """ Calculates the amount of health an herb will restore. """
-        heal_amt = Randomizer.randint(*self.herb_range)
-        return min(heal_amt, self.model.player.max_hp - self.model.player.current_hp)
-
+    
     # Player Flees
 
     def is_flee_successful(self):

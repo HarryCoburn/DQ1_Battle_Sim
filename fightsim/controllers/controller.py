@@ -64,15 +64,7 @@ class Controller:
     def initial_update(self):
         self.update_player_info()
         self.battle.fight_over.trace('w', self.end_battle)
-
-    # def start_battle(self, *_):
-    #     print(f"Entering start_battle, enemy is {self.model.enemy}")
-    #     """ Performs the handoff to battle.py for battle control"""
-    #     if self.model.enemy is None:
-    #         pass
-    #     else:
-    #         self.battle.setup_battle()
-
+ 
     def end_battle(self, *_):
         """Cleans up after the battle is done and resets the simulator"""
         self.model.enemy.current_hp = self.model.enemy.max_hp
@@ -112,30 +104,9 @@ class Controller:
 
     def enable_main_frame_text(self):
         self.view.main_frame.txt["state"] = 'normal'
-
-    # def prepare_battle(self):
-    #     self.update_player_info()
-    #     self.switch_battle_frame()
-    #     self.clear_output()
-
-    # def start_battle_interaction(self):
-    #     self.enable_main_frame_text()
-    #     self.model.text(f"""You are fighting the {self.model.enemy.name}!\n""")
-
    
-
-    def player_wins(self):
-        self.model.text(f"""You have defeated the {self.model.enemy.name}!\n""")
-
-    def no_herbs(self):
-        self.model.text(f"You have no herbs!")
-
-    def eat_herb_at_full_hp(self):
-        self.model.text(f"You eat a herb, but your hit points are already at maximum!\n")
-
-    def eat_herb(self, heal_amt):
-        self.model.text(f"""You eat a herb and regain {heal_amt} hit points!\n""")
-
+    
+    
     def fleeing(self, succeed):
         self.model.text(f"You attempt to run away...\n")
         if succeed:

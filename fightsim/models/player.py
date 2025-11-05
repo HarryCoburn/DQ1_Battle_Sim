@@ -43,6 +43,7 @@ class Player:
     sleep_count: int = SLEEP_COUNT
     leveler: _Levelling = _Levelling()
     model: Optional = None  # Placeholder
+    herb_range: tuple = (23, 30)
 
     
     def __post_init__(self):
@@ -207,6 +208,20 @@ class Player:
             self.model.text(f"But the {enemy_name} dodged your attack!\n")
         else:
             self.model.text(f"You hit {enemy_name} for {damage_dealt} points of damage!\n")
+
+    def has_herbs(self):
+        return self.herb_count >=1
+    
+    def use_herb(self):
+        """ Returns the amount healed """
+        self.herb_count -= 1
+        if self.current_hp >= self.max_hp:
+            return 0       
+        herb_hp = Randomizer.randint(*self.herb_range)
+        actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
+        self.current_hp += actual_hp_gained
+        return actual_hp_gained
+
 
 
 def player_factory():

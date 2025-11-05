@@ -56,19 +56,35 @@ class BattleController:
         if self.player.check_sleep():  # If the player is asleep, switch to the enemy's turn.
             self.enemy_turn()
 
-
-
-
     def on_attack_button(self):
         result = self.player.attack(self.enemy)
 
         if result.hit:
             self.battle.enemy.take_damage(result.damage)
-            message = self.battle_presenter.attack_result(result, self.battle.enemy.name)
-            self.view.update_output(None, message)
+            self.battle_presenter.attack_result(result, self.battle.enemy.name)            
             self.view.update_enemy_info(self.enemy)
+            self.is_enemy_defeated()
         else:
             self.enemy_turn()
 
+    def on_herb_button(self):
+        if self.player.has_herbs() is False:
+            self.battle_presenter.no_herbs()
+            return # Player does not lose turn if they try to use an herb when they have none.
+        else:
+            result = self.player.use_herb()
+            if result == 0: # Used herb with full HP, no healing
+                self.battle_presenter.eat_herb_at_full_hp()
+            else:
+                self.battle_presenter.eat_herb(None, result)
+        self.is_enemy_defeated()        
 
-    
+    # Battle Ending and turn Switching
+
+    def is_enemy_defeated(self):
+        """ Checks if the enemy is defeated. Ends fight if true. Starts enemy turn if false. """
+        if self.enemy.is_defeated():
+            self.battle_presenter.player_wins(None, self.enemy.name)
+            self.end_fight()
+        else:
+            self.enemy_turn()

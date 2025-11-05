@@ -33,7 +33,7 @@ class BattleFrame(tk.Frame):
         """Create and layout widgets for battle."""
         self.attack_btn = tk.Button(self, text="Attack", command=self.controller.on_attack_button)
         self.attack_btn.grid(row=0, column=0, padx=5, pady=5)
-        self.herb_btn = tk.Button(self, text="Use Herb", command=self.controller.battle.use_herb)
+        self.herb_btn = tk.Button(self, text="Use Herb", command=self.controller.on_herb_button)
         self.herb_btn.grid(row=1, column=0, padx=5, pady=5)
         self.run_btn = tk.Button(self, text="Run", command=self.controller.battle.player_flees)
         self.run_btn.grid(row=2, column=0, padx=5, pady=5)

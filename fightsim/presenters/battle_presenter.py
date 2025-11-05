@@ -13,8 +13,7 @@ class BattlePresenter:
             message += f"But the {enemy_name} dodged your attack!\n"
         else:
             message += f"You hit {enemy_name} for {result.damage} points of damage!\n"
-
-        return message
+        self.view.update_output(None, message)
     
     def start_fight_msg(self, _, enemy_name):
         self.view.main_frame.txt["state"] = 'normal'
@@ -25,4 +24,19 @@ class BattlePresenter:
     def player_surprised(self, _, enemy_name):
         message = f"""The {enemy_name} surprises you! They attack first!\n"""
         self.view.update_output(None, message)
-        
+
+    def player_wins(self, _, enemy_name):
+        message = f"""You have defeated the {enemy_name}!\n"""
+        self.view.update_output(None, message)
+
+    def no_herbs(self):
+        message = "You have no herbs!\n"
+        self.view.update_output(None, message)
+
+    def eat_herb_at_full_hp(self):
+        message = "You eat a herb, but your hit points are already at maximum!\n"
+        self.view.update_output(None, message)
+
+    def eat_herb(self, _, heal_amt):
+        message = f"""You eat a herb and regain {heal_amt} hit points!\n"""
+        self.view.update_output(None, message)
