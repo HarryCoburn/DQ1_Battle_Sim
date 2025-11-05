@@ -47,3 +47,21 @@ class BattlePresenter:
             self.view.update_output(None, f"You successfully flee!\n")
         else:
             self.view.update_output(None, f"""...but the {enemy_name} blocks you from running away!\n""")
+
+    def no_spell_selected(self, spell):
+        if spell == "Select Spell":
+            self.view.update_output(None, "You must select a valid spell first.\n")
+        else:
+            self.view.update_output(None, "Your level is too low to cast magic.\n")
+
+    def not_enough_mp(self, spell):
+        self.view.update_output(None, f"Player tries to cast {spell}, but doesn't have enough MP!\n")
+
+    def player_spellstopped(self, spell):
+        self.view.update_output(None, f"""Player casts {spell}, but their magic has been sealed!\n""")
+
+    def player_healed_when_full(self, spell):
+        self.view.update_output(None, f"""Player casts {spell}, but their hit points were already at maximum!\n""")
+
+    def player_healed(self, spell, amount):
+        self.view.update_output(None, f"""Player casts {spell}! Player is healed {str(amount)} hit points!\n""")

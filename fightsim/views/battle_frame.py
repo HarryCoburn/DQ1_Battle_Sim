@@ -37,7 +37,7 @@ class BattleFrame(tk.Frame):
         self.herb_btn.grid(row=1, column=0, padx=5, pady=5)
         self.run_btn = tk.Button(self, text="Run", command=self.controller.on_flee_button)
         self.run_btn.grid(row=2, column=0, padx=5, pady=5)
-        self.cast_btn = tk.Button(self, text="Cast", command=self.controller.battle.player_cast_magic)
+        self.cast_btn = tk.Button(self, text="Cast", command=self.controller.on_cast_magic_button)
         self.cast_btn.grid(row=3, column=0, padx=5, pady=5)
 
         self.magic_menu = tk.OptionMenu(self, self.magic_option_var, *self.player_magic)

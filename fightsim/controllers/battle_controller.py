@@ -87,7 +87,30 @@ class BattleController:
         else:
             self.enemy_turn()
 
-   
+    def on_cast_magic_button(self):
+        spell = self.view.battle_frame.magic_option_var.get()    
+
+        # First make sure a spell is selected
+        if spell in ["Select Spell", "No Magic Available"]:
+            self.battle_presenter.no_spell_selected(spell)
+            return
+        
+        result = self.player.cast_magic(spell)
+        if result == "not_enough_mp":
+            self.battle_presenter.not_enough_mp(spell)
+            self.is_enemy_defeated() #player loses turn here
+        if result == "player_spellstopped":
+            self.battle_presenter.player_spellstopped(spell)
+            self.is_enemy_defeated()  #player loses turn here
+        if result == "heal_when_at_max_hp":
+            self.battle_presenter.player_healed_when_full(spell)
+            self.is_enemy_defeated()
+        if spell in ["Heal", "Healmore"]:
+            self.battle_presenter.player_healed(spell, result)
+            self.is_enemy_defeated()
+        
+
+
     
 
     # Battle Ending and Turn Switching

@@ -23,63 +23,11 @@ class BattleEngine:
         self.enemy = self.model.enemy
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
-    
-    # Player Flees
-
-    def is_flee_successful(self):
-        """ Return True if the player flees successfully """
-        enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
-        player_flee_chance = self.model.player.agility * Randomizer.randint(0, 254)
-        enemy_block_chance = self.model.enemy.agility * Randomizer.randint(0, 254) * enemy_run_modifiers[self.model.enemy.run]
-        return player_flee_chance > enemy_block_chance
-
-    def player_flees(self):
-        """Player attempts to flee battle."""
-
-        if self.is_flee_successful():
-            self.controller.fleeing(True)
-            self.end_fight()
-        else:
-            self.controller.fleeing(False)
-            self.enemy_turn()
-
+   
     # Player Magic
 
     def player_cast_magic(self):
         spell = self.controller.get_chosen_magic()
-
-        if spell in ["Select Spell", "No Magic Available"]:
-            self.model.text(
-                "You must select a valid spell first." if spell == "Select Spell" else "Your level is too low to cast magic.")
-            return
-
-        spell_switch = {
-            "Heal": lambda: self.player_heal(False),
-            "Healmore": lambda: self.player_heal(True),
-            "Hurt": lambda: self.player_hurt(False),
-            "Hurtmore": lambda: self.player_hurt(True),
-            "Sleep": self.player_casts_sleep,
-            "Stopspell": self.player_casts_stopspell
-        }
-
-        spell_cost = {
-            "Heal": 4,
-            "Healmore": 10,
-            "Hurt": 2,
-            "Hurtmore": 5,
-            "Sleep": 2,
-            "Stopspell": 2
-        }
-
-        cost = spell_cost.get(spell, 0)
-        if self.model.player.current_mp < cost:
-            self.model.text(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
-            self.is_enemy_defeated()  # Player loses turn if they try to cast a spell without enough mp
-
-        self.model.player.current_mp -= cost
-        if self.model.player.is_spellstopped:
-            self.model.text(f"""Player casts {spell}, but their magic has been sealed!\n""")
-            self.is_enemy_defeated()  # Player loses turn if they try to cast a spell while stopspelled.
 
         # Execute the spell function
         spell_function = spell_switch.get(spell, lambda: None)
@@ -87,26 +35,7 @@ class BattleEngine:
         self.controller.update_player_info()
         self.is_enemy_defeated()
 
-    def player_heal(self, more):
-        heal_ranges = {
-            "Heal": [10, 17],
-            "Healmore": [85,100]
-        }
-        spell_name = "Healmore" if more else "Heal"
-        heal_range = heal_ranges[spell_name]
-
-        heal_total = self.calc_heal(heal_range)
-        if heal_total == 0:
-            self.model.text(f"""Player casts {spell_name}, but their hit points were already at maximum!\n""")
-        else:
-            self.model.player.current_hp += heal_total
-            self.model.text(f"""Player casts {spell_name}! Player is healed {str(heal_total)} hit points!\n""")
-
-    def calc_heal(self, heal_range):
-        heal_max = self.model.player.max_hp - self.model.player.current_hp
-        heal_amount = Randomizer.randint(*heal_range)
-        return min(heal_max, heal_amount)
-
+ 
     def player_hurt(self, more):
         """ Handles player casting of Hurt and Hurtmore"""
         hurt_ranges = {

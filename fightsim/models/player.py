@@ -229,7 +229,53 @@ class Player:
         enemy_block_chance = enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
         return player_flee_chance > enemy_block_chance
 
+    def cast_magic(self, spell):
+        spell_switch = {
+            "Heal": lambda: self.player_heal(False),
+            "Healmore": lambda: self.player_heal(True),
+            "Hurt": lambda: self.player_hurt(False),
+            "Hurtmore": lambda: self.player_hurt(True),
+            "Sleep": self.player_casts_sleep,
+            "Stopspell": self.player_casts_stopspell
+        }
 
+        spell_cost = {
+            "Heal": 4,
+            "Healmore": 10,
+            "Hurt": 2,
+            "Hurtmore": 5,
+            "Sleep": 2,
+            "Stopspell": 2
+        }
+
+        cost = spell_cost.get(spell, 0)
+        if self.current_mp < cost:
+            return "not_enough_mp"
+        self.current_mp -= cost # always burn the MP even if spellstopped
+        if self.is_spellstopped:
+            return "player_spellstopped"
+        spell_function = spell_switch.get(spell, lambda: None)
+        spell_function()
+
+    def player_heal(self, more):
+        heal_ranges = {
+            "Heal": [10, 17],
+            "Healmore": [85,100]
+        }
+        spell_name = "Healmore" if more else "Heal"
+
+        heal_range = heal_ranges[spell_name]
+        heal_total = self.calc_heal(heal_range)
+        if heal_total == 0:
+            return "heal_when_at_max_hp"
+        else:
+            self.current_hp += heal_total
+            return heal_total
+
+    def calc_heal(self, heal_range):
+        heal_max = self.max_hp - self.current_hp
+        heal_amount = Randomizer.randint(*heal_range)
+        return min(heal_max, heal_amount)
 
 def player_factory():
     """
