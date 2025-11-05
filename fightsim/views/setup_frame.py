@@ -3,6 +3,7 @@ from fightsim.models.items import weapon_names, armor_names, shield_names
 from fightsim.models.enemy import enemy_names
 
 
+
 class SetupFrame(tk.Frame):
     """
     Frame for fight setup buttons
@@ -13,6 +14,7 @@ class SetupFrame(tk.Frame):
         self.start_fight_button = None
         self.buy_herb_button = None
         self.controller = None
+        self.battle_controller = None
         self.level_spinbox = None
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -27,8 +29,9 @@ class SetupFrame(tk.Frame):
         self.shield_menu = None
         self.enemy_menu = None
 
-    def set_controller(self, controller):
+    def set_controllers(self, controller, battle_controller):
         self.controller = controller
+        self.battle_controller = battle_controller
         self.create_widgets()
         self.set_traces()
 
@@ -81,7 +84,7 @@ class SetupFrame(tk.Frame):
         self.buy_herb_button = tk.Button(self, text="Buy Herb",
                                          command=lambda: self.controller.update_player_attribute("herb"))
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_battle)
+        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.battle_controller.start_battle)
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
 
     def set_traces(self):

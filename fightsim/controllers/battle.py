@@ -42,7 +42,7 @@ class BattleEngine:
 
     def start_fight(self):
         """Starts the battle loop"""
-        self.controller.start_battle_interaction()
+        # self.controller.start_battle_interaction()
         surprise_check = self.does_enemy_surprise()
         self.first_turn(surprise_check)
 
@@ -103,6 +103,7 @@ class BattleEngine:
     def player_attack(self, *_):
         """ Orchestrates what happens when the player clicks the attack button on their turn. """
         """ REFACTORED """
+        print(f"Player is {self.player} and enemy is {self.enemy}") 
         crit = self.check_for_player_critical_hit()
         dodge = self.check_for_enemy_dodge()
         damage = self.calculate_player_attack_damage(crit)

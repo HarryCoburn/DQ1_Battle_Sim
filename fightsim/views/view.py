@@ -81,7 +81,7 @@ class View(tk.Tk):
         self.controller = controller
         self.main_frame.set_controller(controller)
         self.battle_frame.set_controller(battle_controller)
-        self.setup_frame.set_controller(controller)
+        self.setup_frame.set_controllers(controller, battle_controller)
         # Initialize and display frames
         self.show_frame(self.setup_frame)
 

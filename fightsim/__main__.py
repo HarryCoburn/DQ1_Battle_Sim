@@ -26,14 +26,14 @@ def create_controller(model, view, event_manager):
 def create_battle_controller(model, view):
     return BattleController(model, view)
 
-def create_battle_presenter():
-    return BattlePresenter()
+# def create_battle_presenter():
+#     return BattlePresenter()
 
 def main(event_manager_factory=create_event_manager,
          view_factory=create_view,
          model_factory=create_model,
          controller_factory=create_controller,
-         battle_presenter_factory=create_battle_presenter,
+        #  battle_presenter_factory=create_battle_presenter,
          battle_controller_factory=create_battle_controller):
     """ Entry Point for the Application """
 
@@ -47,7 +47,7 @@ def main(event_manager_factory=create_event_manager,
         model = model_factory(event_manager)
         controller = controller_factory(model, view, event_manager)
         battle_controller = battle_controller_factory(model, view)
-        battle_presenter = battle_presenter_factory()
+        # battle_presenter = battle_presenter_factory(view)
         
         view.set_controllers(controller, battle_controller)
         controller.initial_update()

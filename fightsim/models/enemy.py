@@ -26,6 +26,7 @@ class Enemy:
         self.current_hp = self.max_hp
         self.enemy_sleep_count = 0  # was e_sleep
         self.enemy_spell_stopped = False  # was e_stop
+        print(f"DEBUG: Enemy {self.name} initialized with current_hp={self.current_hp}")
 
     @classmethod
     def create_dummy(cls):

@@ -65,13 +65,13 @@ class Controller:
         self.update_player_info()
         self.battle.fight_over.trace('w', self.end_battle)
 
-    def start_battle(self, *_):
-        print(f"Entering start_battle, enemy is {self.model.enemy}")
-        """ Performs the handoff to battle.py for battle control"""
-        if self.model.enemy is None:
-            pass
-        else:
-            self.battle.setup_battle()
+    # def start_battle(self, *_):
+    #     print(f"Entering start_battle, enemy is {self.model.enemy}")
+    #     """ Performs the handoff to battle.py for battle control"""
+    #     if self.model.enemy is None:
+    #         pass
+    #     else:
+    #         self.battle.setup_battle()
 
     def end_battle(self, *_):
         """Cleans up after the battle is done and resets the simulator"""
