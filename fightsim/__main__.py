@@ -9,7 +9,6 @@ from fightsim.models.player import player_factory
 from fightsim.models.enemy import enemy_dummy_factory
 from fightsim.common.eventmanager import EventManager
 from fightsim.controllers.battle_controller import BattleController
-from fightsim.presenters.battle_presenter import BattlePresenter
 
 def create_event_manager():
     return EventManager("DQ1 Model Observer")
@@ -25,9 +24,6 @@ def create_controller(model, view, event_manager):
 
 def create_battle_controller(model, view):
     return BattleController(model, view)
-
-# def create_battle_presenter():
-#     return BattlePresenter()
 
 def main(event_manager_factory=create_event_manager,
          view_factory=create_view,

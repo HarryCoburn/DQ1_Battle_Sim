@@ -1,6 +1,5 @@
 """ Controller for the battle system """
 
-from ..models.battle import BattleEngine
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
 from ..common.messages import EnemyActions
@@ -11,7 +10,7 @@ class BattleController:
         self.view = view
         self.player = self.model.player
         self.enemy = self.model.enemy
-        self.battle = BattleEngine(self)
+        
         self.battle_presenter = BattlePresenter(view)
 
     # Battle Setup
