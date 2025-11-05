@@ -22,17 +22,7 @@ class BattleEngine:
     def end_fight(self):
         """Triggers the flag that tells the controller battle is over"""
         self.fight_over.set(True)
-    
-    def enemy_casts_sleep(self):
-        """Enemy attempts to cast sleep"""
-        spell_name = "Sleep"
-        if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
-        else:
-            self.model.player.is_asleep = True
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}. You fall asleep!!""")
-        self.player_turn()
-
+        
     def enemy_casts_stopspell(self):
         """ Enemy attempts to cast stopspell. 50% chance of failure"""
         spell_name = "Stopspell"

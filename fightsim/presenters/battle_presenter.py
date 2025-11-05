@@ -122,6 +122,14 @@ class BattlePresenter:
             spell_name = "Hurt"
         if spell == EnemyActions.HURTMORE:
             spell_name = "Hurtmore"
+        if spell == EnemyActions.HEAL:
+            spell_name = "Heal"
+        if spell == EnemyActions.HEALMORE:
+            spell_name = "Healmore"
+        if spell == EnemyActions.SLEEP:
+            spell_name = "Sleep"
+        if spell == EnemyActions.STOPSPELL:
+            spell_name = "Stopspell"
         self.view.update_output(f"""The {enemy_name} casts {spell_name}, but their spell has been blocked!""")
 
     def enemy_casts_hurt(self, enemy_name, result, player_name):
@@ -150,3 +158,6 @@ class BattlePresenter:
         if result[0] == EnemyActions.HEALMORE:
             spell_name = "Healmore"
         self.view.update_output(f"""The {enemy_name} casts {spell_name}! {enemy_name} is healed {heal_amt} hit points!""")
+
+    def enemy_casts_sleep(self, enemy_name):
+        self.view.update_output(f"""The {enemy_name} casts Sleep. You fall asleep!!""")

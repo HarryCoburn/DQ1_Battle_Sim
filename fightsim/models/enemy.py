@@ -37,12 +37,12 @@ class Enemy:
 
     def perform_enemy_action(self, player):
         action_methods = {
-            EnemyActions.ATTACK: self.attack(player),
+            EnemyActions.ATTACK: lambda: self.attack(player),
             EnemyActions.HURT: lambda: self.casts_hurt(False, player),
             EnemyActions.HURTMORE: lambda: self.casts_hurt(True, player),
             EnemyActions.HEAL: lambda: self.casts_heal(False),
             EnemyActions.HEALMORE: lambda: self.casts_heal(True),
-            EnemyActions.SLEEP: self.enemy_casts_sleep,
+            EnemyActions.SLEEP: lambda: self.casts_sleep(player),
             EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
             EnemyActions.FIRE: lambda: self.breathes_fire(False, player),
             EnemyActions.STRONGFIRE: lambda: self.breathes_fire(True, player)
@@ -57,7 +57,7 @@ class Enemy:
         """ Handles unknown enemy actions """
         raise NotImplementedError("Enemy tried to attack with something not programmed yet!!")
 
-    def choose_enemy_action(self, player): # TODO, special choices here
+    def choose_enemy_action(self, player): 
         choice = None
         for item in self.pattern:
             chance = item["weight"]
@@ -69,10 +69,10 @@ class Enemy:
                 if action in [EnemyActions.HEAL, EnemyActions.HEALMORE] and self.trigger_healing(): # Won't always heal
                     choice = action
                     break
-                if action == EnemyActions.SLEEP and not self.model.player.is_asleep:
+                if action == EnemyActions.SLEEP and not player.is_asleep: # Don't cast sleep if player is asleep. Smart monsters.
                     choice = action
                     break
-                if action == EnemyActions.STOPSPELL and not self.model.player.is_spellstopped:
+                if action == EnemyActions.STOPSPELL and not player.is_spellstopped: # Don't cast spellstop if player is stopped. Smart monsters.
                     choice = action
                     break
         return choice or EnemyActions.ATTACK
@@ -154,6 +154,12 @@ class Enemy:
 
     def set_model(self, model):
         self.model = model  # Method to inject the model dependency
+
+    def casts_sleep(self, player):
+        # Sleep always hits player
+        player.is_asleep = True
+        return "player_now_asleep"
+
 
     def reset_battle_state(self):
         """Resets the enemy's mutable state back to default for a new battle."""
