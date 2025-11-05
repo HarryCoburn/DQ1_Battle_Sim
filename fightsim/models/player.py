@@ -295,7 +295,7 @@ class Player:
 
     def player_casts_stopspell(self, enemy):
         enemy_stop_resistance = enemy.stopspell_resist
-        if enemy.enemy.spell_stopped:
+        if enemy.enemy_spell_stopped:
             return "enemy_already_spellstopped"
         if self.resist(enemy_stop_resistance):
             return "enemy_resists_spellstop"

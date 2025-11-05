@@ -31,7 +31,7 @@ class BattleController:
         # self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
         self.player = self.model.player
         self.enemy = self.model.enemy
-        self.battle_presenter.start_fight_msg(None, self.model.enemy.name)
+        self.battle_presenter.start_fight_msg(None, self.enemy.name) #test name here
         self.start_fight()
 
     def start_fight(self):
@@ -66,8 +66,8 @@ class BattleController:
         result = self.player.attack(self.enemy)
 
         if result.hit:
-            self.battle.enemy.take_damage(result.damage)
-            self.battle_presenter.attack_result(result, self.battle.enemy.name)            
+            self.enemy.take_damage(result.damage)
+            self.battle_presenter.attack_result(result, self.enemy.name)            
             self.view.update_enemy_info(self.enemy)
             self.is_enemy_defeated()
         else:
