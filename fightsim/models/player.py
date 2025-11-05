@@ -221,6 +221,13 @@ class Player:
         actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
         self.current_hp += actual_hp_gained
         return actual_hp_gained
+    
+    def is_flee_successful(self, enemy_agility, mod_select):
+        """ Return True if the player flees successfully """
+        enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
+        player_flee_chance = self.agility * Randomizer.randint(0, 254)
+        enemy_block_chance = enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
+        return player_flee_chance > enemy_block_chance
 
 
 

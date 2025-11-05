@@ -107,9 +107,4 @@ class Controller:
    
     
     
-    def fleeing(self, succeed):
-        self.model.text(f"You attempt to run away...\n")
-        if succeed:
-            self.model.text(f"You successfully flee!\n")
-        else:
-            self.model.text(f"""...but the {self.model.enemy.name} blocks you from running away!\n""")
+    

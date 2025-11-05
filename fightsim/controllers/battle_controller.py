@@ -77,9 +77,20 @@ class BattleController:
                 self.battle_presenter.eat_herb_at_full_hp()
             else:
                 self.battle_presenter.eat_herb(None, result)
-        self.is_enemy_defeated()        
+        self.is_enemy_defeated()
 
-    # Battle Ending and turn Switching
+    def on_flee_button(self):
+        result = self.player.is_flee_successful(self.enemy.agility, self.enemy.run)
+        self.battle_presenter.fleeing(result, self.enemy.name)
+        if result is True:            
+            self.end_fight()
+        else:
+            self.enemy_turn()
+
+   
+    
+
+    # Battle Ending and Turn Switching
 
     def is_enemy_defeated(self):
         """ Checks if the enemy is defeated. Ends fight if true. Starts enemy turn if false. """

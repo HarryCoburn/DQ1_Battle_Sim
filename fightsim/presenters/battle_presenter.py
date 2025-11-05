@@ -40,3 +40,10 @@ class BattlePresenter:
     def eat_herb(self, _, heal_amt):
         message = f"""You eat a herb and regain {heal_amt} hit points!\n"""
         self.view.update_output(None, message)
+
+    def fleeing(self, succeed, enemy_name):
+        self.view.update_output(None, f"You attempt to run away...\n")
+        if succeed:
+            self.view.update_output(None, f"You successfully flee!\n")
+        else:
+            self.view.update_output(None, f"""...but the {enemy_name} blocks you from running away!\n""")
