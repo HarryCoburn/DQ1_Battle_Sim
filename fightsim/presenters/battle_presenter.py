@@ -89,3 +89,10 @@ class BattlePresenter:
 
     def enemy_now_spell_stopped(self, enemy_name):
         self.view.update_output(None, f"""Player casts Stopspell! The {enemy_name}'s magic is now blocked!!\n""")
+    
+    def player_is_sleeping(self):
+        self.view.update_output(None, "You're still asleep...'\n")
+
+    def player_woke_up(self):
+        self.view.update_output(None, "You wake up!\n")
+

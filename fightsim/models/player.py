@@ -13,6 +13,7 @@ from ..common.randomizer import Randomizer
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
 
+
 @dataclass
 class AttackResult:
     crit: bool
@@ -31,9 +32,13 @@ class Player:
     max_hp: int = 15
     current_mp: int = 0
     max_mp: int = 0
-    weapon: Item = field(default_factory=lambda: items[ItemType.WEAPON.value]["Unarmed"])
+    weapon: Item = field(
+        default_factory=lambda: items[ItemType.WEAPON.value]["Unarmed"]
+    )
     armor: Item = field(default_factory=lambda: items[ItemType.ARMOR.value]["Naked"])
-    shield: Item = field(default_factory=lambda: items[ItemType.SHIELD.value]["No Shield"])
+    shield: Item = field(
+        default_factory=lambda: items[ItemType.SHIELD.value]["No Shield"]
+    )
     player_magic: List[str] = field(default_factory=list)
     herb_count: int = 0
     reduce_hurt_damage: bool = False
@@ -45,7 +50,6 @@ class Player:
     model: Optional = None  # Placeholder
     herb_range: tuple = (23, 30)
 
-    
     def __post_init__(self):
         self.player_magic = []
         if not 1 <= self.level <= 30:
@@ -85,7 +89,9 @@ class Player:
 
     def recalculate_stats(self):
 
-        self.strength, self.agility, self.max_hp, self.max_hp = self.leveler.adjust_stats(self.level, self.name)
+        self.strength, self.agility, self.max_hp, self.max_hp = (
+            self.leveler.adjust_stats(self.level, self.name)
+        )
         self.current_hp = self.max_hp
         self.current_mp = self.max_mp
         self.build_p_magic_list()
@@ -129,24 +135,22 @@ class Player:
         Sets a new shield on the player. Keeps the same shield if it is not found.
         """
         self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
-        
+
     def calculate_attack_damage(self, critical_hit, enemy_agility):
         if critical_hit:
             low, high = self.crit_range(self.attack_num())
         else:
-            low, high = self.damage_range(self.attack_num(), enemy_agility)    
+            low, high = self.damage_range(self.attack_num(), enemy_agility)
         return Randomizer.randint(low, high)
-    # 
+
+    #
     def attack(self, enemy):
         crit = self.did_crit() and enemy.void_critical_hit is False
         dodge = enemy.did_dodge()
         damage = self.calculate_attack_damage(crit, enemy.agility)
 
         return AttackResult(
-            crit = crit,
-            dodge = dodge,
-            damage = damage,
-            hit = not (dodge and not crit)
+            crit=crit, dodge=dodge, damage=damage, hit=not (dodge and not crit)
         )
 
     @staticmethod
@@ -162,8 +166,10 @@ class Player:
         Returns a possible damage range for a normal attack as a tuple in the form (min, max)
         min must be at least 0, max can be no lower than 1
         """
-        return max(((attack - agility // 2) // 4), 0), max(((attack - agility // 2) // 2), 1)
-    
+        return max(((attack - agility // 2) // 4), 0), max(
+            ((attack - agility // 2) // 2), 1
+        )
+
     @staticmethod
     def crit_range(attack):
         """
@@ -178,9 +184,9 @@ class Player:
         """
         return self.current_hp <= 0
 
-    def check_sleep(self):
+    def handle_sleep(self):
         """
-        Returns if the player is asleep or not.
+        Returns the status of the player's sleep
         """
         if not self.is_asleep:
             return False
@@ -189,44 +195,30 @@ class Player:
             if random.randint(1, 2) == 2 or self.sleep_count <= 0:
                 self.is_asleep = False
                 self.sleep_count = 6
-                self.model.text(f"You wake up!\n")
-                return False
+                return "awake"
             else:
-                self.model.text(f"You're still asleep...'\n")
                 return True
 
-    def attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
-        """
-        Display attack messages for the player.
-        """
-        if did_crit:
-            self.model.text(f"\nYou attack with an excellent attack!!\n")
-        else:
-            self.model.text(f"\nYou attack!\n")
-
-        if did_dodge and not did_crit:
-            self.model.text(f"But the {enemy_name} dodged your attack!\n")
-        else:
-            self.model.text(f"You hit {enemy_name} for {damage_dealt} points of damage!\n")
-
     def has_herbs(self):
-        return self.herb_count >=1
-    
+        return self.herb_count >= 1
+
     def use_herb(self):
-        """ Returns the amount healed """
+        """Returns the amount healed"""
         self.herb_count -= 1
         if self.current_hp >= self.max_hp:
-            return 0       
+            return 0
         herb_hp = Randomizer.randint(*self.herb_range)
         actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
         self.current_hp += actual_hp_gained
         return actual_hp_gained
-    
+
     def is_flee_successful(self, enemy_agility, mod_select):
-        """ Return True if the player flees successfully """
+        """Return True if the player flees successfully"""
         enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
         player_flee_chance = self.agility * Randomizer.randint(0, 254)
-        enemy_block_chance = enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
+        enemy_block_chance = (
+            enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
+        )
         return player_flee_chance > enemy_block_chance
 
     def cast_magic(self, spell, enemy):
@@ -236,7 +228,7 @@ class Player:
             "Hurt": lambda: self.player_hurt(False, enemy),
             "Hurtmore": lambda: self.player_hurt(True, enemy),
             "Sleep": self.player_casts_sleep(enemy),
-            "Stopspell": self.player_casts_stopspell(enemy)
+            "Stopspell": self.player_casts_stopspell(enemy),
         }
 
         spell_cost = {
@@ -245,23 +237,20 @@ class Player:
             "Hurt": 2,
             "Hurtmore": 5,
             "Sleep": 2,
-            "Stopspell": 2
+            "Stopspell": 2,
         }
 
         cost = spell_cost.get(spell, 0)
         if self.current_mp < cost:
             return "not_enough_mp"
-        self.current_mp -= cost # always burn the MP even if spellstopped
+        self.current_mp -= cost  # always burn the MP even if spellstopped
         if self.is_spellstopped:
             return "player_spellstopped"
         spell_function = spell_switch.get(spell, lambda: None)
         spell_function()
 
     def player_heal(self, more):
-        heal_ranges = {
-            "Heal": [10, 17],
-            "Healmore": [85,100]
-        }
+        heal_ranges = {"Heal": [10, 17], "Healmore": [85, 100]}
         spell_name = "Healmore" if more else "Heal"
 
         heal_range = heal_ranges[spell_name]
@@ -276,12 +265,9 @@ class Player:
         heal_max = self.max_hp - self.current_hp
         heal_amount = Randomizer.randint(*heal_range)
         return min(heal_max, heal_amount)
-    
+
     def player_hurt(self, more, enemy):
-        hurt_ranges = {
-            "Hurt": [5, 12],
-            "Hurtmore": [58, 65]
-        }
+        hurt_ranges = {"Hurt": [5, 12], "Hurtmore": [58, 65]}
         spell_name = "Hurtmore" if more else "Hurt"
         hurt_range = hurt_ranges[spell_name]
         enemy_hurt_resistance = self.model.enemy.hurt_resist
@@ -294,18 +280,18 @@ class Player:
 
     def calc_hurt(self, hurt_range):
         return Randomizer.randint(*hurt_range)
-    
+
     def resist(self, chance):
-        return Randomizer.randint(1, 16) <= chance        
+        return Randomizer.randint(1, 16) <= chance
 
     def player_casts_sleep(self, enemy):
         enemy_sleep_resistance = enemy.sleep_resist
-        if enemy.enemy_sleep_count > 0: # enemy already asleep
+        if enemy.enemy_sleep_count > 0:  # enemy already asleep
             return "enemy_already_asleep"
-        if self.resist(enemy_sleep_resistance): # enemy resists sleep
+        if self.resist(enemy_sleep_resistance):  # enemy resists sleep
             return "enemy_resists_sleep"
         enemy.enemy_sleep_count = 2
-        return "success" # dummy string
+        return "success"  # dummy string
 
     def player_casts_stopspell(self, enemy):
         enemy_stop_resistance = enemy.stopspell_resist
@@ -314,7 +300,7 @@ class Player:
         if self.resist(enemy_stop_resistance):
             return "enemy_resists_spellstop"
         enemy.enemy_spell_stopped = True
-        return "success" # dummy string
+        return "success"  # dummy string
 
 
 def player_factory():
