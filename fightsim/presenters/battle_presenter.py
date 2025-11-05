@@ -161,3 +161,9 @@ class BattlePresenter:
 
     def enemy_casts_sleep(self, enemy_name):
         self.view.update_output(f"""The {enemy_name} casts Sleep. You fall asleep!!""")
+
+    def enemy_casts_stopspell(self, enemy_name, result):
+        if result is False:
+            self.view.update_output(f"""The {enemy_name} casts Spellstop, but the spell fails!""")
+        else:
+            self.view.update_output(f"""The {enemy_name} casts Spellstop. Your magic has been blocked!""")

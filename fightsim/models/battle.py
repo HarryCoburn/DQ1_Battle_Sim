@@ -23,14 +23,4 @@ class BattleEngine:
         """Triggers the flag that tells the controller battle is over"""
         self.fight_over.set(True)
         
-    def enemy_casts_stopspell(self):
-        """ Enemy attempts to cast stopspell. 50% chance of failure"""
-        spell_name = "Stopspell"
-        if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!")
-        elif random.randint(1, 2) == 2:
-            self.model.player.is_spellstopped = True
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! Your magic has been blocked!""")
-        else:
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but the spell fails!""")
-        self.player_turn()
+   

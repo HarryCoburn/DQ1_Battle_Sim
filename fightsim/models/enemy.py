@@ -43,7 +43,7 @@ class Enemy:
             EnemyActions.HEAL: lambda: self.casts_heal(False),
             EnemyActions.HEALMORE: lambda: self.casts_heal(True),
             EnemyActions.SLEEP: lambda: self.casts_sleep(player),
-            EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
+            EnemyActions.STOPSPELL: lambda: self.casts_stopspell(player),
             EnemyActions.FIRE: lambda: self.breathes_fire(False, player),
             EnemyActions.STRONGFIRE: lambda: self.breathes_fire(True, player)
         }
@@ -160,6 +160,13 @@ class Enemy:
         player.is_asleep = True
         return "player_now_asleep"
 
+    def casts_stopspell(self, player):
+        # 50% chance
+        if random.randint(1,2) == 2:
+            player.is_spellstopped = True
+            return True
+        else:
+            return False
 
     def reset_battle_state(self):
         """Resets the enemy's mutable state back to default for a new battle."""

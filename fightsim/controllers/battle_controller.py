@@ -187,6 +187,11 @@ class BattleController:
             else:
                 self.battle_presenter.enemy_casts_sleep(self.enemy.name)
 
+        if result[0] == EnemyActions.STOPSPELL:
+            if self.enemy.enemy_spell_stopped:
+                self.battle_presenter.enemy_casts_while_spellstopped(self.enemy.name, result[0])
+            else:
+                self.battle_presenter.enemy_casts_stopspell(self.enemy.name, result[1])
 
 
         self.is_player_defeated()    
