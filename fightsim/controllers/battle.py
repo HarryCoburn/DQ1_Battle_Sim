@@ -25,8 +25,8 @@ class BattleEngine:
         self.controller = main_controller
         self.model = self.controller.model
         self.view = self.controller.view
-        self.player = None
-        self.enemy = None
+        self.player = self.model.player
+        self.enemy = self.model.enemy
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
         self.herb_range = (23, 30)

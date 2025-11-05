@@ -7,8 +7,8 @@ class BattleController:
     def __init__(self, model, view):
         self.model = model
         self.view = view
-        self.player = None
-        self.enemy = None
+        self.player = self.model.player
+        self.enemy = self.model.enemy
         self.battle = BattleEngine(self)
         self.battle_presenter = BattlePresenter(view)
 
@@ -20,6 +20,9 @@ class BattleController:
             self.setup_battle()
 
     def setup_battle(self):
+        self.view.update_player_info(self.model.player)
+        self.view.show_frame(self.view.battle_frame)
+        # self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
         self.player = self.model.player
         self.enemy = self.model.enemy
         self.battle_presenter.start_fight_msg(None, self.model.enemy.name)
@@ -31,5 +34,5 @@ class BattleController:
         if result.hit:
             self.battle.enemy.take_damage(result.damage)
             message = self.battle_presenter.attack_result(result, self.battle.enemy.name)
-            self.view.update_output(message)
+            self.view.update_output(None, message)
             self.view.update_enemy_info(self.battle.enemy)
