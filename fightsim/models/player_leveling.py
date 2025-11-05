@@ -99,7 +99,3 @@ class _Levelling:
             max_hp = self.calculate_slow_progression(name_sum, level_base[2])
             max_mp = self.calculate_slow_progression(name_sum, level_base[3])
         return strength, agility, max_hp, max_mp
-
-        # self.curr_hp = self.max_hp
-        # self.curr_mp = self.max_mp
-        # self.build_p_magic_list()

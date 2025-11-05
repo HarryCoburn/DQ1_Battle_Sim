@@ -2,13 +2,21 @@
 battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 """
 
+from dataclasses import dataclass
 import random
 import tkinter as tk
 from ..common.messages import EnemyActions
 from ..common.randomizer import Randomizer
 
+@dataclass
+class AttackResult:
+    crit: bool
+    dodge: bool
+    damage: bool
+    hit: bool
 
-class Battle:
+
+class BattleEngine:
     """
     Main battle controller
     """
@@ -94,11 +102,19 @@ class Battle:
 
     def player_attack(self, *_):
         """ Orchestrates what happens when the player clicks the attack button on their turn. """
-        player_crit_this_turn = self.check_for_player_critical_hit()
-        enemy_dodge_this_turn = self.check_for_enemy_dodge()
+        """ REFACTORED """
+        crit = self.check_for_player_critical_hit()
+        dodge = self.check_for_enemy_dodge()
+        damage = self.calculate_player_attack_damage(crit)
 
-        damage_dealt = self.calculate_player_attack_damage(player_crit_this_turn)
-        self.process_player_attack_result(player_crit_this_turn, enemy_dodge_this_turn, damage_dealt)
+        return AttackResult(
+            crit = crit,
+            dodge = dodge,
+            damage = damage,
+            hit = not (dodge and not crit)
+        )
+
+        
 
     def process_player_attack_result(self, crit, dodge, damage):
         self.player.attack_msg(crit, dodge, damage, self.enemy.name)

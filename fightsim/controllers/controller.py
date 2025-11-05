@@ -1,7 +1,7 @@
 # controller.py - Core controller for the simulation
 
 from fightsim.common.messages import ObserverMessages
-from .battle import Battle
+from .battle import BattleEngine
 import logging
 from ..common.decorators import handle_errors
 
@@ -18,7 +18,7 @@ class Controller:
         self.model = model
         self.view = view
         self.observer = observer
-        self.battle = Battle(self)
+        self.battle = BattleEngine(self)
 
         self.setup_observers()
         self.initialize_view()

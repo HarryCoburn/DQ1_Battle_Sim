@@ -7,6 +7,7 @@ from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
 from fightsim.controllers.controller import Controller
+from fightsim.controllers.battle_controller import BattleController
 from typing import Optional, Dict, Union, Type
 
 
@@ -75,11 +76,11 @@ class View(tk.Tk):
         self.resizable(width=True, height=True)
         self.main_frame.pack(fill='x', expand=True)
 
-    def set_controller(self, controller):
+    def set_controllers(self, controller, battle_controller):
         """ Attaches the controller to the frames """
         self.controller = controller
         self.main_frame.set_controller(controller)
-        self.battle_frame.set_controller(controller)
+        self.battle_frame.set_controller(battle_controller)
         self.setup_frame.set_controller(controller)
         # Initialize and display frames
         self.show_frame(self.setup_frame)
