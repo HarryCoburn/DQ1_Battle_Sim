@@ -22,3 +22,7 @@ class BattlePresenter:
         self.view.update_output(None, message)
         
 
+    def player_surprised(self, _, enemy_name):
+        message = f"""The {enemy_name} surprises you! They attack first!\n"""
+        self.view.update_output(None, message)
+        

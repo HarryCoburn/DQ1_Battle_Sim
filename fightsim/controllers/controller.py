@@ -1,7 +1,7 @@
 # controller.py - Core controller for the simulation
 
 from fightsim.common.messages import ObserverMessages
-from .battle import BattleEngine
+from ..models.battle import BattleEngine
 import logging
 from ..common.decorators import handle_errors
 
@@ -113,17 +113,16 @@ class Controller:
     def enable_main_frame_text(self):
         self.view.main_frame.txt["state"] = 'normal'
 
-    def prepare_battle(self):
-        self.update_player_info()
-        self.switch_battle_frame()
-        self.clear_output()
+    # def prepare_battle(self):
+    #     self.update_player_info()
+    #     self.switch_battle_frame()
+    #     self.clear_output()
 
-    def start_battle_interaction(self):
-        self.enable_main_frame_text()
-        self.model.text(f"""You are fighting the {self.model.enemy.name}!\n""")
+    # def start_battle_interaction(self):
+    #     self.enable_main_frame_text()
+    #     self.model.text(f"""You are fighting the {self.model.enemy.name}!\n""")
 
-    def player_surprised(self):
-        self.model.text(f"""The {self.model.enemy.name} surprises you! They attack first!\n""")
+   
 
     def player_wins(self):
         self.model.text(f"""You have defeated the {self.model.enemy.name}!\n""")

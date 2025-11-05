@@ -8,12 +8,7 @@ import tkinter as tk
 from ..common.messages import EnemyActions
 from ..common.randomizer import Randomizer
 
-@dataclass
-class AttackResult:
-    crit: bool
-    dodge: bool
-    damage: bool
-    hit: bool
+
 
 
 class BattleEngine:
@@ -23,50 +18,14 @@ class BattleEngine:
 
     def __init__(self, main_controller):
         self.controller = main_controller
-        self.model = self.controller.model
-        self.view = self.controller.view
+        self.model = self.controller.model      
         self.player = self.model.player
         self.enemy = self.model.enemy
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
         self.herb_range = (23, 30)
 
-    # Core Fight Routines
-
-    def setup_battle(self):
-        """Performs setup tasks for the battle prior to start"""
-        self.player = self.model.player
-        self.enemy = self.model.enemy
-        self.controller.prepare_battle()
-        self.start_fight()
-
-    def start_fight(self):
-        """Starts the battle loop"""
-        # self.controller.start_battle_interaction()
-        surprise_check = self.does_enemy_surprise()
-        self.first_turn(surprise_check)
-
-    def first_turn(self, enemy_surprises):
-        """ Determines the first turn. """
-        if enemy_surprises:
-            self.controller.player_surprised()
-            self.enemy_turn()
-        else:
-            self.player_turn()
-
-    def does_enemy_surprise(self):
-        """ Determine if the enemy surprises the player based on agility and randomness. """
-        player_roll = Randomizer.agility_roll(self.player.agility)
-        enemy_roll = Randomizer.agility_roll(self.enemy.agility, surprise_factor=0.25)
-        return player_roll < enemy_roll
-
     # Player Actions
-
-    def player_turn(self):
-        """Runs at the start of player turn. Checks for sleep status and updates it, then waits for user to
-        enter a command."""
-        if self.player.check_sleep():  # If the player is asleep, switch to the enemy's turn.
-            self.enemy_turn()
 
     def is_enemy_defeated(self):
         """ Checks if the enemy is defeated. Ends fight if true. Starts enemy turn if false. """
@@ -76,46 +35,7 @@ class BattleEngine:
         else:
             self.enemy_turn()
 
-    # Player Attack
-
-    def did_player_critical_hit(self):
-        return self.player.did_crit() and self.enemy.void_critical_hit is False
-
-    def check_for_player_critical_hit(self):
-        return self.did_player_critical_hit()
-
-    def check_for_enemy_dodge(self):
-        return self.enemy.did_dodge()
-
-    def calculate_player_critical_hit_damage(self):
-        low, high = self.player.crit_range(self.player.attack_num())
-        return Randomizer.randint(low, high)
-
-    def calculate_player_attack_damage(self, critical_hit):
-        if critical_hit:
-            return self.calculate_player_critical_hit_damage()
-        return self.calculate_player_normal_hit_damage()
-
-    def calculate_player_normal_hit_damage(self):
-        low, high = self.player.damage_range(self.player.attack_num(), self.enemy.agility)
-        return Randomizer.randint(low, high)
-
-    def player_attack(self, *_):
-        """ Orchestrates what happens when the player clicks the attack button on their turn. """
-        """ REFACTORED """
-        print(f"Player is {self.player} and enemy is {self.enemy}") 
-        crit = self.check_for_player_critical_hit()
-        dodge = self.check_for_enemy_dodge()
-        damage = self.calculate_player_attack_damage(crit)
-
-        return AttackResult(
-            crit = crit,
-            dodge = dodge,
-            damage = damage,
-            hit = not (dodge and not crit)
-        )
-
-        
+           
 
     def process_player_attack_result(self, crit, dodge, damage):
         self.player.attack_msg(crit, dodge, damage, self.enemy.name)

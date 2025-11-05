@@ -2,16 +2,24 @@
 Player class
 """
 
+import random
+from typing import List, Optional
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
 from ..common.messages import ObserverMessages
-import math
-import random
-from typing import List, Optional
 from .player_leveling import _Levelling
+from ..common.randomizer import Randomizer
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
+
+@dataclass
+class AttackResult:
+    crit: bool
+    dodge: bool
+    damage: int
+    hit: bool
+
 
 @dataclass
 class Player:
@@ -120,7 +128,26 @@ class Player:
         Sets a new shield on the player. Keeps the same shield if it is not found.
         """
         self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
-    
+        
+    def calculate_attack_damage(self, critical_hit, enemy_agility):
+        if critical_hit:
+            low, high = self.crit_range(self.attack_num())
+        else:
+            low, high = self.damage_range(self.attack_num(), enemy_agility)    
+        return Randomizer.randint(low, high)
+    # 
+    def attack(self, enemy):
+        crit = self.did_crit() and enemy.void_critical_hit is False
+        dodge = enemy.did_dodge()
+        damage = self.calculate_attack_damage(crit, enemy.agility)
+
+        return AttackResult(
+            crit = crit,
+            dodge = dodge,
+            damage = damage,
+            hit = not (dodge and not crit)
+        )
+
     @staticmethod
     def did_crit():
         """
