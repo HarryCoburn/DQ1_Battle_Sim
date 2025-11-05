@@ -52,7 +52,7 @@ class Controller:
             self.model.player.change_name(value)
         elif attribute_type == "herb":
             self.model.buy_herb()
-        self.update_player_info()
+        self.view.update_player_info(self.model.player)        
         self.logger.info(f"Updated {attribute_type} to {value}")
 
 
@@ -62,8 +62,7 @@ class Controller:
         self.logger.info(f"Updated enemy to {value}")
 
     def initial_update(self):
-        self.update_player_info()
-        self.battle.fight_over.trace('w', self.end_battle)   
+        self.view.update_player_info(self.model.player)        
 
     def update(self, property_name, data=None):
         if property_name == ObserverMessages.OUTPUT_CHANGE:
