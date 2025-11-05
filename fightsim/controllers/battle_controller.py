@@ -218,4 +218,11 @@ class BattleController:
         
 
     def end_fight(self):
-        pass
+        self.enemy.current_hp = self.enemy.max_hp
+        self.player.current_hp = self.player.max_hp
+        self.player.current_mp = self.player.max_mp
+        self.player.herb_count = 0
+        self.view.main_frame.txt["state"] = "disabled"
+        self.view.update_player_info(self.player)
+        self.view.update_enemy_info(self.enemy)
+        self.view.show_frame(self.view.setup_frame)

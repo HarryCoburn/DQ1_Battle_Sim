@@ -63,18 +63,7 @@ class Controller:
 
     def initial_update(self):
         self.update_player_info()
-        self.battle.fight_over.trace('w', self.end_battle)
- 
-    def end_battle(self, *_):
-        """Cleans up after the battle is done and resets the simulator"""
-        self.model.enemy.current_hp = self.model.enemy.max_hp
-        self.model.player.current_hp = self.model.player.max_hp
-        self.model.player.current_mp = self.model.player.max_mp
-        self.model.player.herb_count = 0
-        self.view.main_frame.txt["state"] = "disabled"
-        self.update_enemy_info()
-        self.update_player_info()
-        self.view.show_frame(self.view.setup_frame)
+        self.battle.fight_over.trace('w', self.end_battle)   
 
     def update(self, property_name, data=None):
         if property_name == ObserverMessages.OUTPUT_CHANGE:
@@ -84,13 +73,13 @@ class Controller:
         if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
             self.view.battle_frame.update_player_magic_menu()
 
-    def update_player_info(self):
-        """Updates the view with current player information from the model."""
-        self.view.update_player_info(self.model.player)
-        self.logger.info("Player info updated in the view.")
+    # def update_player_info(self):
+    #     """Updates the view with current player information from the model."""
+    #     self.view.update_player_info(self.model.player)
+    #     self.logger.info("Player info updated in the view.")
 
-    def update_enemy_info(self):
-        self.view.update_enemy_info(self.model.enemy)
+    # def update_enemy_info(self):
+    #     self.view.update_enemy_info(self.model.enemy)
 
     def get_chosen_magic(self):
         return self.view.battle_frame.magic_option_var.get()
