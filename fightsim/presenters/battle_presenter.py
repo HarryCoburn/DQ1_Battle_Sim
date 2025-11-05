@@ -96,3 +96,14 @@ class BattlePresenter:
     def player_woke_up(self):
         self.view.update_output(None, "You wake up!\n")
 
+    def enemy_is_sleeping(self, enemy_name):
+        self.view.update_output(None, f"The {enemy_name} is asleep...")
+    
+    def enemy_is_still_sleeping(self, enemy_name):
+        self.view.update_output(None, f"The {enemy_name} is still asleep...")
+    
+    def enemy_woke_up(self, enemy_name):
+        self.view.update_output(None, f"The {enemy_name} woke up!")
+
+    def enemy_flees(self, enemy_name):
+        self.view.update_output(None, f"The {enemy_name} flees the battlefield!")

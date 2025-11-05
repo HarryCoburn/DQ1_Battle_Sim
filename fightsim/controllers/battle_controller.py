@@ -1,4 +1,5 @@
 """ Controller for the battle system """
+import random
 from ..models.battle import BattleEngine
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
@@ -140,7 +141,24 @@ class BattleController:
         
         self.is_enemy_defeated()
 
+    # Enemy Turn and Actions
 
+    def enemy_turn(self):
+        # First, handle if the enemy's sleep status
+        if self.enemy.enemy_sleep_count > 0:
+            sleep_status = self.enemy.is_asleep()
+            if sleep_status is True:
+                if self.enemy.enemy_sleep_count == 2:
+                    self.battle_presenter.enemy_is_sleeping(self.enemy.name)
+                else:
+                    self.battle_presenter.enemy_is_still_sleeping(self.enemy.name)
+                self.player_turn()
+            elif sleep_status == "enemy_woke_up":
+                self.battle_presenter.enemy_woke_up(self.enemy.name)
+        # Now see if the enemy flees
+        if self.enemy.does_flee(self.player.strength):
+            self.battle_presenter.enemy_flees(self.enemy.name)
+            self.end_fight() #    self.fight_over.set(True)
         
         
 

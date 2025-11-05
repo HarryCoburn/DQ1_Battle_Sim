@@ -18,31 +18,8 @@ class BattleEngine:
         self.enemy = self.model.enemy
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
-   
-    # Enemy Actions
-
-    def handle_enemy_sleep(self):
-        if self.enemy.is_asleep():
-            self.player_turn()
-        elif self.should_enemy_flee():
-            self.enemy_flees()
-        else:
-            self.perform_enemy_action()
-
-    def should_enemy_flee(self):
-        return self.model.player.strength > self.model.enemy.strength * 2 and random.randint(1, 4) == 4
 
     def enemy_turn(self):
-        """ Handles the Enemy's turn """
-
-        if self.model.enemy.enemy_sleep_count > 0:
-            self.handle_enemy_sleep()
-            # Enemy is asleep. Handle sleep.
-
-        elif self.should_enemy_flee():
-            # Handle fleeing
-            self.enemy_flees()
-        else:
             # Do a combat action
             self.perform_enemy_action()
 
@@ -68,10 +45,7 @@ class BattleEngine:
         """ Handles unknown enemy actions """
         raise NotImplementedError("Enemy tried to attack with something not programmed yet!!")
 
-    def enemy_flees(self):
-        """ Enemy runs away. End the combat"""
-        self.model.text(f"The {self.enemy.name} flees from your superior strength!")
-        self.fight_over.set(True)
+
 
     def enemy_choose_attack(self):
         atk_list = self.model.enemy.pattern

@@ -1,3 +1,4 @@
+import random
 from dataclasses import dataclass, field
 from typing import List, Optional
 from .enemy_data import enemy_dict
@@ -64,30 +65,22 @@ class Enemy:
         Returns True if the enemy remains asleep, otherwise False.
         """
         if self.enemy_sleep_count == 2:
-            self.enemy_sleep_count -= 1
-            self.model.text(f"The {self.name} is asleep")
-            return True
+            self.enemy_sleep_count -= 1            
+            return True # Enemy always sleeps for one round
         else:
-            return self.update_sleep_status()
+            return self.check_for_wake_up()
 
-    def update_sleep_status(self):
+    def check_for_wake_up(self):
         """ Determines if the enemy wakes up or not """
         if Randomizer.randint(1, 3) == 3:
-            return self.wake_up()
+            self.enemy_sleep_count = 0
+            return "enemy_woke_up"
         else:
-            return self.remain_asleep()
+            return True
 
-    def wake_up(self):
-        """ Wakes up the enemy """
-        self.model.text(f"The {self.name} woke up!")
-        self.enemy_sleep_count = 0
-        return False
-
-    def remain_asleep(self):
-        """ The enemy remains asleep """
-        self.model.text(f"The {self.name} is still asleep...")
-        return True
-
+    def does_flee(self, player_strength):
+        return player_strength > self.strength * 2 and random.randint(1,4) == 4
+    
     def trigger_healing(self):
         return self.current_hp / self.max_hp < 0.25
 
