@@ -37,7 +37,7 @@ class Enemy:
 
     def perform_enemy_action(self, player):
         action_methods = {
-            EnemyActions.ATTACK: self.enemy_attack,
+            EnemyActions.ATTACK: self.attack(player),
             EnemyActions.HURT: lambda: self.enemy_casts_hurt(False),
             EnemyActions.HURTMORE: lambda: self.enemy_casts_hurt(True),
             EnemyActions.HEAL: lambda: self.enemy_casts_heal(False),
@@ -50,13 +50,14 @@ class Enemy:
 
         chosen_action = self.choose_enemy_action(player)
         action = action_methods.get(chosen_action, self.handle_unknown_action)
-        action()
+        result = action()
+        return (chosen_action, result)
 
     def handle_unknown_action(self):
         """ Handles unknown enemy actions """
         raise NotImplementedError("Enemy tried to attack with something not programmed yet!!")
 
-    def choose_enemy_action(self, player):
+    def choose_enemy_action(self, player): # TODO, special choices here
         choice = None
         for item in self.pattern:
             chance = item["weight"]
@@ -75,6 +76,23 @@ class Enemy:
                     choice = action
                     break
         return choice or EnemyActions.ATTACK
+    
+    def attack(self, player):
+        """Enemy attacks normally"""
+        enemy_damage_dealt = self.attack_damage_dealt(player.defense())
+        player.current_hp -= enemy_damage_dealt
+        return enemy_damage_dealt
+
+
+    
+    def attack_damage_dealt(self, hero_defense):
+        """ Enemy makes a successful attack. Returns a damage amount. """
+        if hero_defense > self.strength:
+            damage_range = self.weak_damage_range(self.strength)
+        else:
+            damage_range = self.normal_damage_range(self.strength, hero_defense)
+
+        return Randomizer.randint(*damage_range)
     
     def is_spell_stopped(self, spell_name):
         if self.enemy_spell_stopped:
@@ -125,14 +143,7 @@ class Enemy:
     def trigger_healing(self):
         return self.current_hp / self.max_hp < 0.25
 
-    def attack(self, hero_defense):
-        """ Enemy makes a successful attack. Returns a damage amount. """
-        if hero_defense > self.strength:
-            damage_range = self.weak_damage_range(self.strength)
-        else:
-            damage_range = self.normal_damage_range(self.strength, hero_defense)
-
-        return Randomizer.randint(*damage_range)
+    
 
     def take_damage(self, damage):
         self.current_hp -= damage

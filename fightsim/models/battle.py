@@ -19,10 +19,6 @@ class BattleEngine:
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
 
-    def enemy_turn(self):
-            # Do a combat action
-            self.perform_enemy_action()
-
     def end_fight(self):
         """Triggers the flag that tells the controller battle is over"""
         self.fight_over.set(True)
@@ -35,15 +31,7 @@ class BattleEngine:
             self.player_turn()
 
   
-    def enemy_attack(self):
-        """Enemy attacks normally"""
-        self.model.text(f"\nEnemy turn\n")
-        enemy_damage_dealt = self.enemy.attack(self.player.defense())
-        self.model.player.current_hp -= enemy_damage_dealt
-        self.controller.update_player_info()
-
-        self.model.text(f"{self.model.enemy.name} attacks! {self.model.enemy.name} hits you for {enemy_damage_dealt} damage.\n")
-        self.is_player_defeated()
+    
 
     def enemy_casts_hurt(self, more):
         """ Enemy handling of hurt and hurtmore"""

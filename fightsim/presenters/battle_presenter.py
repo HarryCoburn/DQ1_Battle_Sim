@@ -107,3 +107,6 @@ class BattlePresenter:
 
     def enemy_flees(self, enemy_name):
         self.view.update_output(None, f"The {enemy_name} flees the battlefield!")
+    
+    def enemy_attacks(self, enemy_name, amount):
+        self.view.update_output(None, f"{enemy_name} attacks! {enemy_name} hits you for {amount} damage.\n")

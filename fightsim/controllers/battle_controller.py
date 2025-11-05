@@ -3,6 +3,7 @@
 from ..models.battle import BattleEngine
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
+from ..common.messages import EnemyActions
 
 class BattleController:
     def __init__(self, model, view):
@@ -159,16 +160,9 @@ class BattleController:
             self.battle_presenter.enemy_flees(self.enemy.name)
             self.end_fight() #    self.fight_over.set(True)
         result = self.enemy.perform_enemy_action(self.player)
-
-    def perform_enemy_action(self):
-        
-
-        chosen_action = self.enemy_choose_action()
-
-        
-
-
-    
+        if result[0] == EnemyActions.ATTACK:
+            self.battle_presenter.enemy_attacks(self.enemy.name, str(result[1]))
+            self.is_player_defeated() # TODO: Update player info in this function
 
     # Battle Ending and Turn Switching
 
@@ -179,3 +173,6 @@ class BattleController:
             self.end_fight()
         else:
             self.enemy_turn()
+
+    def is_player_defeated(self):
+        
