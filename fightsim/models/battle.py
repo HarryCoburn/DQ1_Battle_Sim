@@ -23,43 +23,6 @@ class BattleEngine:
         """Triggers the flag that tells the controller battle is over"""
         self.fight_over.set(True)
 
-    def is_player_defeated(self):
-        if self.model.player.is_defeated():
-            self.model.text(f"You have been defeated by the {self.enemy.name}!\n")
-            self.end_fight()
-        else:
-            self.player_turn()
-
-  
-    
-
-    def enemy_casts_hurt(self, more):
-        """ Enemy handling of hurt and hurtmore"""
-        spell_name = "Hurtmore" if more else "Hurt"
-        if self.enemy.is_spell_stopped(spell_name):
-            self.player_turn()
-
-        hurt_high = [3, 10]
-        hurt_low = [2, 6]
-        hurtmore_high = [30, 45]
-        hurtmore_low = [20, 30]
-
-        mag_def = self.model.player.reduce_hurt_damage
-        hurt_dmg = 0
-
-        if mag_def and more:
-            hurt_dmg = random.randint(hurtmore_low[0], hurtmore_low[1])
-        elif mag_def and not more:
-            hurt_dmg = random.randint(hurt_low[0], hurt_low[1])
-        elif more:
-            hurt_dmg = random.randint(hurtmore_high[0], hurtmore_high[1])
-        else:
-            hurt_dmg = random.randint(hurt_high[0], hurt_high[1])
-
-        self.model.player.current_hp -= hurt_dmg
-        self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.player.name} is hurt for {hurt_dmg} damage!""")
-        self.is_player_defeated()
-
     def enemy_casts_heal(self, more):
         """ Enemy handling of heal and healmore"""
         spell_name = "Healmore" if more else "Heal"
@@ -103,30 +66,3 @@ class BattleEngine:
         else:
             self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but the spell fails!""")
         self.player_turn()
-
-    def enemy_breathes_fire(self, more):
-        """ Enemy handling of breath attacks"""
-        spell_name = "strong flames at you!" if more else "fire"
-        if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
-
-        fire_high = [16, 23]
-        fire_low = [10, 14]
-        strongfire_high = [65, 72]
-        strongfire_low = [42, 48]
-
-        fire_def = self.model.player.reduce_fire_damage
-        fire_dmg = 0
-
-        if fire_def and more:
-            fire_dmg = random.randint(strongfire_low[0], strongfire_low[1])
-        elif fire_def and not more:
-            fire_dmg = random.randint(fire_low[0], fire_low[1])
-        elif more:
-            fire_dmg = random.randint(strongfire_high[0], strongfire_high[1])
-        else:
-            fire_dmg = random.randint(fire_high[0], fire_high[1])
-
-        self.model.player.current_hp -= fire_dmg
-        self.model.text(f"""The {self.model.enemy.name} breathes {spell_name}! {self.model.player.name} is hurt for {fire_dmg} damage!""")
-        self.is_player_defeated()

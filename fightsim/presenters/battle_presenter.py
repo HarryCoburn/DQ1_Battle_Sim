@@ -1,3 +1,5 @@
+from ..common.messages import EnemyActions
+
 class BattlePresenter:
     def __init__(self, view):
         self.view = view
@@ -110,3 +112,32 @@ class BattlePresenter:
     
     def enemy_attacks(self, enemy_name, amount):
         self.view.update_output(None, f"{enemy_name} attacks! {enemy_name} hits you for {amount} damage.\n")
+
+    def enemy_wins(self, enemy_name):
+        self.view.update_output(None, f"You have been defeated by the {enemy_name}!\n")
+
+    def enemy_casts_while_spellstopped(self, enemy_name, spell):
+        spell_name = ""
+        if spell == EnemyActions.HURT:
+            spell_name = "Hurt"
+        if spell == EnemyActions.HURTMORE:
+            spell_name = "Hurtmore"
+        self.view.update_output(f"""The {enemy_name} casts {spell_name}, but their spell has been blocked!""")
+
+    def enemy_casts_hurt(self, enemy_name, result, player_name):
+        spell_name = ""
+        damage = result[1]
+        if result[0] == EnemyActions.HURT:
+            spell_name = "Hurt"
+        if result[0] == EnemyActions.HURTMORE:
+            spell_name = "Hurtmore"
+        self.view.update_output(f"""The {enemy_name} casts {spell_name}! {player_name} is hurt for {damage} damage!""")
+
+    def enemy_breathes_fire(self, enemy_name, result, player_name):
+        spell_name = ""
+        damage = result[1]
+        if result[0] == EnemyActions.FIRE:
+            spell_name = "fire"
+        if result[0] == EnemyActions.STRONGFIRE:
+            spell_name = "strong flames at you!"
+        self.view.update_output(f"""The {enemy_name} breathes {spell_name}! {player_name} is hurt for {damage} damage!""")

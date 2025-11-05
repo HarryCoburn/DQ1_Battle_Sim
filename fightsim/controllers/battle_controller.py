@@ -159,15 +159,30 @@ class BattleController:
         if self.enemy.does_flee(self.player.strength):
             self.battle_presenter.enemy_flees(self.enemy.name)
             self.end_fight() #    self.fight_over.set(True)
+        
+        # Perform an action and get its result
         result = self.enemy.perform_enemy_action(self.player)
+        
         if result[0] == EnemyActions.ATTACK:
-            self.battle_presenter.enemy_attacks(self.enemy.name, str(result[1]))
-            self.is_player_defeated() # TODO: Update player info in this function
+            self.battle_presenter.enemy_attacks(self.enemy.name, str(result[1]))            
+        
+        if result[0] in [EnemyActions.HURT, EnemyActions.HURTMORE]:
+            if self.enemy.enemy_spell_stopped:
+                self.battle_presenter.enemy_casts_while_spellstopped(self.enemy.name, result[0])
+            else:
+                self.battle_presenter.enemy_casts_hurt(self.enemy.name, result, self.player.name)
+        
+        if result[0] in [EnemyActions.FIRE, EnemyActions.STRONGFIRE]:
+            self.battle_presenter.enemy_breathes_fire(self.enemy.name, result, self.player.name)
+
+        self.is_player_defeated()    
+
 
     # Battle Ending and Turn Switching
 
     def is_enemy_defeated(self):
         """ Checks if the enemy is defeated. Ends fight if true. Starts enemy turn if false. """
+        self.view.update_enemy_info(self.enemy)
         if self.enemy.is_defeated():
             self.battle_presenter.player_wins(None, self.enemy.name)
             self.end_fight()
@@ -175,4 +190,13 @@ class BattleController:
             self.enemy_turn()
 
     def is_player_defeated(self):
+        self.view.update_player_info(self.player)
+        if self.player.is_defeated():
+            self.battle_presenter.enemy_wins(self.enemy.name)
+            self.end_fight()
+        else:
+            self.player_turn()
         
+
+    def end_fight(self):
+        pass

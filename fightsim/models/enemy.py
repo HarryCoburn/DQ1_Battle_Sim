@@ -38,14 +38,14 @@ class Enemy:
     def perform_enemy_action(self, player):
         action_methods = {
             EnemyActions.ATTACK: self.attack(player),
-            EnemyActions.HURT: lambda: self.enemy_casts_hurt(False),
-            EnemyActions.HURTMORE: lambda: self.enemy_casts_hurt(True),
+            EnemyActions.HURT: lambda: self.casts_hurt(False, player),
+            EnemyActions.HURTMORE: lambda: self.casts_hurt(True, player),
             EnemyActions.HEAL: lambda: self.enemy_casts_heal(False),
             EnemyActions.HEALMORE: lambda: self.enemy_casts_heal(True),
             EnemyActions.SLEEP: self.enemy_casts_sleep,
             EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
-            EnemyActions.FIRE: lambda: self.enemy_breathes_fire(False),
-            EnemyActions.STRONGFIRE: lambda: self.enemy_breathes_fire(True)
+            EnemyActions.FIRE: lambda: self.breathes_fire(False, player),
+            EnemyActions.STRONGFIRE: lambda: self.breathes_fire(True, player)
         }
 
         chosen_action = self.choose_enemy_action(player)
@@ -83,8 +83,51 @@ class Enemy:
         player.current_hp -= enemy_damage_dealt
         return enemy_damage_dealt
 
+    def casts_hurt(self, more, player):
+        """ Enemy handling of hurt and hurtmore"""
+        spell_name = "Hurtmore" if more else "Hurt"
+        hurt_high = [3, 10]
+        hurt_low = [2, 6]
+        hurtmore_high = [30, 45]
+        hurtmore_low = [20, 30]
+        player_mag_def = player.reduce_hurt_damage
+        hurt_dmg = 0
+        
+        if self.enemy_spell_stopped is True:
+            return "enemy_spellstopped"
 
-    
+        if player_mag_def and more:
+            hurt_dmg = random.randint(hurtmore_low[0], hurtmore_low[1])
+        elif player_mag_def and not more:
+            hurt_dmg = random.randint(hurt_low[0], hurt_low[1])
+        elif more:
+            hurt_dmg = random.randint(hurtmore_high[0], hurtmore_high[1])
+        else:
+            hurt_dmg = random.randint(hurt_high[0], hurt_high[1])
+
+        player.current_hp -= hurt_dmg
+        return hurt_dmg
+        
+    def breathes_fire(self, more, player):
+        fire_high = [16, 23]
+        fire_low = [10, 14]
+        strongfire_high = [65, 72]
+        strongfire_low = [42, 48]
+        fire_def = player.reduce_fire_damage
+        fire_dmg = 0
+
+        if fire_def and more:
+            fire_dmg = random.randint(strongfire_low[0], strongfire_low[1])
+        elif fire_def and not more:
+            fire_dmg = random.randint(fire_low[0], fire_low[1])
+        elif more:
+            fire_dmg = random.randint(strongfire_high[0], strongfire_high[1])
+        else:
+            fire_dmg = random.randint(fire_high[0], fire_high[1])
+
+        player.current_hp -= fire_dmg
+        return fire_dmg
+
     def attack_damage_dealt(self, hero_defense):
         """ Enemy makes a successful attack. Returns a damage amount. """
         if hero_defense > self.strength:
@@ -93,12 +136,6 @@ class Enemy:
             damage_range = self.normal_damage_range(self.strength, hero_defense)
 
         return Randomizer.randint(*damage_range)
-    
-    def is_spell_stopped(self, spell_name):
-        if self.enemy_spell_stopped:
-            self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!""")
-            return True
-        return False
 
     def set_model(self, model):
         self.model = model  # Method to inject the model dependency
