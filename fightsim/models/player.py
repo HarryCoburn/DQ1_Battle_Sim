@@ -6,7 +6,7 @@ import random
 from typing import List, Optional
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
-from ..common.messages import ObserverMessages
+from ..common.messages import ObserverMessages, SpellFailureReason
 from .player_leveling import _Levelling
 from ..common.randomizer import Randomizer
 
@@ -21,6 +21,18 @@ class AttackResult:
     damage: int
     hit: bool
 
+@dataclass
+class HerbResult:
+    success: bool
+    healing: int
+    reason: str = ""
+
+@dataclass
+class SpellResult:
+    spell_name: str
+    success: bool
+    amount: int = 0
+    reason: Optional[SpellFailureReason] = None
 
 @dataclass
 class Player:
@@ -126,6 +138,12 @@ class Player:
         """
         self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
 
+    def raise_hp(self, hp_gain):
+        self.current_hp += hp_gain
+
+    def lower_hp(self, hp_gain):
+        self.current_hp -= hp_gain
+
     # Attack damage calcuations
 
     def calculate_attack_damage(self, critical_hit, enemy_agility):
@@ -182,13 +200,17 @@ class Player:
 
     def use_herb(self):
         """Returns the amount healed"""
-        self.herb_count -= 1
+        self.herb_count -= 1        
         if self.current_hp >= self.max_hp:
-            return 0
+            return HerbResult(
+                success=False, healing=0, reason="max_hp"
+            )
         herb_hp = Randomizer.randint(*self.herb_range)
         actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
-        self.current_hp += actual_hp_gained
-        return actual_hp_gained
+        #self.current_hp += actual_hp_gained
+        return HerbResult(
+            success=True, healing=actual_hp_gained
+        )
     
     # Magic Usage
 
@@ -213,10 +235,14 @@ class Player:
 
         cost = spell_cost.get(spell, 0)
         if self.current_mp < cost:
-            return "not_enough_mp"
+            return SpellResult(
+                spell_name=spell, success=False, amount=0, reason=SpellFailureReason.NOT_ENOUGH_MP
+            )
         self.current_mp -= cost  # always burn the MP even if spellstopped
         if self.is_spellstopped:
-            return "player_spellstopped"
+            return SpellResult(
+                spell_name=spell, success=False, amount=0, reason=SpellFailureReason.PLAYER_SPELLSTOPPED
+            )
         spell_function = spell_switch.get(spell, lambda: None)
         spell_function()
 
@@ -229,7 +255,7 @@ class Player:
         heal_range = heal_ranges[spell_name]
         heal_total = self.calc_heal(heal_range)
         if heal_total == 0:
-            return "heal_when_at_max_hp"
+            return SpellResult(spell_name=spell_name, success=False, amount=0, reason=SpellFailureReason.HEALED_AT_MAX_HP)
         else:
             self.current_hp += heal_total
             return heal_total
@@ -247,7 +273,7 @@ class Player:
         hurt_range = hurt_ranges[spell_name]
         enemy_hurt_resistance = enemy.hurt_resist
         if self.resist(enemy_hurt_resistance):
-            return "resist_hurt"
+            return SpellResult(spell_name=spell_name, success=False, amount=0, reason=SpellFailureReason.ENEMY_RESISTED_HURT)
 
         hurt_total = self.calc_hurt(hurt_range)
         enemy.take_damage(hurt_total)
@@ -261,9 +287,9 @@ class Player:
     def player_casts_sleep(self, enemy):
         enemy_sleep_resistance = enemy.sleep_resist
         if enemy.enemy_sleep_count > 0:  # enemy already asleep
-            return "enemy_already_asleep"
+            return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_ALREADY_ASLEEP)
         if self.resist(enemy_sleep_resistance):  # enemy resists sleep
-            return "enemy_resists_sleep"
+            return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SLEEP)
         enemy.enemy_sleep_count = 2
         return "success"  # dummy string
 

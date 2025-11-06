@@ -58,3 +58,13 @@ class EnemyActions(Enum):
             EnemyActions.STRONGFIRE: "Enemy uses a strong fiery breath attack."
         }
         return descriptions.get(self, "No description available.")
+
+class SpellFailureReason(Enum):
+    NOT_ENOUGH_MP = auto()
+    PLAYER_SPELLSTOPPED = auto()
+    HEALED_AT_MAX_HP = auto()
+    ENEMY_RESISTED_HURT = auto()
+    ENEMY_ALREADY_ASLEEP = auto()
+    ENEMY_RESISTED_SLEEP = auto()
+    ENEMY_ALREADY_SPELLSTOPPED = auto()
+    ENEMY_RESISTED_SPELLSTOP = auto()

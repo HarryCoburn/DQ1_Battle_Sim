@@ -1,4 +1,4 @@
-from ..common.messages import EnemyActions
+from ..common.messages import EnemyActions, SpellFailureReason
 
 class BattlePresenter:
     def __init__(self, view):
@@ -56,38 +56,33 @@ class BattlePresenter:
         else:
             self.view.update_output(None, "Your level is too low to cast magic.\n")
 
-    def not_enough_mp(self, spell):
-        self.view.update_output(None, f"Player tries to cast {spell}, but doesn't have enough MP!\n")
+    def player_spell_failed(self, result, enemy_name):
+        if result.reason == SpellFailureReason.NOT_ENOUGH_MP:
+            self.view.update_output(None, f"Player tries to cast {result.spell_name}, but doesn't have enough MP!\n")
+        elif result.reason == SpellFailureReason.PLAYER_SPELLSTOPPED:
+            self.view.update_output(None, f"""Player casts {result.spell_name}, but their magic has been sealed!\n""")
+        elif result.reason == SpellFailureReason.HEALED_AT_MAX_HP:
+            self.view.update_output(None, f"""Player casts {result.spell_name}, but their hit points were already at maximum!\n""")
+        elif result.reason == SpellFailureReason.ENEMY_RESISTED_HURT:
+            self.view.update_output(None, f"""Player casts {result.spell_name}, but the enemy resisted!\n""")
+        elif result.reason == SpellFailureReason.ENEMY_ALREADY_ASLEEP:
+            self.view.update_output(None, f"""Player casts Sleep! But the {enemy_name} is already asleep!\n""")
+        elif result.reason == SpellFailureReason.ENEMY_RESISTED_SLEEP:
+            self.view.update_output(None, f"""Player casts Sleep! But the {enemy_name} resisted!\n""")
+        elif result.reason == SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED:
+            self.view.update_output(None, f"""Player casts Stopspell! But the {enemy_name}'s magic was already blocked!\n""")
+        elif result.reason == SpellFailureReason.ENEMY_RESISTED_SPELLSTOP:
+            self.view.update_output(None, f"""Player casts Stopspell! But the {enemy_name} resisted!\n""")
 
-    def player_spellstopped(self, spell):
-        self.view.update_output(None, f"""Player casts {spell}, but their magic has been sealed!\n""")
-
-    def player_casts_heal_when_full(self, spell):
-        self.view.update_output(None, f"""Player casts {spell}, but their hit points were already at maximum!\n""")
 
     def player_casts_heal(self, spell, amount):
         self.view.update_output(None, f"""Player casts {spell}! Player is healed {str(amount)} hit points!\n""")
 
-    def enemy_resists_hurt(self, spell):
-        self.view.update_output(None, f"""Player casts {spell}, but the enemy resisted!\n""")
-
     def player_casts_hurt(self, spell, enemy_name, amount):
         self.view.update_output(None, f"""Player casts {spell}! {enemy_name} is hurt by {str(amount)} hit points!\n""")
 
-    def enemy_already_asleep(self, enemy_name):
-        self.view.update_output(None, f"""Player casts Sleep! But the {enemy_name} is already asleep!\n""")
-
-    def enemy_resists_sleep(self, enemy_name):
-        self.view.update_output(None, f"""Player casts Sleep! But the {enemy_name} resisted!\n""")
-
     def enemy_now_asleep(self, enemy_name):
         self.view.update_output(None, f"""Player casts Sleep! The {enemy_name} is now asleep!\n""")
-    
-    def enemy_already_stopped(self, enemy_name):
-        self.view.update_output(None, f"""Player casts Stopspell! But the {enemy_name}'s magic was already blocked!\n""")
-
-    def enemy_resists_stopped(self, enemy_name):
-        self.view.update_output(None, f"""Player casts Stopspell! But the {enemy_name} resisted!\n""")
 
     def enemy_now_spell_stopped(self, enemy_name):
         self.view.update_output(None, f"""Player casts Stopspell! The {enemy_name}'s magic is now blocked!!\n""")

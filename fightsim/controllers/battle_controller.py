@@ -78,10 +78,11 @@ class BattleController:
             return # Player does not lose turn if they try to use an herb when they have none.
         else:
             result = self.player.use_herb()
-            if result == 0: # Used herb with full HP, no healing
+            if result.success is False and result.reason == "max_hp": # Used herb with full HP, no healing
                 self.battle_presenter.eat_herb_at_full_hp()
             else:
-                self.battle_presenter.eat_herb(None, result)
+                self.player.raise_hp(result.healing)
+                self.battle_presenter.eat_herb(None, result.healing)
         self.is_enemy_defeated()
 
     def on_flee_button(self):
@@ -101,29 +102,8 @@ class BattleController:
             return
         
         result = self.player.cast_magic(spell, self.enemy)
-        if result == "not_enough_mp":
-            self.battle_presenter.not_enough_mp(spell)
-        
-        if result == "player_spellstopped":
-            self.battle_presenter.player_spellstopped(spell)
-        
-        if result == "heal_when_at_max_hp":
-            self.battle_presenter.player_casts_heal_when_full(spell)
-        
-        if result == "resist_hurt":
-            self.battle_presenter.enemy_resists_hurt(spell)
-        
-        if result == "enemy_already_asleep":
-            self.battle_presenter.enemy_already_asleep(self.enemy.name)
-        
-        if result == "enemy_resists_sleep":
-            self.battle_presenter.enemy_resists_sleep(self.enemy.name)
-        
-        if result == "enemy_already_spellstopped":
-            self.battle_presenter.enemy_already_stopped(self.enemy.name)
-        
-        if result == "enemy_resists_spellstop":
-            self.battle_presenter.enemy_resists_stopped(self.enemy.name)
+        if result.success is False:
+            self.battle_presenter.player_spell_failed(result, self.enemy.name)
         
         # From here, spells are successful
         if spell in ["Heal", "Healmore"]:
