@@ -61,11 +61,7 @@ class Player:
         """
         return (self.agility + self.armor.modifier + self.shield.modifier) // 2
 
-    def attack_num(self):
-        """
-        Calculate and return attack number
-        """
-        return self.strength + self.weapon.modifier
+    
 
     def set_model(self, model):
         """
@@ -136,14 +132,39 @@ class Player:
         """
         self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
 
+    # Attack damage calcuations
+    
     def calculate_attack_damage(self, critical_hit, enemy_agility):
         if critical_hit:
             low, high = self.crit_range(self.attack_num())
         else:
             low, high = self.damage_range(self.attack_num(), enemy_agility)
         return Randomizer.randint(low, high)
+    
+    def attack_num(self):
+        """
+        Calculate and return attack number
+        """
+        return self.strength + self.weapon.modifier
 
-    #
+    @staticmethod
+    def damage_range(attack, agility):
+        """
+        Returns a possible damage range for a normal attack as a tuple in the form (min, max)
+        min must be at least 0, max can be no lower than 1
+        """
+        return max(((attack - agility // 2) // 4), 0), max(
+            ((attack - agility // 2) // 2), 1
+        )
+    
+    @staticmethod
+    def crit_range(attack):
+        """
+        Returns a possible critical damage range for a normal attack as a tuple in the form (min, max)
+        min must be at least 0, max can be no lower than 1
+        """
+        return max((attack // 2), 0), max(attack, 1)
+
     def attack(self, enemy):
         crit = self.did_crit() and enemy.void_critical_hit is False
         dodge = enemy.did_dodge()
@@ -160,23 +181,9 @@ class Player:
         """
         return random.randint(1, CRIT_CHANCE) == 1
 
-    @staticmethod
-    def damage_range(attack, agility):
-        """
-        Returns a possible damage range for a normal attack as a tuple in the form (min, max)
-        min must be at least 0, max can be no lower than 1
-        """
-        return max(((attack - agility // 2) // 4), 0), max(
-            ((attack - agility // 2) // 2), 1
-        )
+    
 
-    @staticmethod
-    def crit_range(attack):
-        """
-        Returns a possible critical damage range for a normal attack as a tuple in the form (min, max)
-        min must be at least 0, max can be no lower than 1
-        """
-        return max((attack // 2), 0), max(attack, 1)
+    
 
     def is_defeated(self):
         """
