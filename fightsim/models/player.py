@@ -158,33 +158,15 @@ class Player:
         Calculate and return attack number
         """
         return self.strength + self.weapon.modifier
-
-    @staticmethod
-    def damage_range(attack, agility):
-        """
-        Returns a possible damage range for a normal attack as a tuple in the form (min, max)
-        min must be at least 0, max can be no lower than 1
-        """
-        return max(((attack - agility // 2) // 4), 0), max(
-            ((attack - agility // 2) // 2), 1
-        )
-
-    @staticmethod
-    def crit_range(attack):
-        """
-        Returns a possible critical damage range for a normal attack as a tuple in the form (min, max)
-        min must be at least 0, max can be no lower than 1
-        """
-        return max((attack // 2), 0), max(attack, 1)
-
-    def attack(self, enemy):
-        crit = self.did_crit() and enemy.void_critical_hit is False
-        dodge = enemy.did_dodge()
-        damage = self.calculate_attack_damage(crit, enemy.agility)
-
-        return AttackResult(
-            crit=crit, dodge=dodge, damage=damage, hit=not (dodge and not crit)
-        )
+    
+    def attack(self, enemy, combat_engine):
+        return combat_engine.resolve_player_attack(
+            player_strength = self.strength,
+            player_weapon = self.weapon.modifier,
+            enemy_agility = enemy.agility,
+            enemy_dodge_chance = enemy.dodge,
+            enemy_blocks_crits=enemy.void_critical_hit
+        )        
 
     @staticmethod
     def did_crit():
