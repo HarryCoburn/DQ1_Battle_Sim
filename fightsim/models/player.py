@@ -55,19 +55,13 @@ class Player:
         if not 1 <= self.level <= 30:
             raise ValueError("Level must be within 1 to 30")
 
-    def defense(self):
-        """
-        Calculate and return defense value
-        """
-        return (self.agility + self.armor.modifier + self.shield.modifier) // 2
-
-    
-
     def set_model(self, model):
         """
         Injects model dependence into Player.
         """
         self.model = model
+
+    # Changing Player stats
 
     def change_name(self, name):
         """
@@ -133,14 +127,14 @@ class Player:
         self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
 
     # Attack damage calcuations
-    
+
     def calculate_attack_damage(self, critical_hit, enemy_agility):
         if critical_hit:
             low, high = self.crit_range(self.attack_num())
         else:
             low, high = self.damage_range(self.attack_num(), enemy_agility)
         return Randomizer.randint(low, high)
-    
+
     def attack_num(self):
         """
         Calculate and return attack number
@@ -156,7 +150,7 @@ class Player:
         return max(((attack - agility // 2) // 4), 0), max(
             ((attack - agility // 2) // 2), 1
         )
-    
+
     @staticmethod
     def crit_range(attack):
         """
@@ -181,30 +175,7 @@ class Player:
         """
         return random.randint(1, CRIT_CHANCE) == 1
 
-    
-
-    
-
-    def is_defeated(self):
-        """
-        Returns if the player is defeated
-        """
-        return self.current_hp <= 0
-
-    def handle_sleep(self):
-        """
-        Returns the status of the player's sleep
-        """
-        if not self.is_asleep:
-            return False
-        else:
-            self.sleep_count -= 1
-            if random.randint(1, 2) == 2 or self.sleep_count <= 0:
-                self.is_asleep = False
-                self.sleep_count = 6
-                return "awake"
-            else:
-                return True
+    # Herb usage
 
     def has_herbs(self):
         return self.herb_count >= 1
@@ -218,15 +189,8 @@ class Player:
         actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
         self.current_hp += actual_hp_gained
         return actual_hp_gained
-
-    def is_flee_successful(self, enemy_agility, mod_select):
-        """Return True if the player flees successfully"""
-        enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
-        player_flee_chance = self.agility * Randomizer.randint(0, 254)
-        enemy_block_chance = (
-            enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
-        )
-        return player_flee_chance > enemy_block_chance
+    
+    # Magic Usage
 
     def cast_magic(self, spell, enemy):
         spell_switch = {
@@ -256,6 +220,8 @@ class Player:
         spell_function = spell_switch.get(spell, lambda: None)
         spell_function()
 
+    # Heal
+
     def player_heal(self, more):
         heal_ranges = {"Heal": [10, 17], "Healmore": [85, 100]}
         spell_name = "Healmore" if more else "Heal"
@@ -273,11 +239,13 @@ class Player:
         heal_amount = Randomizer.randint(*heal_range)
         return min(heal_max, heal_amount)
 
+    # Hurt
+
     def player_hurt(self, more, enemy):
         hurt_ranges = {"Hurt": [5, 12], "Hurtmore": [58, 65]}
         spell_name = "Hurtmore" if more else "Hurt"
         hurt_range = hurt_ranges[spell_name]
-        enemy_hurt_resistance = self.model.enemy.hurt_resist
+        enemy_hurt_resistance = enemy.hurt_resist
         if self.resist(enemy_hurt_resistance):
             return "resist_hurt"
 
@@ -286,10 +254,9 @@ class Player:
         return hurt_total
 
     def calc_hurt(self, hurt_range):
-        return Randomizer.randint(*hurt_range)
+        return Randomizer.randint(*hurt_range)    
 
-    def resist(self, chance):
-        return Randomizer.randint(1, 16) <= chance
+    # Sleep
 
     def player_casts_sleep(self, enemy):
         enemy_sleep_resistance = enemy.sleep_resist
@@ -300,6 +267,8 @@ class Player:
         enemy.enemy_sleep_count = 2
         return "success"  # dummy string
 
+    # Stopspell
+
     def player_casts_stopspell(self, enemy):
         enemy_stop_resistance = enemy.stopspell_resist
         if enemy.enemy_spell_stopped:
@@ -309,6 +278,50 @@ class Player:
         enemy.enemy_spell_stopped = True
         return "success"  # dummy string
 
+    # Handle player's sleep status
+
+    def handle_sleep(self):
+        """
+        Returns the status of the player's sleep
+        """
+        if not self.is_asleep:
+            return False
+        else:
+            self.sleep_count -= 1
+            if random.randint(1, 2) == 2 or self.sleep_count <= 0:
+                self.is_asleep = False
+                self.sleep_count = 6
+                return "awake"
+            else:
+                return True
+            
+    # Handle fleeing
+
+    def is_flee_successful(self, enemy_agility, mod_select):
+        """Return True if the player flees successfully"""
+        enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
+        player_flee_chance = self.agility * Randomizer.randint(0, 254)
+        enemy_block_chance = (
+            enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
+        )
+        return player_flee_chance > enemy_block_chance
+
+    # Misc stats
+
+    def resist(self, chance):
+        return Randomizer.randint(1, 16) <= chance
+    
+    def defense(self):
+        """
+        Calculate and return defense value
+        """
+        return (self.agility + self.armor.modifier + self.shield.modifier) // 2
+
+    def is_defeated(self):
+        """
+        Returns if the player is defeated
+        """
+        return self.current_hp <= 0
 
 def player_factory():
     """
