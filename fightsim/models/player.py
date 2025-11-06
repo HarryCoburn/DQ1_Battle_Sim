@@ -146,18 +146,19 @@ class Player:
 
     # Attack damage calcuations
 
-    def calculate_attack_damage(self, critical_hit, enemy_agility):
-        if critical_hit:
-            low, high = self.crit_range(self.attack_num())
-        else:
-            low, high = self.damage_range(self.attack_num(), enemy_agility)
-        return Randomizer.randint(low, high)
+    # def calculate_attack_damage(self, critical_hit, enemy_agility):
+    #     if critical_hit:
+    #         low, high = self.crit_range(self.attack_num())
+    #     else:
+    #         low, high = self.damage_range(self.attack_num(), enemy_agility)
+    #     return Randomizer.randint(low, high)
 
-    def attack_num(self):
-        """
-        Calculate and return attack number
-        """
-        return self.strength + self.weapon.modifier
+    # def attack_num(self):
+    #     """
+    #     Calculate and return attack number
+    #     """
+    #     return self.strength + self.weapon.modifier
+   
     
     def attack(self, enemy, combat_engine):
         return combat_engine.resolve_player_attack(
@@ -168,12 +169,12 @@ class Player:
             enemy_blocks_crits=enemy.void_critical_hit
         )        
 
-    @staticmethod
-    def did_crit():
-        """
-        Returns if the player had a critical hit or not.
-        """
-        return random.randint(1, CRIT_CHANCE) == 1
+    # @staticmethod
+    # def did_crit():
+    #     """
+    #     Returns if the player had a critical hit or not.
+    #     """
+    #     return random.randint(1, CRIT_CHANCE) == 1
 
     # Herb usage
 

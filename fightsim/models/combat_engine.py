@@ -1,6 +1,4 @@
 from ..common.randomizer import Randomizer
-
-import random
 from dataclasses import dataclass
 
 @dataclass
@@ -32,7 +30,7 @@ class CombatEngine:
         return max((player_attack // 2), 0), max(player_attack, 1)
     
     def player_did_crit(self):
-        return random.randint(1, self.CRIT_CHANCE) == 1
+        return Randomizer.randint(1, self.CRIT_CHANCE) == 1
     
     def enemy_did_dodge(self, dodge_chance):
         return Randomizer.randint(1, 64) <= dodge_chance
