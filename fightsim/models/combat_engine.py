@@ -9,9 +9,9 @@ class AttackResult:
     hit: bool
 
 class CombatEngine:
-    def __init__(self):
-        self.CRIT_CHANCE = 32
-        pass    
+    def __init__(self, randomizer):
+        self.randomizer = randomizer if randomizer else Randomizer()
+        self.CRIT_CHANCE = 32            
 
     def player_damage_range(self, player_attack, enemy_agility):
         """
@@ -30,10 +30,10 @@ class CombatEngine:
         return max((player_attack // 2), 0), max(player_attack, 1)
     
     def player_did_crit(self):
-        return Randomizer.randint(1, self.CRIT_CHANCE) == 1
+        return self.randomizer.randint(1, self.CRIT_CHANCE) == 1
     
     def enemy_did_dodge(self, dodge_chance):
-        return Randomizer.randint(1, 64) <= dodge_chance
+        return self.randomizer.randint(1, 64) <= dodge_chance
 
     def calculate_player_attack_damage(self, crit, enemy_agility, player_strength, player_weapon):
         player_computed_attack = player_strength + player_weapon
@@ -41,7 +41,7 @@ class CombatEngine:
             low, high = self.player_crit_range(player_computed_attack)
         else:
             low, high = self.player_damage_range(player_computed_attack, enemy_agility)
-        return Randomizer.randint(low, high)
+        return self.randomizer.randint(low, high)
 
     def resolve_player_attack(self, player_strength, player_weapon, enemy_agility, enemy_dodge_chance, enemy_blocks_crits):
         crit = enemy_blocks_crits is False and self.player_did_crit()
