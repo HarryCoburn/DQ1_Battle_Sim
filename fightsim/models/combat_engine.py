@@ -10,7 +10,7 @@ class AttackResult:
 
 class CombatEngine:
     def __init__(self, randomizer):
-        self.randomizer = randomizer if randomizer else Randomizer()
+        self.randomizer = randomizer if randomizer is not None else Randomizer()
         self.CRIT_CHANCE = 32            
 
     def player_damage_range(self, player_attack, enemy_agility):

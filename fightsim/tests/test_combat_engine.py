@@ -11,6 +11,8 @@ class FakeRandomizer:
     def randint(self, low, high):
         if self.sequence:
             # Return values from sequence
+            if self.call_count >= len(self.sequence):
+                return (low + high) // 2    
             value = self.sequence[self.call_count % len(self.sequence)]
             self.call_count += 1
             return value
@@ -23,7 +25,7 @@ class FakeRandomizer:
 
 class TestCombatEngine(unittest.TestCase):
     def setUp(self):
-        self.combat_engine = CombatEngine(FakeRandomizer)
+        self.combat_engine = CombatEngine(FakeRandomizer())
 
     def test_combat_engine_attack_calculation(self):
         # No crit, no dodge
@@ -43,3 +45,54 @@ class TestCombatEngine(unittest.TestCase):
         assert result.damage == 25
         assert result.hit == True
         assert result.crit == False  # or True depending on your logic
+
+    def test_combat_engine_attack_calculation_crit(self):
+        # crit, no dodge
+        
+        self.combat_engine.randomizer.sequence = [1,10]
+
+        result = self.combat_engine.resolve_player_attack(
+            player_strength=50,
+            player_weapon=10,
+            enemy_agility=30,
+            enemy_dodge_chance=5,
+            enemy_blocks_crits=False
+        )
+        
+        # Result is an AttackResult
+        assert result.damage == 45
+        assert result.hit == True
+        assert result.crit == True  # or True depending on your logic
+
+    def test_combat_engine_attack_dodged(self):
+        # No crit, dodge
+        
+        self.combat_engine.randomizer.sequence = [2,1]
+
+        result = self.combat_engine.resolve_player_attack(
+            player_strength=50,
+            player_weapon=10,
+            enemy_agility=30,
+            enemy_dodge_chance=5,
+            enemy_blocks_crits=False
+        )       
+                
+        assert result.hit == False
+        assert result.dodge == True  # or True depending on your logic
+
+    def test_combat_engine_crits_cancel_dodge(self):
+        # No crit, dodge
+        
+        self.combat_engine.randomizer.sequence = [1,1]
+
+        result = self.combat_engine.resolve_player_attack(
+            player_strength=50,
+            player_weapon=10,
+            enemy_agility=30,
+            enemy_dodge_chance=5,
+            enemy_blocks_crits=False
+        )       
+                
+        assert result.hit == True
+        assert result.dodge == True  # or True depending on your logic
+        assert result.crit == True
