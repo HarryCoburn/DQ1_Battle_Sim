@@ -155,6 +155,9 @@ class Enemy:
     def set_model(self, model):
         self.model = model  # Method to inject the model dependency
 
+    def set_sleep(self, amount):
+        self.enemy_sleep_count = amount
+    
     def casts_sleep(self, player):
         # Sleep always hits player
         player.is_asleep = True

@@ -169,8 +169,8 @@ class Player:
             SpellType.HEALMORE: lambda: combat_engine.player_casts_heal(spell=spell, heal_max=(self.max_hp - self.current_hp)),
             SpellType.HURT: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
             SpellType.HURTMORE: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
-            SpellType.SLEEP: self.player_casts_sleep(enemy),
-            SpellType.STOPSPELL: self.player_casts_stopspell(enemy),
+            SpellType.SLEEP: lambda: combat_engine.player_casts_sleep(spell, enemy.enemy_sleep_count, enemy.sleep_resist),
+            SpellType.STOPSPELL: self.player_casts_stopspell()),
         }
 
         
@@ -188,23 +188,7 @@ class Player:
         spell_function = spell_switch.get(spell, lambda: None)
         spell_function()
 
-    # Hurt
-
-    def player_hurt(self, more, enemy):
-        hurt_ranges = {"Hurt": [5, 12], "Hurtmore": [58, 65]}
-        spell_name = "Hurtmore" if more else "Hurt"
-        hurt_range = hurt_ranges[spell_name]
-        enemy_hurt_resistance = enemy.hurt_resist
-        if self.resist(enemy_hurt_resistance):
-            return SpellResult(spell_name=spell_name, success=False, amount=0, reason=SpellFailureReason.ENEMY_RESISTED_HURT)
-
-        hurt_total = self.calc_hurt(hurt_range)
-        enemy.take_damage(hurt_total)
-        return hurt_total
-
-    def calc_hurt(self, hurt_range):
-        return self.randomizer.randint(*hurt_range)    
-
+  
     # Sleep
 
     def player_casts_sleep(self, enemy):

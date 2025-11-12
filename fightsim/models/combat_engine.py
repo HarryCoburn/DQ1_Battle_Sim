@@ -13,7 +13,8 @@ class AttackResult:
 class CombatEngine:
     def __init__(self, randomizer):
         self.randomizer = randomizer if randomizer is not None else Randomizer()
-        self.CRIT_CHANCE = 32            
+        self.CRIT_CHANCE = 32
+        self.ENEMY_SLEEP_ROUNDS = 2            
 
         self.HEAL_RANGES = {
             SpellType.HEAL: (10, 17),
@@ -83,3 +84,10 @@ class CombatEngine:
         if self.randomizer.randint(1, 16) <= enemy_hurt_resist:
             return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.ENEMY_RESISTED_HURT)
         return SpellResult(spell_name=spell, success=True, amount=hurt_amount, reason=None)
+
+    def player_casts_sleep(self, spell, enemy_sleep_count, enemy_sleep_resistance):
+        if enemy_sleep_count > 0:  # enemy already asleep
+            return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_ALREADY_ASLEEP)
+        if self.randomizer.randint(1, 16) <= enemy_sleep_resistance:  # enemy resists sleep
+            return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SLEEP)
+        return SpellResult(spell_name=spell, success=True, amount=self.ENEMY_SLEEP_ROUNDS, reason=None)
