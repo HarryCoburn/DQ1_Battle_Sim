@@ -1,7 +1,7 @@
 from ..common.randomizer import Randomizer
 from dataclasses import dataclass
-from enum import Enum
-from .spells import SpellType
+from .spells import SpellType, SpellResult
+from ..common.messages import SpellFailureReason
 
 @dataclass
 class AttackResult:
@@ -9,9 +9,6 @@ class AttackResult:
     dodge: bool
     damage: int
     hit: bool
-
-
-
 
 class CombatEngine:
     def __init__(self, randomizer):
@@ -73,3 +70,9 @@ class CombatEngine:
 
     def resolve_player_magic(self, spell, player_mp, player_is_spellstopped):
         pass
+
+    def player_casts_heal(self, spell, heal_max):
+        heal_amount = min(heal_max, self.randomizer.randint(*self.HEAL_RANGES[spell]))  
+        if heal_amount == 0:
+            return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.HEALED_AT_MAX_HP)
+        return SpellResult(spell_name=spell, success=True, amount=heal_amount, reason=None)

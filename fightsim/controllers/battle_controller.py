@@ -3,6 +3,7 @@
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
 from ..common.messages import EnemyActions
+from ..models.spells import SpellResult, SpellType
 
 class BattleController:
     def __init__(self, model, view):
@@ -106,8 +107,9 @@ class BattleController:
             self.battle_presenter.player_spell_failed(result, self.enemy.name)
         
         # From here, spells are successful
-        if spell in ["Heal", "Healmore"]:
-            self.battle_presenter.player_casts_heal(spell, result)
+        if spell in [SpellType.HEAL, SpellType.HEALMORE]:
+            self.battle_presenter.player_casts_heal(spell, result.amount)
+            self.player.raise_hp(result.amount)
         
         if spell in ["Hurt", "Hurtmore"]:
             self.battle_presenter.player_casts_hurt(spell, self.enemy.name, result)

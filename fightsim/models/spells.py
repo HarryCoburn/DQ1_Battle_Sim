@@ -1,5 +1,8 @@
+from typing import List, Optional
 from dataclasses import dataclass
 from enum import Enum
+from ..common.messages import SpellFailureReason
+
 
 @dataclass
 class SpellData:
@@ -15,3 +18,10 @@ class SpellType(Enum):
     HURTMORE = SpellData("Hurtmore", 5, 19)
     SLEEP = SpellData("Sleep", 2, 7)
     STOPSPELL = SpellData("Stopspell", 2, 10)
+
+@dataclass
+class SpellResult:
+    spell_name: str
+    success: bool
+    amount: int = 0
+    reason: Optional[SpellFailureReason] = None

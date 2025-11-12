@@ -9,7 +9,7 @@ from fightsim.models.items import Item, ItemType, items
 from ..common.messages import ObserverMessages, SpellFailureReason
 from .player_leveling import _Levelling
 from ..common.randomizer import Randomizer
-from .spells import SpellType
+from .spells import SpellType, SpellResult
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
@@ -27,15 +27,6 @@ class HerbResult:
     success: bool
     healing: int
     reason: str = ""
-
-@dataclass
-class SpellResult:
-    spell_name: str
-    success: bool
-    amount: int = 0
-    reason: Optional[SpellFailureReason] = None
-
-
 
 
 
@@ -172,10 +163,10 @@ class Player:
     
     # Magic Usage
 
-    def cast_magic(self, spell, enemy):
+    def cast_magic(self, spell, enemy, combat_engine):
         spell_switch = {
-            SpellType.HEAL: lambda: self.player_heal(False),
-            SpellType.HEALMORE: lambda: self.player_heal(True),
+            SpellType.HEAL: lambda: combat_engine.player_casts_heal(spell=spell, heal_max=(self.max_hp - self.current_hp)),
+            SpellType.HEALMORE: lambda: combat_engine.player_casts_heal(spell=spell, heal_max=(self.max_hp - self.current_hp)),
             SpellType.HURT: lambda: self.player_hurt(False, enemy),
             SpellType.HURTMORE: lambda: self.player_hurt(True, enemy),
             SpellType.SLEEP: self.player_casts_sleep(enemy),
@@ -196,25 +187,6 @@ class Player:
             )
         spell_function = spell_switch.get(spell, lambda: None)
         spell_function()
-
-    # Heal
-
-    def player_heal(self, more):
-        heal_ranges = {"Heal": [10, 17], "Healmore": [85, 100]}
-        spell_name = "Healmore" if more else "Heal"
-
-        heal_range = heal_ranges[spell_name]
-        heal_total = self.calc_heal(heal_range)
-        if heal_total == 0:
-            return SpellResult(spell_name=spell_name, success=False, amount=0, reason=SpellFailureReason.HEALED_AT_MAX_HP)
-        else:
-            self.current_hp += heal_total
-            return heal_total
-
-    def calc_heal(self, heal_range):
-        heal_max = self.max_hp - self.current_hp
-        heal_amount = self.randomizer.randint(*heal_range)
-        return min(heal_max, heal_amount)
 
     # Hurt
 
