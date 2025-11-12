@@ -70,7 +70,15 @@ class CombatEngine:
     # Player Magic
 
     def resolve_player_magic(self, spell, player_mp, player_is_spellstopped):
-        pass
+        if player_mp < spell.value.mp_cost:
+            return SpellResult(
+                spell_name=spell, success=False, amount=0, reason=SpellFailureReason.NOT_ENOUGH_MP
+            )
+        if player_is_spellstopped:
+            return SpellResult(
+                spell_name=spell, success=False, amount=0, reason=SpellFailureReason.PLAYER_SPELLSTOPPED
+            )
+        return SpellResult(spell_name=spell, success=True, amount=0)
 
     def player_casts_heal(self, spell, heal_max):
         heal_amount = min(heal_max, self.randomizer.randint(*self.HEAL_RANGES[spell]))  
@@ -91,3 +99,10 @@ class CombatEngine:
         if self.randomizer.randint(1, 16) <= enemy_sleep_resistance:  # enemy resists sleep
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SLEEP)
         return SpellResult(spell_name=spell, success=True, amount=self.ENEMY_SLEEP_ROUNDS, reason=None)
+    
+    def player_casts_stopspell(self, spell, is_spellstopped, enemy_spellstop_resistance):
+        if is_spellstopped:
+            return SpellResult(spell_name=spell, success=False, reason=SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED)
+        if self.randomizer.randint(1, 16) <= enemy_spellstop_resistance:  
+            return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SPELLSTOP)
+        return SpellResult(spell_name=spell, success=True, amount=0, reason=None)

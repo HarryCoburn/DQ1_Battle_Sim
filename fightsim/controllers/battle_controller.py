@@ -115,11 +115,12 @@ class BattleController:
             self.enemy.take_damage(result.amount)
             self.battle_presenter.player_casts_hurt(spell, self.enemy.name, result.amount)
                         
-        if spell == SpellType.SLEEP:
+        if spell == SpellType.SLEEP:                        
             self.enemy.set_sleep(result.amount)
             self.battle_presenter.enemy_now_asleep(self.enemy.name)
             
-        if spell == "Stopspell":
+        if spell == SpellType.STOPSPELL:
+            self.enemy.enemy_spell_stopped = True
             self.battle_presenter.enemy_now_spell_stopped(self.enemy.name)
         
         self.is_enemy_defeated()

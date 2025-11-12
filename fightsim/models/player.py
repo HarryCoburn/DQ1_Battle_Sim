@@ -170,47 +170,22 @@ class Player:
             SpellType.HURT: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
             SpellType.HURTMORE: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
             SpellType.SLEEP: lambda: combat_engine.player_casts_sleep(spell, enemy.enemy_sleep_count, enemy.sleep_resist),
-            SpellType.STOPSPELL: self.player_casts_stopspell()),
+            SpellType.STOPSPELL: combat_engine.player_casts_stopspell(spell, enemy.enemy_spell_stopped, enemy.enemy_stopspell_resist)
         }
 
         
-
-        
-        if self.current_mp < spell.value.mp_cost:
-            return SpellResult(
-                spell_name=spell, success=False, amount=0, reason=SpellFailureReason.NOT_ENOUGH_MP
-            )
-        self.current_mp -= spell.value.mp_cost  # always burn the MP even if spellstopped
-        if self.is_spellstopped:
-            return SpellResult(
-                spell_name=spell, success=False, amount=0, reason=SpellFailureReason.PLAYER_SPELLSTOPPED
-            )
+        magic_check = combat_engine.resolve_player_magic(spell, self.current_mp, self.is_spellstopped)
+        if magic_check.success == False:
+            if magic_check.reason == SpellFailureReason.PLAYER_SPELLSTOPPED:
+                self.current_mp -= spell.value.mp_cost
+                return magic_check
+            else: # Not enough MP
+                return magic_check
+            
+        self.current_mp -= spell.value.mp_cost
         spell_function = spell_switch.get(spell, lambda: None)
-        spell_function()
-
-  
-    # Sleep
-
-    def player_casts_sleep(self, enemy):
-        enemy_sleep_resistance = enemy.sleep_resist
-        if enemy.enemy_sleep_count > 0:  # enemy already asleep
-            return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_ALREADY_ASLEEP)
-        if self.resist(enemy_sleep_resistance):  # enemy resists sleep
-            return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SLEEP)
-        enemy.enemy_sleep_count = 2
-        return "success"  # dummy string
-
-    # Stopspell
-
-    def player_casts_stopspell(self, enemy):
-        enemy_stop_resistance = enemy.stopspell_resist
-        if enemy.enemy_spell_stopped:
-            return "enemy_already_spellstopped"
-        if self.resist(enemy_stop_resistance):
-            return "enemy_resists_spellstop"
-        enemy.enemy_spell_stopped = True
-        return "success"  # dummy string
-
+        spell_function()  
+ 
     # Handle player's sleep status
 
     def handle_sleep(self):
