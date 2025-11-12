@@ -175,7 +175,7 @@ class Player:
 
         
         magic_check = combat_engine.resolve_player_magic(spell, self.current_mp, self.is_spellstopped)
-        if magic_check.success == False:
+        if magic_check.success is False:
             if magic_check.reason == SpellFailureReason.PLAYER_SPELLSTOPPED:
                 self.current_mp -= spell.value.mp_cost
                 return magic_check
