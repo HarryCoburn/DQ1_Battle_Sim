@@ -35,14 +35,20 @@ class SpellResult:
     amount: int = 0
     reason: Optional[SpellFailureReason] = None
 
+@dataclass
+class SpellData:
+    name: str
+    mp_cost: int
+    level_required: int
+
 class SpellType(Enum):
     # Spell name, MP requirement, Level requirement
-    HEAL = ("Heal", 4, 3)
-    HEALMORE = ("Healmore", 10, 17)
-    HURT = ("Hurt", 2, 4)
-    HURTMORE = ("Hurtmore", 5, 19)
-    SLEEP = ("Sleep", 2, 7)
-    STOPSPELL = ("Stopspell", 2, 10)
+    HEAL = SpellData("Heal", 4, 3)
+    HEALMORE = SpellData("Healmore", 10, 17)
+    HURT = SpellData("Hurt", 2, 4)
+    HURTMORE = SpellData("Hurtmore", 5, 19)
+    SLEEP = SpellData("Sleep", 2, 7)
+    STOPSPELL = SpellData("Stopspell", 2, 10)
 
 
 
@@ -118,17 +124,9 @@ class Player:
         self.player_magic = []
         if self.level >= 3:
             self.player_magic.append("Select Spell")
-            self.player_magic.append(SpellType.HEAL)
-        if self.level >= 4:
-            self.player_magic.append(SpellType.HURT)
-        if self.level >= 7:
-            self.player_magic.append(SpellType.SLEEP)
-        if self.level >= 10:
-            self.player_magic.append(SpellType.STOPSPELL)
-        if self.level >= 17:
-            self.player_magic.append(SpellType.HEALMORE)
-        if self.level >= 19:
-            self.player_magic.append(SpellType.HURTMORE)
+            for spell in SpellType:
+                if self.level >= spell.value.level_required:
+                    self.player_magic.append(spell)            
         self.model.observed.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
 
     def equip_weapon(self, weapon_name: str):
@@ -199,12 +197,12 @@ class Player:
 
         
 
-        cost = spell_cost.get(spell, 0)
-        if self.current_mp < cost:
+        
+        if self.current_mp < spell.value.mp_cost:
             return SpellResult(
                 spell_name=spell, success=False, amount=0, reason=SpellFailureReason.NOT_ENOUGH_MP
             )
-        self.current_mp -= cost  # always burn the MP even if spellstopped
+        self.current_mp -= spell.value.mp_cost  # always burn the MP even if spellstopped
         if self.is_spellstopped:
             return SpellResult(
                 spell_name=spell, success=False, amount=0, reason=SpellFailureReason.PLAYER_SPELLSTOPPED
