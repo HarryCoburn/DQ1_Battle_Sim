@@ -53,7 +53,7 @@ class BattleFrame(tk.Frame):
         self.magic_option_var.set(player_magic[0])
 
         for magic in player_magic:
-            menu.add_command(label=magic.value, command=partial(self.set_magic_option, magic))
+            menu.add_command(label=magic.value.name, command=partial(self.set_magic_option, magic))
 
     def set_magic_option(self, magic):
         """ Set the current magic option in the OptionMenu. """
