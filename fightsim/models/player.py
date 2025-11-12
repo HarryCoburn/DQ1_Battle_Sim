@@ -61,6 +61,7 @@ class Player:
     leveler: _Levelling = _Levelling()
     model: Optional = None  # Placeholder
     herb_range: tuple = (23, 30)
+    randomizer: Optional[Randomizer] = None
 
     def __post_init__(self):
         self.player_magic = []
@@ -143,22 +144,6 @@ class Player:
 
     def lower_hp(self, hp_gain):
         self.current_hp -= hp_gain
-
-    # Attack damage calcuations
-
-    # def calculate_attack_damage(self, critical_hit, enemy_agility):
-    #     if critical_hit:
-    #         low, high = self.crit_range(self.attack_num())
-    #     else:
-    #         low, high = self.damage_range(self.attack_num(), enemy_agility)
-    #     return Randomizer.randint(low, high)
-
-    # def attack_num(self):
-    #     """
-    #     Calculate and return attack number
-    #     """
-    #     return self.strength + self.weapon.modifier
-   
     
     def attack(self, enemy, combat_engine):
         return combat_engine.resolve_player_attack(
@@ -168,13 +153,6 @@ class Player:
             enemy_dodge_chance = enemy.dodge,
             enemy_blocks_crits=enemy.void_critical_hit
         )        
-
-    # @staticmethod
-    # def did_crit():
-    #     """
-    #     Returns if the player had a critical hit or not.
-    #     """
-    #     return random.randint(1, CRIT_CHANCE) == 1
 
     # Herb usage
 
@@ -188,9 +166,9 @@ class Player:
             return HerbResult(
                 success=False, healing=0, reason="max_hp"
             )
-        herb_hp = Randomizer.randint(*self.herb_range)
+        herb_hp = self.randomizer.randint(*self.herb_range)
         actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
-        #self.current_hp += actual_hp_gained
+        
         return HerbResult(
             success=True, healing=actual_hp_gained
         )
@@ -245,7 +223,7 @@ class Player:
 
     def calc_heal(self, heal_range):
         heal_max = self.max_hp - self.current_hp
-        heal_amount = Randomizer.randint(*heal_range)
+        heal_amount = self.randomizer.randint(*heal_range)
         return min(heal_max, heal_amount)
 
     # Hurt
@@ -263,7 +241,7 @@ class Player:
         return hurt_total
 
     def calc_hurt(self, hurt_range):
-        return Randomizer.randint(*hurt_range)    
+        return self.randomizer.randint(*hurt_range)    
 
     # Sleep
 
@@ -311,14 +289,14 @@ class Player:
         enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
         player_flee_chance = self.agility * Randomizer.randint(0, 254)
         enemy_block_chance = (
-            enemy_agility * Randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
+            enemy_agility * self.randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
         )
         return player_flee_chance > enemy_block_chance
 
     # Misc stats
 
     def resist(self, chance):
-        return Randomizer.randint(1, 16) <= chance
+        return self.randomizer.randint(1, 16) <= chance
     
     def defense(self):
         """
@@ -336,4 +314,4 @@ def player_factory():
     """
     Returns a player
     """
-    return Player()
+    return Player(randomizer=Randomizer())
