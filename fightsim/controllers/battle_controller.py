@@ -4,6 +4,7 @@ from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
 from ..common.messages import EnemyActions
 from ..models.spells import SpellResult, SpellType
+from ..models.combat_engine import CombatEngine
 
 class BattleController:
     def __init__(self, model, view):
@@ -11,6 +12,7 @@ class BattleController:
         self.view = view
         self.player = self.model.player
         self.enemy = self.model.enemy
+        self.combat_engine = CombatEngine()
         
         self.battle_presenter = BattlePresenter(view)
 
@@ -63,7 +65,7 @@ class BattleController:
         # Stopspell does not lift once the player is under that status.
 
     def on_attack_button(self):
-        result = self.player.attack(self.enemy)
+        result = self.player.attack(self.enemy, self.combat_engine)
 
         if result.hit:
             self.enemy.take_damage(result.damage)
@@ -102,7 +104,7 @@ class BattleController:
             self.battle_presenter.no_spell_selected(spell)
             return
         
-        result = self.player.cast_magic(spell, self.enemy)
+        result = self.player.cast_magic(spell, self.enemy, self.combat_engine)
         if result.success is False:
             self.battle_presenter.player_spell_failed(result, self.enemy.name)
         
