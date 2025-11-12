@@ -108,12 +108,13 @@ class BattleController:
         
         # From here, spells are successful
         if spell in [SpellType.HEAL, SpellType.HEALMORE]:
-            self.battle_presenter.player_casts_heal(spell, result.amount)
             self.player.raise_hp(result.amount)
-        
-        if spell in ["Hurt", "Hurtmore"]:
-            self.battle_presenter.player_casts_hurt(spell, self.enemy.name, result)
-            
+            self.battle_presenter.player_casts_heal(spell, result.amount)
+                    
+        if spell in [SpellType.HURT, SpellType.HURTMORE]:
+            self.enemy.take_damage(result.amount)
+            self.battle_presenter.player_casts_hurt(spell, self.enemy.name, result.amount)
+                        
         if spell == "Sleep":
             self.battle_presenter.enemy_now_asleep(self.enemy.name)
             

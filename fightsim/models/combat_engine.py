@@ -76,3 +76,10 @@ class CombatEngine:
         if heal_amount == 0:
             return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.HEALED_AT_MAX_HP)
         return SpellResult(spell_name=spell, success=True, amount=heal_amount, reason=None)
+
+    def player_casts_hurt(self, spell, enemy_hurt_resist):
+        hurt_range = self.HURT_RANGES[spell]
+        hurt_amount = self.randomizer.randint(*hurt_range)
+        if self.randomizer.randint(1, 16) <= enemy_hurt_resist:
+            return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.ENEMY_RESISTED_HURT)
+        return SpellResult(spell_name=spell, success=True, amount=hurt_amount, reason=None)

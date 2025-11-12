@@ -167,8 +167,8 @@ class Player:
         spell_switch = {
             SpellType.HEAL: lambda: combat_engine.player_casts_heal(spell=spell, heal_max=(self.max_hp - self.current_hp)),
             SpellType.HEALMORE: lambda: combat_engine.player_casts_heal(spell=spell, heal_max=(self.max_hp - self.current_hp)),
-            SpellType.HURT: lambda: self.player_hurt(False, enemy),
-            SpellType.HURTMORE: lambda: self.player_hurt(True, enemy),
+            SpellType.HURT: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
+            SpellType.HURTMORE: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
             SpellType.SLEEP: self.player_casts_sleep(enemy),
             SpellType.STOPSPELL: self.player_casts_stopspell(enemy),
         }

@@ -76,10 +76,10 @@ class BattlePresenter:
 
 
     def player_casts_heal(self, spell, amount):
-        self.view.update_output(None, f"""Player casts {spell}! Player is healed {str(amount)} hit points!\n""")
+        self.view.update_output(None, f"""Player casts {spell.name}! Player is healed {str(amount)} hit points!\n""")
 
     def player_casts_hurt(self, spell, enemy_name, amount):
-        self.view.update_output(None, f"""Player casts {spell}! {enemy_name} is hurt by {str(amount)} hit points!\n""")
+        self.view.update_output(None, f"""Player casts {spell.name}! {enemy_name} is hurt by {str(amount)} hit points!\n""")
 
     def enemy_now_asleep(self, enemy_name):
         self.view.update_output(None, f"""Player casts Sleep! The {enemy_name} is now asleep!\n""")
