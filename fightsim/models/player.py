@@ -9,6 +9,7 @@ from fightsim.models.items import Item, ItemType, items
 from ..common.messages import ObserverMessages, SpellFailureReason
 from .player_leveling import _Levelling
 from ..common.randomizer import Randomizer
+from enum import Enum
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
@@ -33,6 +34,14 @@ class SpellResult:
     success: bool
     amount: int = 0
     reason: Optional[SpellFailureReason] = None
+
+class SpellType(Enum):
+    HEAL = "Heal"
+    HEALMORE = "Healmore"
+    HURT = "Hurt"
+    HURTMORE = "Hurtmore"
+    SLEEP = "Sleep"
+    STOPSPELL = "Stopspell"    
 
 @dataclass
 class Player:
@@ -106,17 +115,17 @@ class Player:
         self.player_magic = []
         if self.level >= 3:
             self.player_magic.append("Select Spell")
-            self.player_magic.append("Heal")
+            self.player_magic.append(SpellType.HEAL)
         if self.level >= 4:
-            self.player_magic.append("Hurt")
+            self.player_magic.append(SpellType.HURT)
         if self.level >= 7:
-            self.player_magic.append("Sleep")
+            self.player_magic.append(SpellType.SLEEP)
         if self.level >= 10:
-            self.player_magic.append("Stopspell")
+            self.player_magic.append(SpellType.STOPSPELL)
         if self.level >= 17:
-            self.player_magic.append("Healmore")
+            self.player_magic.append(SpellType.HEALMORE)
         if self.level >= 19:
-            self.player_magic.append("Hurtmore")
+            self.player_magic.append(SpellType.HURTMORE)
         self.model.observed.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
 
     def equip_weapon(self, weapon_name: str):
@@ -287,7 +296,7 @@ class Player:
     def is_flee_successful(self, enemy_agility, mod_select):
         """Return True if the player flees successfully"""
         enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
-        player_flee_chance = self.agility * Randomizer.randint(0, 254)
+        player_flee_chance = self.agility * self.randomizer.randint(0, 254)
         enemy_block_chance = (
             enemy_agility * self.randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
         )

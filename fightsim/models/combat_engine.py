@@ -13,6 +13,8 @@ class CombatEngine:
         self.randomizer = randomizer if randomizer is not None else Randomizer()
         self.CRIT_CHANCE = 32            
 
+    # Player Attack
+
     def player_damage_range(self, player_attack, enemy_agility):
         """
         Returns a possible damage range for a normal player_attack aenemy_aa tuple in the form (min, max)
@@ -51,3 +53,8 @@ class CombatEngine:
         return AttackResult(
             crit=crit, dodge=dodge, damage=damage, hit=not (dodge and not crit)
         )
+    
+    # Player Magic
+
+    def resolve_player_magic(self, spell, player_mp, player_is_spellstopped):
+        pass
