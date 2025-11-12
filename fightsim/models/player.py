@@ -36,12 +36,15 @@ class SpellResult:
     reason: Optional[SpellFailureReason] = None
 
 class SpellType(Enum):
-    HEAL = "Heal"
-    HEALMORE = "Healmore"
-    HURT = "Hurt"
-    HURTMORE = "Hurtmore"
-    SLEEP = "Sleep"
-    STOPSPELL = "Stopspell"    
+    # Spell name, MP requirement, Level requirement
+    HEAL = ("Heal", 4, 3)
+    HEALMORE = ("Healmore", 10, 17)
+    HURT = ("Hurt", 2, 4)
+    HURTMORE = ("Hurtmore", 5, 19)
+    SLEEP = ("Sleep", 2, 7)
+    STOPSPELL = ("Stopspell", 2, 10)
+
+
 
 @dataclass
 class Player:
@@ -194,14 +197,7 @@ class Player:
             "Stopspell": self.player_casts_stopspell(enemy),
         }
 
-        spell_cost = {
-            "Heal": 4,
-            "Healmore": 10,
-            "Hurt": 2,
-            "Hurtmore": 5,
-            "Sleep": 2,
-            "Stopspell": 2,
-        }
+        
 
         cost = spell_cost.get(spell, 0)
         if self.current_mp < cost:
