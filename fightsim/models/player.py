@@ -187,12 +187,12 @@ class Player:
 
     def cast_magic(self, spell, enemy):
         spell_switch = {
-            "Heal": lambda: self.player_heal(False),
-            "Healmore": lambda: self.player_heal(True),
-            "Hurt": lambda: self.player_hurt(False, enemy),
-            "Hurtmore": lambda: self.player_hurt(True, enemy),
-            "Sleep": self.player_casts_sleep(enemy),
-            "Stopspell": self.player_casts_stopspell(enemy),
+            SpellType.HEAL: lambda: self.player_heal(False),
+            SpellType.HEALMORE: lambda: self.player_heal(True),
+            SpellType.HURT: lambda: self.player_hurt(False, enemy),
+            SpellType.HURTMORE: lambda: self.player_hurt(True, enemy),
+            SpellType.SLEEP: self.player_casts_sleep(enemy),
+            SpellType.STOPSPELL: self.player_casts_stopspell(enemy),
         }
 
         
