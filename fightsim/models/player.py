@@ -9,7 +9,7 @@ from fightsim.models.items import Item, ItemType, items
 from ..common.messages import ObserverMessages, SpellFailureReason
 from .player_leveling import _Levelling
 from ..common.randomizer import Randomizer
-from enum import Enum
+from .spells import SpellType
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
@@ -35,20 +35,7 @@ class SpellResult:
     amount: int = 0
     reason: Optional[SpellFailureReason] = None
 
-@dataclass
-class SpellData:
-    name: str
-    mp_cost: int
-    level_required: int
 
-class SpellType(Enum):
-    # Spell name, MP requirement, Level requirement
-    HEAL = SpellData("Heal", 4, 3)
-    HEALMORE = SpellData("Healmore", 10, 17)
-    HURT = SpellData("Hurt", 2, 4)
-    HURTMORE = SpellData("Hurtmore", 5, 19)
-    SLEEP = SpellData("Sleep", 2, 7)
-    STOPSPELL = SpellData("Stopspell", 2, 10)
 
 
 
@@ -77,7 +64,7 @@ class Player:
     is_spellstopped: bool = False
     sleep_count: int = SLEEP_COUNT
     leveler: _Levelling = _Levelling()
-    model: Optional = None  # Placeholder
+    model: Optional = None  # Used for notification
     herb_range: tuple = (23, 30)
     randomizer: Optional[Randomizer] = None
 

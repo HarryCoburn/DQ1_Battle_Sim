@@ -1,5 +1,7 @@
 from ..common.randomizer import Randomizer
 from dataclasses import dataclass
+from enum import Enum
+from .spells import SpellType
 
 @dataclass
 class AttackResult:
@@ -8,10 +10,23 @@ class AttackResult:
     damage: int
     hit: bool
 
+
+
+
 class CombatEngine:
     def __init__(self, randomizer):
         self.randomizer = randomizer if randomizer is not None else Randomizer()
         self.CRIT_CHANCE = 32            
+
+        self.HEAL_RANGES = {
+            SpellType.HEAL: (10, 17),
+            SpellType.HEALMORE: (58, 85)
+        }
+
+        self.HURT_RANGES = {
+            SpellType.HURT: (5, 12),
+            SpellType.HURTMORE: (58, 65)
+        }
 
     # Player Attack
 
