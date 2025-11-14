@@ -6,7 +6,7 @@ import random
 from typing import List, Optional
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
-from ..common.messages import SpellFailureReason
+from ..common.messages import SpellFailureReason, HerbFailureReason, HerbResult
 from .player_leveling import _Levelling
 from ..common.randomizer import Randomizer
 from .spells import SpellType
@@ -24,11 +24,7 @@ class AttackResult:
     hit: bool
 
 
-@dataclass
-class HerbResult:
-    success: bool
-    healing: int
-    reason: str = ""
+
 
 
 @dataclass
@@ -142,14 +138,20 @@ class Player:
         return self.herb_count >= 1
 
     def use_herb(self):
-        """Returns the amount healed"""
-        self.herb_count -= 1
-        if self.current_hp >= self.max_hp:
-            return HerbResult(success=False, healing=0, reason="max_hp")
-        herb_hp = self.randomizer.randint(*self.herb_range)
-        actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
+        if not self.has_herbs():
+            return HerbResult(success=False, healing=0, reason=HerbFailureReason.NO_HERBS)
+        result = self.combat_engine.resolve_herb_healing(
+            current_hp = self.current_hp,
+            max_hp = self.max_hp
+        )
 
-        return HerbResult(success=True, healing=actual_hp_gained)
+        if result.success:
+            self.consume_herb()
+
+        return result
+
+    def consume_herb(self):
+        self.herb_count -= 1
 
     # Magic Usage
 

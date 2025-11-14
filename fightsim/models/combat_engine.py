@@ -1,8 +1,7 @@
 from ..common.randomizer import Randomizer
 from dataclasses import dataclass
 from .spells import SpellType, SpellResult
-from ..common.messages import SpellFailureReason
-
+from ..common.messages import SpellFailureReason, HerbFailureReason, HerbResult
 @dataclass
 class AttackResult:
     crit: bool
@@ -25,6 +24,8 @@ class CombatEngine:
             SpellType.HURT: (5, 12),
             SpellType.HURTMORE: (58, 65)
         }
+
+        self.HERB_RANGE = (23, 30)
 
     # Player Attack
 
@@ -106,3 +107,14 @@ class CombatEngine:
         if self.randomizer.randint(1, 16) <= enemy_spellstop_resistance:  
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SPELLSTOP)
         return SpellResult(spell_name=spell, success=True, amount=0, reason=None)
+    
+    # Player herbs
+    def player_herb_healing(self, current_hp, max_hp):
+        if current_hp >= max_hp:
+            return HerbResult(success=False, healing=0, reason=HerbFailureReason.MAX_HP)
+        herb_hp = self.randomizer.randint(*self.HERB_RANGE)
+        actual_hp_gained = min(herb_hp, max_hp - current_hp)
+
+        return HerbResult(success=True, healing=actual_hp_gained)
+
+        

@@ -1,5 +1,5 @@
 from enum import Enum, auto
-
+from dataclasses import dataclass
 
 class ObserverMessages(Enum):
     """
@@ -68,3 +68,13 @@ class SpellFailureReason(Enum):
     ENEMY_RESISTED_SLEEP = auto()
     ENEMY_ALREADY_SPELLSTOPPED = auto()
     ENEMY_RESISTED_SPELLSTOP = auto()
+
+class HerbFailureReason(Enum):
+    NO_HERBS = auto()
+    MAX_HP = auto()
+
+@dataclass
+class HerbResult:
+    success: bool
+    healing: int
+    reason: str = ""
