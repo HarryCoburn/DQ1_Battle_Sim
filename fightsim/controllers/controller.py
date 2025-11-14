@@ -46,6 +46,7 @@ class Controller:
             self.model.player.equip_shield(value)
         elif attribute_type == "level":
             self.model.player.level_up(value)
+            self.observer.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
         elif attribute_type == "name":
             self.model.player.change_name(value)
         elif attribute_type == "herb":

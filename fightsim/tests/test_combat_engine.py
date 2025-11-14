@@ -30,21 +30,21 @@ class TestCombatEngine(unittest.TestCase):
     def test_combat_engine_attack_calculation(self):
         # No crit, no dodge
         
-        self.combat_engine.randomizer.sequence = [2,10,25]
+        self.combat_engine.randomizer.sequence = [2,10,20]
 
         result = self.combat_engine.resolve_player_attack(
             player_strength=50,
             player_weapon=10,
-            enemy_agility=30,
-            enemy_dodge_chance=5,
+            enemy_agility=3,
+            enemy_dodge_chance=1,
             enemy_blocks_crits=False
         )
         
         # Result is an AttackResult
         
-        assert result.damage == 25
+        assert result.damage == 20
         assert result.hit == True
-        assert result.crit == False  # or True depending on your logic
+        assert result.crit == False 
 
     def test_combat_engine_attack_calculation_crit(self):
         # crit, no dodge

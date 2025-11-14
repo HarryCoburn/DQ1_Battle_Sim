@@ -9,6 +9,8 @@ from fightsim.models.player import player_factory
 from fightsim.models.enemy import enemy_dummy_factory
 from fightsim.common.eventmanager import EventManager
 from fightsim.controllers.battle_controller import BattleController
+from fightsim.models.combat_engine import CombatEngine
+from fightsim.common.randomizer import Randomizer
 
 def create_event_manager():
     return EventManager("DQ1 Model Observer")
@@ -16,8 +18,8 @@ def create_event_manager():
 def create_view():
     return View()  
 
-def create_model(event_manager):
-    return Model(player=player_factory(), enemy=enemy_dummy_factory(), observer=event_manager)
+def create_model(event_manager, combat_engine):
+    return Model(player=player_factory(combat_engine), enemy=enemy_dummy_factory(combat_engine), observer=event_manager)
 
 def create_controller(model, view, event_manager):
     return Controller(model, view, event_manager)
@@ -25,21 +27,26 @@ def create_controller(model, view, event_manager):
 def create_battle_controller(model, view):
     return BattleController(model, view)
 
+def create_combat_engine():
+    return CombatEngine(Randomizer())
+
 def main(event_manager_factory=create_event_manager,
-         view_factory=create_view,
-         model_factory=create_model,
-         controller_factory=create_controller,
+        view_factory=create_view,
+        model_factory=create_model,
+        controller_factory=create_controller,
         #  battle_presenter_factory=create_battle_presenter,
-         battle_controller_factory=create_battle_controller):
+        battle_controller_factory=create_battle_controller
+        ):
+        
     """ Entry Point for the Application """
 
     
     logging.config.fileConfig('./fightsim/logging.ini')
     main_logger = logging.getLogger('main')
     
-    try:
+    try:        
         event_manager = event_manager_factory()
-        view = view_factory()
+        view = view_factory()        
         model = model_factory(event_manager)
         controller = controller_factory(model, view, event_manager)
         battle_controller = battle_controller_factory(model, view)

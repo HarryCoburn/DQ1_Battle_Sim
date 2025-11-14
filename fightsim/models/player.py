@@ -10,6 +10,7 @@ from ..common.messages import ObserverMessages, SpellFailureReason
 from .player_leveling import _Levelling
 from ..common.randomizer import Randomizer
 from .spells import SpellType, SpellResult
+from .combat_engine import CombatEngine
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
@@ -22,12 +23,12 @@ class AttackResult:
     damage: int
     hit: bool
 
+
 @dataclass
 class HerbResult:
     success: bool
     healing: int
     reason: str = ""
-
 
 
 @dataclass
@@ -54,21 +55,15 @@ class Player:
     is_asleep: bool = False
     is_spellstopped: bool = False
     sleep_count: int = SLEEP_COUNT
-    leveler: _Levelling = _Levelling()
-    model: Optional = None  # Used for notification
+    leveler: _Levelling = _Levelling()    
     herb_range: tuple = (23, 30)
     randomizer: Optional[Randomizer] = None
+    combat_engine: Optional[CombatEngine] = None
 
     def __post_init__(self):
         self.player_magic = []
         if not 1 <= self.level <= 30:
             raise ValueError("Level must be within 1 to 30")
-
-    def set_model(self, model):
-        """
-        Injects model dependence into Player.
-        """
-        self.model = model
 
     # Changing Player stats
 
@@ -104,8 +99,7 @@ class Player:
             self.player_magic.append("Select Spell")
             for spell in SpellType:
                 if self.level >= spell.value.level_required:
-                    self.player_magic.append(spell)            
-        self.model.observed.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
+                    self.player_magic.append(spell)
 
     def equip_weapon(self, weapon_name: str):
         """
@@ -132,15 +126,15 @@ class Player:
 
     def lower_hp(self, hp_gain):
         self.current_hp -= hp_gain
-    
-    def attack(self, enemy, combat_engine):
-        return combat_engine.resolve_player_attack(
-            player_strength = self.strength,
-            player_weapon = self.weapon.modifier,
-            enemy_agility = enemy.agility,
-            enemy_dodge_chance = enemy.dodge,
-            enemy_blocks_crits=enemy.void_critical_hit
-        )        
+
+    def attack(self, enemy):
+        return self.combat_engine.resolve_player_attack(
+            player_strength=self.strength,
+            player_weapon=self.weapon.modifier,
+            enemy_agility=enemy.agility,
+            enemy_dodge_chance=enemy.dodge,
+            enemy_blocks_crits=enemy.void_critical_hit,
+        )
 
     # Herb usage
 
@@ -149,43 +143,52 @@ class Player:
 
     def use_herb(self):
         """Returns the amount healed"""
-        self.herb_count -= 1        
+        self.herb_count -= 1
         if self.current_hp >= self.max_hp:
-            return HerbResult(
-                success=False, healing=0, reason="max_hp"
-            )
+            return HerbResult(success=False, healing=0, reason="max_hp")
         herb_hp = self.randomizer.randint(*self.herb_range)
         actual_hp_gained = min(herb_hp, self.max_hp - self.current_hp)
-        
-        return HerbResult(
-            success=True, healing=actual_hp_gained
-        )
-    
+
+        return HerbResult(success=True, healing=actual_hp_gained)
+
     # Magic Usage
 
     def cast_magic(self, spell, enemy, combat_engine):
         spell_switch = {
-            SpellType.HEAL: lambda: combat_engine.player_casts_heal(spell=spell, heal_max=(self.max_hp - self.current_hp)),
-            SpellType.HEALMORE: lambda: combat_engine.player_casts_heal(spell=spell, heal_max=(self.max_hp - self.current_hp)),
-            SpellType.HURT: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
-            SpellType.HURTMORE: lambda: combat_engine.player_casts_hurt(spell, enemy.hurt_resist),
-            SpellType.SLEEP: lambda: combat_engine.player_casts_sleep(spell, enemy.enemy_sleep_count, enemy.sleep_resist),
-            SpellType.STOPSPELL: combat_engine.player_casts_stopspell(spell, enemy.enemy_spell_stopped, enemy.enemy_stopspell_resist)
+            SpellType.HEAL: lambda: combat_engine.player_casts_heal(
+                spell=spell, heal_max=(self.max_hp - self.current_hp)
+            ),
+            SpellType.HEALMORE: lambda: combat_engine.player_casts_heal(
+                spell=spell, heal_max=(self.max_hp - self.current_hp)
+            ),
+            SpellType.HURT: lambda: combat_engine.player_casts_hurt(
+                spell, enemy.hurt_resist
+            ),
+            SpellType.HURTMORE: lambda: combat_engine.player_casts_hurt(
+                spell, enemy.hurt_resist
+            ),
+            SpellType.SLEEP: lambda: combat_engine.player_casts_sleep(
+                spell, enemy.enemy_sleep_count, enemy.sleep_resist
+            ),
+            SpellType.STOPSPELL: combat_engine.player_casts_stopspell(
+                spell, enemy.enemy_spell_stopped, enemy.enemy_stopspell_resist
+            ),
         }
 
-        
-        magic_check = combat_engine.resolve_player_magic(spell, self.current_mp, self.is_spellstopped)
+        magic_check = combat_engine.resolve_player_magic(
+            spell, self.current_mp, self.is_spellstopped
+        )
         if magic_check.success is False:
             if magic_check.reason == SpellFailureReason.PLAYER_SPELLSTOPPED:
                 self.current_mp -= spell.value.mp_cost
                 return magic_check
-            else: # Not enough MP
+            else:  # Not enough MP
                 return magic_check
-            
+
         self.current_mp -= spell.value.mp_cost
         spell_function = spell_switch.get(spell, lambda: None)
-        spell_function()  
- 
+        spell_function()
+
     # Handle player's sleep status
 
     def handle_sleep(self):
@@ -202,7 +205,7 @@ class Player:
                 return "awake"
             else:
                 return True
-            
+
     # Handle fleeing
 
     def is_flee_successful(self, enemy_agility, mod_select):
@@ -210,7 +213,9 @@ class Player:
         enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
         player_flee_chance = self.agility * self.randomizer.randint(0, 254)
         enemy_block_chance = (
-            enemy_agility * self.randomizer.randint(0, 254) * enemy_run_modifiers[mod_select]
+            enemy_agility
+            * self.randomizer.randint(0, 254)
+            * enemy_run_modifiers[mod_select]
         )
         return player_flee_chance > enemy_block_chance
 
@@ -218,7 +223,7 @@ class Player:
 
     def resist(self, chance):
         return self.randomizer.randint(1, 16) <= chance
-    
+
     def defense(self):
         """
         Calculate and return defense value
@@ -231,8 +236,12 @@ class Player:
         """
         return self.current_hp <= 0
 
-def player_factory():
+
+def player_factory(combat_engine):
     """
     Returns a player
     """
-    return Player(randomizer=Randomizer())
+    return Player(
+        randomizer=Randomizer(),
+        combat_engine=combat_engine        
+    )

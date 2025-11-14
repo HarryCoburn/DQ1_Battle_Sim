@@ -5,15 +5,17 @@ from fightsim.common.messages import ObserverMessages
 from ..common.eventmanager import EventManager
 from fightsim.models.player import Player # For type checking
 from fightsim.models.enemy import Enemy, enemy_instances # For type checking
-
+from fightsim.models.combat_engine import CombatEngine
 
 
 class Model:
     """ Model class for the MVC pattern """
-    def __init__(self, player: Optional[Player] = None, enemy: Optional[Enemy] = None, observer: EventManager = None):
+    def __init__(self, player: Optional[Player] = None, enemy: Optional[Enemy] = None, observer: EventManager = None, combat_engine: CombatEngine = None):
+        self.combat_engine = combat_engine
         self.player: Player = player if player else Player()  # Add a player
         self.enemy: Optional[Enemy] = enemy if enemy else Enemy.create_dummy()
         self.observed: EventManager = observer if observer else EventManager("Generic Model Observer")
+        
 
         self.clean_text: bool = False
         self.in_battle: bool = False  # Are we in battle mode or not? If not, we're in setup mode.

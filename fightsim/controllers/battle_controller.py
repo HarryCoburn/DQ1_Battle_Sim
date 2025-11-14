@@ -12,7 +12,7 @@ class BattleController:
         self.view = view
         self.player = self.model.player
         self.enemy = self.model.enemy
-        self.combat_engine = CombatEngine()
+        self.combat_engine = CombatEngine(Randomizer())
         
         self.battle_presenter = BattlePresenter(view)
 
@@ -65,7 +65,7 @@ class BattleController:
         # Stopspell does not lift once the player is under that status.
 
     def on_attack_button(self):
-        result = self.player.attack(self.enemy, self.combat_engine)
+        result = self.player.attack(self.enemy)
 
         if result.hit:
             self.enemy.take_damage(result.damage)
