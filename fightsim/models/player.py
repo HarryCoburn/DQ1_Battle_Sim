@@ -6,10 +6,10 @@ import random
 from typing import List, Optional
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
-from ..common.messages import ObserverMessages, SpellFailureReason
+from ..common.messages import SpellFailureReason
 from .player_leveling import _Levelling
 from ..common.randomizer import Randomizer
-from .spells import SpellType, SpellResult
+from .spells import SpellType
 from .combat_engine import CombatEngine
 
 CRIT_CHANCE: int = 32
