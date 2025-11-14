@@ -203,14 +203,14 @@ class Enemy:
 
     def check_for_wake_up(self):
         """ Determines if the enemy wakes up or not """
-        if Randomizer.randint(1, 3) == 3:
+        if self.combat_engine.enemy_wakes_up():
             self.enemy_sleep_count = 0
             return SleepResult(success=False, reason=SleepReason.ENEMY_WAKES_UP)
         else:
             return SleepResult(success=True, reason=SleepReason.ENEMY_ASLEEP)
 
     def does_flee(self, player_strength):
-        return player_strength > self.strength * 2 and random.randint(1,4) == 4
+        return self.combat_engine.enemy_flees(self.strength, player_strength)
     
     def trigger_healing(self):
         return self.current_hp / self.max_hp < 0.25

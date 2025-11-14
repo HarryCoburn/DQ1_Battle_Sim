@@ -117,4 +117,12 @@ class CombatEngine:
 
         return HerbResult(success=True, healing=actual_hp_gained)
 
-        
+    #
+    # ENEMY
+    #    
+
+    def enemy_flees(self, enemy_strength, player_strength):
+        return player_strength > enemy_strength * 2 and self.randomizer.randint(1,4) == 4
+    
+    def enemy_wakes_up(self):
+        return Randomizer.randint(1, 3) == 3
