@@ -2,7 +2,7 @@
 
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
-from ..common.messages import EnemyActions, HerbFailureReason
+from ..common.messages import EnemyActions, HerbFailureReason, SleepReason
 from ..models.spells import SpellResult, SpellType
 from ..models.combat_engine import CombatEngine
 
@@ -135,17 +135,19 @@ class BattleController:
     # Enemy Turn and Actions
 
     def enemy_turn(self):
+
+        sleep_result = self.enemy.is_asleep()
         # First, handle if the enemy's sleep status
-        if self.enemy.enemy_sleep_count > 0:
-            sleep_status = self.enemy.is_asleep()
-            if sleep_status is True:
-                if self.enemy.enemy_sleep_count == 2:
-                    self.battle_presenter.enemy_is_sleeping(self.enemy.name)
-                else:
-                    self.battle_presenter.enemy_is_still_sleeping(self.enemy.name)
-                self.player_turn()
-            elif sleep_status == "enemy_woke_up":
-                self.battle_presenter.enemy_woke_up(self.enemy.name)
+        if sleep_result.success is True: # Enemy is asleep
+            if sleep_result.reason == SleepReason.FIRST_ROUND_ENEMY_ASLEEP:
+                self.battle_presenter.enemy_is_sleeping(self.enemy.name)
+            if sleep_result.reason == SleepReason.ENEMY_ASLEEP:
+                self.battle_presenter.enemy_is_still_sleeping(self.enemy.name)
+            self.player_turn()
+        if sleep_result.reason == SleepReason.ENEMY_WAKES_UP:
+            self.battle_presenter.enemy_woke_up(self.enemy.name)
+        
+                
         # Now see if the enemy flees
         if self.enemy.does_flee(self.player.strength):
             self.battle_presenter.enemy_flees(self.enemy.name)

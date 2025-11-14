@@ -3,7 +3,14 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from .enemy_data import enemy_dict
 from ..common.randomizer import Randomizer
-from ..common.messages import EnemyActions
+from .combat_engine import CombatEngine
+from ..common.messages import EnemyActions, SleepReason
+
+@dataclass
+class SleepResult:
+    success: bool
+    reason: SleepReason
+
 
 
 # Enemy Class
@@ -20,6 +27,7 @@ class Enemy:
     pattern: List[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
     run: int = 0
     void_critical_hit: bool = False
+    combat_engine: CombatEngine
     
 
     def __post_init__(self):
@@ -27,13 +35,13 @@ class Enemy:
         self.current_hp = self.max_hp
         self.enemy_sleep_count = 0  # was e_sleep
         self.enemy_spell_stopped = False  # was e_stop
-        print(f"DEBUG: Enemy {self.name} initialized with current_hp={self.current_hp}")
+        # print(f"DEBUG: Enemy {self.name} initialized with current_hp={self.current_hp}")
 
     @classmethod
-    def create_dummy(cls):
+    def create_dummy(cls, combat_engine):
         """Creates a dummy enemy with neutral stats"""
         return cls(name="Dummy", strength=0, agility=0, base_hp=[1, 1], sleep_resist=0,
-                   stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
+                   stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0, combat_engine=combat_engine)
 
     def perform_enemy_action(self, player):
         action_methods = {
@@ -186,23 +194,20 @@ class Enemy:
         return self.current_hp <= 0
 
     def is_asleep(self):
-        """
-        Check and update the sleep status of the enemy.
-        Returns True if the enemy remains asleep, otherwise False.
-        """
+        if self.enemy_sleep_count <= 0:
+            return SleepResult(success=False, reason=SleepReason.NOT_ASLEEP)
         if self.enemy_sleep_count == 2:
-            self.enemy_sleep_count -= 1            
-            return True # Enemy always sleeps for one round
-        else:
-            return self.check_for_wake_up()
+            self.enemy_sleep_count -= 1
+            return SleepResult(success=True, reason=SleepReason.FIRST_ROUND_ENEMY_ASLEEP)
+        self.check_for_wake_up()        
 
     def check_for_wake_up(self):
         """ Determines if the enemy wakes up or not """
         if Randomizer.randint(1, 3) == 3:
             self.enemy_sleep_count = 0
-            return "enemy_woke_up"
+            return SleepResult(success=False, reason=SleepReason.ENEMY_WAKES_UP)
         else:
-            return True
+            return SleepResult(success=True, reason=SleepReason.ENEMY_ASLEEP)
 
     def does_flee(self, player_strength):
         return player_strength > self.strength * 2 and random.randint(1,4) == 4
@@ -233,5 +238,5 @@ enemy_instances = {k: Enemy(**v) for k, v in enemy_dict.items()}
 enemy_names = [enemy.name for enemy in enemy_instances.values()]
 
 
-def enemy_dummy_factory():
-    return Enemy.create_dummy()
+def enemy_dummy_factory(combat_engine):
+    return Enemy.create_dummy(combat_engine)

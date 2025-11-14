@@ -78,3 +78,10 @@ class HerbResult:
     success: bool
     healing: int
     reason: str = ""
+
+class SleepReason(Enum):
+    NOT_ASLEEP = auto()
+    FIRST_ROUND_ENEMY_ASLEEP = auto()
+    ENEMY_WAKES_UP = auto()
+    ENEMY_ASLEEP = auto()
+    
