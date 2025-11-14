@@ -26,7 +26,6 @@ class Model:
 
     def initialize_game(self):
         """ Inject the model into player, reset battle variables, and notify the observer. """
-        self.player.set_model(self)
         self.in_battle = False
         self.initiative = False
         self.crit_hit = False
@@ -59,8 +58,7 @@ class Model:
             enemy_instance = enemy_instances.get(key)
             print(f"The enemy_instance is is {enemy_instance}")
             if enemy_instance:
-                self.enemy = enemy_instance
-                self.enemy.set_model(self)
+                self.enemy = enemy_instance                
                 self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
             else:
                 print("Selected an enemy that doesn't exist nor the default message. This should not happen!")

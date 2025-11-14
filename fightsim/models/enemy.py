@@ -20,7 +20,7 @@ class Enemy:
     pattern: List[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
     run: int = 0
     void_critical_hit: bool = False
-    model: Optional[any] = None
+    
 
     def __post_init__(self):
         self.max_hp = Randomizer.randint(self.base_hp[0], self.base_hp[1])
@@ -152,8 +152,7 @@ class Enemy:
         self.current_hp += heal_amt
         return heal_amt
 
-    def set_model(self, model):
-        self.model = model  # Method to inject the model dependency
+    
 
     def set_sleep(self, amount):
         self.enemy_sleep_count = amount
