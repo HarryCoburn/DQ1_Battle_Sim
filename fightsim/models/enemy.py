@@ -52,8 +52,8 @@ class Enemy:
             EnemyActions.HEALMORE: lambda: self.casts_heal(True),
             EnemyActions.SLEEP: lambda: self.casts_sleep(player),
             EnemyActions.STOPSPELL: lambda: self.casts_stopspell(player),
-            EnemyActions.FIRE: lambda: self.breathes_fire(False, player),
-            EnemyActions.STRONGFIRE: lambda: self.breathes_fire(True, player)
+            EnemyActions.FIRE: lambda: self.combat_engine.enemy_breathes_fire(chosen_action, player.armor.reduce_fire_damage),
+            EnemyActions.STRONGFIRE: lambda: self.combat_engine.enemy_breathes_fire(chosen_action, player.armor.reduce_fire_damage)
         }
 
         chosen_action = self.choose_enemy_action(player)
@@ -84,28 +84,6 @@ class Enemy:
                     choice = action
                     break
         return choice or EnemyActions.ATTACK 
-
-        
-    def breathes_fire(self, more, player):
-        fire_high = [16, 23]
-        fire_low = [10, 14]
-        strongfire_high = [65, 72]
-        strongfire_low = [42, 48]
-        fire_def = player.reduce_fire_damage
-        fire_dmg = 0
-
-        if fire_def and more:
-            fire_dmg = random.randint(strongfire_low[0], strongfire_low[1])
-        elif fire_def and not more:
-            fire_dmg = random.randint(fire_low[0], fire_low[1])
-        elif more:
-            fire_dmg = random.randint(strongfire_high[0], strongfire_high[1])
-        else:
-            fire_dmg = random.randint(fire_high[0], fire_high[1])
-
-        player.current_hp -= fire_dmg
-        return fire_dmg
-
     
     def casts_heal(self, more):
         if self.enemy_spell_stopped is True:
@@ -177,8 +155,6 @@ class Enemy:
     
     def trigger_healing(self):
         return self.current_hp / self.max_hp < 0.25
-
-    
 
     def take_damage(self, damage):
         self.current_hp -= damage

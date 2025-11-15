@@ -172,8 +172,9 @@ class BattleController:
                 )
 
         if action in [EnemyActions.FIRE, EnemyActions.STRONGFIRE]:
-            self.battle_presenter.enemy_breathes_fire(
-                self.enemy.name, result, self.player.name
+            self.player.lower_hp(result.amount)
+            self.battle_presenter.enemy_breathes_fire(                
+                self.enemy.name, self.player.name, result.amount, action
             )
 
         if action in [EnemyActions.HEAL, EnemyActions.HEALMORE]:

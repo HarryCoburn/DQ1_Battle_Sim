@@ -162,3 +162,22 @@ class CombatEngine:
             hurt_dmg = Randomizer.randint(*hurt_high)
 
         return SpellResult(action.description, True, hurt_dmg)
+    
+    def enemy_breathes_fire(self, action, reduce_fire_damage):        
+        
+        fire_high = []
+        fire_low = []
+
+        if action == EnemyActions.FIRE:
+            fire_high = [16, 23]
+            fire_low = [10, 14]
+        elif action == EnemyActions.STRONGFIRE:
+            fire_high = [65,72] 
+            fire_low = [42,48]
+
+        if reduce_fire_damage:
+            fire_dmg = Randomizer.randint(*fire_low)
+        else:
+            fire_dmg = Randomizer.randint(*fire_high)
+
+        return SpellResult(action.description, True, fire_dmg)

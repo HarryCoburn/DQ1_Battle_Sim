@@ -136,14 +136,14 @@ class BattlePresenter:
             spell_name = "Hurtmore"
         self.view.update_output(f"""The {enemy_name} casts {spell_name}! {player_name} is hurt for {damage} damage!""")
 
-    def enemy_breathes_fire(self, enemy_name, result, player_name):
+    def enemy_breathes_fire(self, enemy_name, player_name, amount, action):
         spell_name = ""
-        damage = result[1]
-        if result[0] == EnemyActions.FIRE:
+        
+        if action == EnemyActions.FIRE:
             spell_name = "fire"
-        if result[0] == EnemyActions.STRONGFIRE:
+        if action == EnemyActions.STRONGFIRE:
             spell_name = "strong flames at you!"
-        self.view.update_output(f"""The {enemy_name} breathes {spell_name}! {player_name} is hurt for {damage} damage!""")
+        self.view.update_output(f"""The {enemy_name} breathes {spell_name}! {player_name} is hurt for {amount} damage!""")
 
     def enemy_casts_heal(self, enemy_name, result):
         spell_name = ""
