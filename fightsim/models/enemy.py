@@ -45,9 +45,9 @@ class Enemy:
 
     def perform_enemy_action(self, player):
         enemy_actions = {
-            EnemyActions.ATTACK: self.combat_engine.resolve_enemy_attack(self.strength, player.defense()),
-            EnemyActions.HURT: lambda: self.casts_hurt(False, player),
-            EnemyActions.HURTMORE: lambda: self.casts_hurt(True, player),
+            EnemyActions.ATTACK: lambda: self.combat_engine.resolve_enemy_attack(self.strength, player.defense()),
+            EnemyActions.HURT: lambda: self.combat_engine.enemy_casts_hurt(chosen_action, player.armor.reduce_hurt_damage, self.enemy_spell_stopped),
+            EnemyActions.HURTMORE: lambda: self.combat_engine.enemy_casts_hurt(chosen_action, player.armor.reduce_hurt_damage, self.enemy_spell_stopped),
             EnemyActions.HEAL: lambda: self.casts_heal(False),
             EnemyActions.HEALMORE: lambda: self.casts_heal(True),
             EnemyActions.SLEEP: lambda: self.casts_sleep(player),
@@ -83,31 +83,8 @@ class Enemy:
                 if action == EnemyActions.STOPSPELL and not player.is_spellstopped: # Don't cast spellstop if player is stopped. Smart monsters.
                     choice = action
                     break
-        return choice or EnemyActions.ATTACK
-        
-    def casts_hurt(self, more, player):
-        """ Enemy handling of hurt and hurtmore"""        
-        hurt_high = [3, 10]
-        hurt_low = [2, 6]
-        hurtmore_high = [30, 45]
-        hurtmore_low = [20, 30]
-        player_mag_def = player.reduce_hurt_damage
-        hurt_dmg = 0
-        
-        if self.enemy_spell_stopped is True:
-            return "enemy_spellstopped"
+        return choice or EnemyActions.ATTACK 
 
-        if player_mag_def and more:
-            hurt_dmg = random.randint(hurtmore_low[0], hurtmore_low[1])
-        elif player_mag_def and not more:
-            hurt_dmg = random.randint(hurt_low[0], hurt_low[1])
-        elif more:
-            hurt_dmg = random.randint(hurtmore_high[0], hurtmore_high[1])
-        else:
-            hurt_dmg = random.randint(hurt_high[0], hurt_high[1])
-
-        player.current_hp -= hurt_dmg
-        return hurt_dmg
         
     def breathes_fire(self, more, player):
         fire_high = [16, 23]

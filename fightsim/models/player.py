@@ -172,7 +172,7 @@ class Player:
             SpellType.SLEEP: lambda: combat_engine.player_casts_sleep(
                 spell, enemy.enemy_sleep_count, enemy.sleep_resist
             ),
-            SpellType.STOPSPELL: combat_engine.player_casts_stopspell(
+            SpellType.STOPSPELL: lambda: combat_engine.player_casts_stopspell(
                 spell, enemy.enemy_spell_stopped, enemy.enemy_stopspell_resist
             ),
         }

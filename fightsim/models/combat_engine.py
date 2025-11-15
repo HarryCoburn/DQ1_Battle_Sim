@@ -1,7 +1,7 @@
 from ..common.randomizer import Randomizer
 from dataclasses import dataclass
 from .spells import SpellType, SpellResult
-from ..common.messages import SpellFailureReason, HerbFailureReason, HerbResult
+from ..common.messages import SpellFailureReason, HerbFailureReason, HerbResult, EnemyActions
 @dataclass
 class AttackResult:
     crit: bool = False
@@ -141,3 +141,24 @@ class CombatEngine:
     def normal_damage_range(self, enemy_strength, player_defense):
         """ Returns a damage tuple for a strong attack. """
         return ((enemy_strength - player_defense // 2) // 4), ((enemy_strength - player_defense // 2) // 2)
+    
+    def enemy_casts_hurt(self, action, player_defense, enemy_spell_stopped):
+        if enemy_spell_stopped:
+            return SpellResult(action.description, False, 0, SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED)
+        
+        hurt_high = []
+        hurt_low = []
+
+        if action == EnemyActions.HURT:
+            hurt_high = [3, 10]
+            hurt_low = [2, 6]
+        elif action == EnemyActions.HURTMORE:
+            hurt_high = [30,45] 
+            hurt_low = [20,30]
+
+        if player_defense:
+            hurt_dmg = Randomizer.randint(*hurt_low)
+        else:
+            hurt_dmg = Randomizer.randint(*hurt_high)
+
+        return SpellResult(action.description, True, hurt_dmg)

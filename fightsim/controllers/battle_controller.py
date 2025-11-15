@@ -2,7 +2,7 @@
 
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
-from ..common.messages import EnemyActions, HerbFailureReason, SleepReason
+from ..common.messages import EnemyActions, HerbFailureReason, SleepReason, SpellFailureReason
 from ..models.spells import SpellResult, SpellType
 from ..models.combat_engine import CombatEngine
 
@@ -158,14 +158,15 @@ class BattleController:
 
         if action == EnemyActions.ATTACK:
             self.battle_presenter.enemy_attacks(self.enemy.name, result.damage)
-            self.player.lower_hp(result.damage)
+            self.player.lower_hp(result.amount)
 
         if action in [EnemyActions.HURT, EnemyActions.HURTMORE]:
-            if self.enemy.enemy_spell_stopped:
+            if result.reason == SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED:            
                 self.battle_presenter.enemy_casts_while_spellstopped(
-                    self.enemy.name, result[0]
+                    self.enemy.name, action.description
                 )
             else:
+                self.player.lower_hp(result.amount)
                 self.battle_presenter.enemy_casts_hurt(
                     self.enemy.name, result, self.player.name
                 )
