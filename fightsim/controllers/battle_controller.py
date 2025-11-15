@@ -146,20 +146,21 @@ class BattleController:
             self.player_turn()
         if sleep_result.reason == SleepReason.ENEMY_WAKES_UP:
             self.battle_presenter.enemy_woke_up(self.enemy.name)
-        
-                
+
+
         # Now see if the enemy flees
         if self.enemy.does_flee(self.player.strength):
             self.battle_presenter.enemy_flees(self.enemy.name)
-            self.end_fight()  #    self.fight_over.set(True)
+            self.end_fight()  
 
         # Perform an action and get its result
-        result = self.enemy.perform_enemy_action(self.player)
+        action, result = self.enemy.perform_enemy_action(self.player)
 
-        if result[0] == EnemyActions.ATTACK:
-            self.battle_presenter.enemy_attacks(self.enemy.name, str(result[1]))
+        if action == EnemyActions.ATTACK:
+            self.battle_presenter.enemy_attacks(self.enemy.name, result.damage)
+            self.player.lower_hp(result.damage)
 
-        if result[0] in [EnemyActions.HURT, EnemyActions.HURTMORE]:
+        if action in [EnemyActions.HURT, EnemyActions.HURTMORE]:
             if self.enemy.enemy_spell_stopped:
                 self.battle_presenter.enemy_casts_while_spellstopped(
                     self.enemy.name, result[0]
@@ -169,12 +170,12 @@ class BattleController:
                     self.enemy.name, result, self.player.name
                 )
 
-        if result[0] in [EnemyActions.FIRE, EnemyActions.STRONGFIRE]:
+        if action in [EnemyActions.FIRE, EnemyActions.STRONGFIRE]:
             self.battle_presenter.enemy_breathes_fire(
                 self.enemy.name, result, self.player.name
             )
 
-        if result[0] in [EnemyActions.HEAL, EnemyActions.HEALMORE]:
+        if action in [EnemyActions.HEAL, EnemyActions.HEALMORE]:
             if self.enemy.enemy_spell_stopped:
                 self.battle_presenter.enemy_casts_while_spellstopped(
                     self.enemy.name, result[0]
@@ -182,7 +183,7 @@ class BattleController:
             else:
                 self.battle_presenter.enemy_casts_heal(self.enemy.name, result)
 
-        if result[0] == EnemyActions.SLEEP:
+        if action == EnemyActions.SLEEP:
             if self.enemy.enemy_spell_stopped:
                 self.battle_presenter.enemy_casts_while_spellstopped(
                     self.enemy.name, result[0]
@@ -190,7 +191,7 @@ class BattleController:
             else:
                 self.battle_presenter.enemy_casts_sleep(self.enemy.name)
 
-        if result[0] == EnemyActions.STOPSPELL:
+        if action == EnemyActions.STOPSPELL:
             if self.enemy.enemy_spell_stopped:
                 self.battle_presenter.enemy_casts_while_spellstopped(
                     self.enemy.name, result[0]

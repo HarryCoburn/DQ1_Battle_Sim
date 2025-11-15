@@ -4,10 +4,10 @@ from .spells import SpellType, SpellResult
 from ..common.messages import SpellFailureReason, HerbFailureReason, HerbResult
 @dataclass
 class AttackResult:
-    crit: bool
-    dodge: bool
+    crit: bool = False
+    dodge: bool = False
     damage: int
-    hit: bool
+    hit: bool = True
 
 class CombatEngine:
     def __init__(self, randomizer):
@@ -126,3 +126,18 @@ class CombatEngine:
     
     def enemy_wakes_up(self):
         return Randomizer.randint(1, 3) == 3
+    
+    def resolve_enemy_attack(self, enemy_strength, player_defense):
+        if player_defense > enemy_strength:
+            enemy_damage_dealt = Randomizer.randint(*self.weak_damage_range(enemy_strength))
+        else:
+            enemy_damage_dealt = Randomizer.randint(*self.normal_damage_range(enemy_strength, player_defense))
+        return AttackResult(damage=enemy_damage_dealt)
+    
+    def weak_damage_range(self, enemy_strength):
+        """ Returns a damage tuple for a weak attack. """
+        return 0, ((enemy_strength + 4) // 6)
+    
+    def normal_damage_range(self, enemy_strength, player_defense):
+        """ Returns a damage tuple for a strong attack. """
+        return ((enemy_strength - player_defense // 2) // 4), ((enemy_strength - player_defense // 2) // 2)

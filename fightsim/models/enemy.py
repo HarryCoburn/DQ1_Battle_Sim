@@ -44,8 +44,8 @@ class Enemy:
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0, combat_engine=combat_engine)
 
     def perform_enemy_action(self, player):
-        action_methods = {
-            EnemyActions.ATTACK: lambda: self.attack(player),
+        enemy_actions = {
+            EnemyActions.ATTACK: self.combat_engine.resolve_enemy_attack(self.strength, player.defense()),
             EnemyActions.HURT: lambda: self.casts_hurt(False, player),
             EnemyActions.HURTMORE: lambda: self.casts_hurt(True, player),
             EnemyActions.HEAL: lambda: self.casts_heal(False),
@@ -57,7 +57,7 @@ class Enemy:
         }
 
         chosen_action = self.choose_enemy_action(player)
-        action = action_methods.get(chosen_action, self.handle_unknown_action)
+        action = enemy_actions.get(chosen_action, self.handle_unknown_action)
         result = action()
         return (chosen_action, result)
 
@@ -84,13 +84,7 @@ class Enemy:
                     choice = action
                     break
         return choice or EnemyActions.ATTACK
-    
-    def attack(self, player):
-        """Enemy attacks normally"""
-        enemy_damage_dealt = self.attack_damage_dealt(player.defense())
-        player.current_hp -= enemy_damage_dealt
-        return enemy_damage_dealt
-
+        
     def casts_hurt(self, more, player):
         """ Enemy handling of hurt and hurtmore"""        
         hurt_high = [3, 10]
@@ -135,15 +129,7 @@ class Enemy:
         player.current_hp -= fire_dmg
         return fire_dmg
 
-    def attack_damage_dealt(self, hero_defense):
-        """ Enemy makes a successful attack. Returns a damage amount. """
-        if hero_defense > self.strength:
-            damage_range = self.weak_damage_range(self.strength)
-        else:
-            damage_range = self.normal_damage_range(self.strength, hero_defense)
-
-        return Randomizer.randint(*damage_range)
-
+    
     def casts_heal(self, more):
         if self.enemy_spell_stopped is True:
             return "enemy_spellstopped"
@@ -220,15 +206,7 @@ class Enemy:
     def take_damage(self, damage):
         self.current_hp -= damage
 
-    @staticmethod
-    def weak_damage_range(x):
-        """ Returns a damage tuple for a weak attack. """
-        return 0, ((x + 4) // 6)
-
-    @staticmethod
-    def normal_damage_range(x, y):
-        """ Returns a damage tuple for a strong attack. """
-        return ((x - y // 2) // 4), ((x - y // 2) // 2)
+   
 
 
 # Create enemy objects
