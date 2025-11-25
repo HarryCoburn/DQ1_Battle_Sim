@@ -199,3 +199,9 @@ class CombatEngine:
 
         
         return SpellResult(action, True, heal_amt)
+    
+    def enemy_casts_sleep(self, action, player, is_stopped):
+        if is_stopped:
+            return SpellResult(action, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
+        player.is_asleep = True
+        return SpellResult(action, True, 0)

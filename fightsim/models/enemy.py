@@ -49,8 +49,8 @@ class Enemy:
             EnemyActions.HURT: lambda: self.combat_engine.enemy_casts_hurt(chosen_action, player.armor.reduce_hurt_damage, self.enemy_spell_stopped),
             EnemyActions.HURTMORE: lambda: self.combat_engine.enemy_casts_hurt(chosen_action, player.armor.reduce_hurt_damage, self.enemy_spell_stopped),
             EnemyActions.HEAL: lambda: self.combat_engine.enemy_casts_heal(chosen_action, self.enemy_spell_stopped, (self.max_hp - self.current_hp)),
-            EnemyActions.HEALMORE: lambda: self.casts_heal(True),
-            EnemyActions.SLEEP: lambda: self.casts_sleep(player),
+            EnemyActions.HEALMORE: lambda: self.combat_engine.enemy_casts_heal(chosen_action, self.enemy_spell_stopped, (self.max_hp - self.current_hp)),
+            EnemyActions.SLEEP: lambda: self.combat_engine.enemy_casts_sleep(chosen_action, player, self.enemy_spell_stopped),
             EnemyActions.STOPSPELL: lambda: self.casts_stopspell(player),
             EnemyActions.FIRE: lambda: self.combat_engine.enemy_breathes_fire(chosen_action, player.armor.reduce_fire_damage),
             EnemyActions.STRONGFIRE: lambda: self.combat_engine.enemy_breathes_fire(chosen_action, player.armor.reduce_fire_damage)
@@ -83,26 +83,11 @@ class Enemy:
                 if action == EnemyActions.STOPSPELL and not player.is_spellstopped: # Don't cast spellstop if player is stopped. Smart monsters.
                     choice = action
                     break
-        return choice or EnemyActions.ATTACK 
-    
-    def casts_heal(self, more):
-        if self.enemy_spell_stopped is True:
-            return "enemy_spellstopped"
-        
-        
-        heal_max = self.max_hp - self.current_hp
-
-        
-
-    
+        return choice or EnemyActions.ATTACK
 
     def set_sleep(self, amount):
-        self.enemy_sleep_count = amount
+        self.enemy_sleep_count = amount    
     
-    def casts_sleep(self, player):
-        # Sleep always hits player
-        player.is_asleep = True
-        return "player_now_asleep"
 
     def casts_stopspell(self, player):
         # 50% chance
