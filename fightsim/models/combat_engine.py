@@ -144,7 +144,7 @@ class CombatEngine:
     
     def enemy_casts_hurt(self, action, player_defense, enemy_spell_stopped):
         if enemy_spell_stopped:
-            return SpellResult(action.description, False, 0, SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED)
+            return SpellResult(action.description, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
         
         hurt_high = []
         hurt_low = []
@@ -181,3 +181,21 @@ class CombatEngine:
             fire_dmg = Randomizer.randint(*fire_high)
 
         return SpellResult(action.description, True, fire_dmg)
+    
+    def enemy_casts_heal(self, action, is_stopped, heal_max):
+        if is_stopped:
+            return SpellResult(action, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
+        
+
+        heal_range = [20, 27]
+        healmore_range = [85, 100]
+        heal_rand = 0
+        if action == EnemyActions.HEALMORE:
+            heal_rand = self.randomizer.randint(healmore_range[0], healmore_range[1]) 
+        elif action == EnemyActions.HEAL:
+            heal_rand = self.randomizer.randint(heal_range[0], heal_range[1])
+
+        heal_amt = heal_rand if heal_rand < heal_max else heal_max
+
+        
+        return SpellResult(action, True, heal_amt)

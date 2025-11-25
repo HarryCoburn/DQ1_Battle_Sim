@@ -48,7 +48,7 @@ class Enemy:
             EnemyActions.ATTACK: lambda: self.combat_engine.resolve_enemy_attack(self.strength, player.defense()),
             EnemyActions.HURT: lambda: self.combat_engine.enemy_casts_hurt(chosen_action, player.armor.reduce_hurt_damage, self.enemy_spell_stopped),
             EnemyActions.HURTMORE: lambda: self.combat_engine.enemy_casts_hurt(chosen_action, player.armor.reduce_hurt_damage, self.enemy_spell_stopped),
-            EnemyActions.HEAL: lambda: self.casts_heal(False),
+            EnemyActions.HEAL: lambda: self.combat_engine.enemy_casts_heal(chosen_action, self.enemy_spell_stopped, (self.max_hp - self.current_hp)),
             EnemyActions.HEALMORE: lambda: self.casts_heal(True),
             EnemyActions.SLEEP: lambda: self.casts_sleep(player),
             EnemyActions.STOPSPELL: lambda: self.casts_stopspell(player),
@@ -89,17 +89,10 @@ class Enemy:
         if self.enemy_spell_stopped is True:
             return "enemy_spellstopped"
         
-        heal_range = [20, 27]
-        healmore_range = [85, 100]
+        
         heal_max = self.max_hp - self.current_hp
 
-        heal_rand = random.randint(healmore_range[0], healmore_range[1]) if more else random.randint(heal_range[0],
-                                                                                                     heal_range[1])
-
-        heal_amt = heal_rand if heal_rand < heal_max else heal_max
-
-        self.current_hp += heal_amt
-        return heal_amt
+        
 
     
 
@@ -158,6 +151,9 @@ class Enemy:
 
     def take_damage(self, damage):
         self.current_hp -= damage
+
+    def gain_hp(self, amount):
+        self.current_hp += amount
 
    
 

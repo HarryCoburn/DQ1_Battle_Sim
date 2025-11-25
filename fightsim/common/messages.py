@@ -68,6 +68,7 @@ class SpellFailureReason(Enum):
     ENEMY_RESISTED_SLEEP = auto()
     ENEMY_ALREADY_SPELLSTOPPED = auto()
     ENEMY_RESISTED_SPELLSTOP = auto()
+    ENEMY_SPELLSTOPPED = auto()
 
 class HerbFailureReason(Enum):
     NO_HERBS = auto()
