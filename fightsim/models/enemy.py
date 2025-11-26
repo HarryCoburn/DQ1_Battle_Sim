@@ -128,8 +128,6 @@ class Enemy:
     def gain_hp(self, amount):
         self.current_hp += amount
 
-# Create enemy objects
-# enemy_instances = {k: Enemy(**v) for k, v in enemy_dict.items()}
 
 # Create enemy names
 enemy_names = [data['name'] for data in enemy_dict.values()]

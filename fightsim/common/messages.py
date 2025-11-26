@@ -1,35 +1,6 @@
 from enum import Enum, auto
 from dataclasses import dataclass
 
-class ObserverMessages(Enum):
-    """
-    Observer Messages for sending commands
-    """
-    OUTPUT_CHANGE = auto()
-    OUTPUT_CLEAR = auto()
-    ENEMY_CHANGE = auto()
-    PLAYER_HP_CHANGE = auto()
-    WEAPON_CHANGE = auto()
-    SHIELD_CHANGE = auto()
-    ARMOR_CHANGE = auto()
-    RESET_GAME = auto()
-    UPDATE_PLAYER_MAGIC = auto()
-
-    def description(self):
-        descriptions = {
-            ObserverMessages.OUTPUT_CLEAR: "Clears the output window.",
-            ObserverMessages.OUTPUT_CHANGE: "Appends new data to the output window.",
-            ObserverMessages.ENEMY_CHANGE: "The enemy has changed",
-            ObserverMessages.PLAYER_HP_CHANGE: "The player's Hit Points have changed.",
-            ObserverMessages.WEAPON_CHANGE: "The player's weapon has changed.",
-            ObserverMessages.SHIELD_CHANGE: "The player's shield has changed.",
-            ObserverMessages.ARMOR_CHANGE: "The player's armor has changed.",
-            ObserverMessages.RESET_GAME: "Resets the game.",
-            ObserverMessages.UPDATE_PLAYER_MAGIC: "Updates the player magic menu"
-        }
-        return descriptions.get(self, "No description available.")
-
-
 # Enemy Actions
 class EnemyActions(Enum):
     """

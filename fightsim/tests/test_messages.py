@@ -1,30 +1,5 @@
 import unittest
-from ..common.messages import ObserverMessages, EnemyActions
-
-
-class TestObserverMessagesEnum(unittest.TestCase):
-    def test_enum_members_exist(self):
-        """Test that all expected enum members exist."""
-        expected_members = {
-            'OUTPUT_CHANGE', 'OUTPUT_CLEAR', 'ENEMY_CHANGE',
-            'PLAYER_HP_CHANGE', 'WEAPON_CHANGE', 'SHIELD_CHANGE',
-            'ARMOR_CHANGE', 'RESET_GAME', 'UPDATE_PLAYER_MAGIC'
-        }
-        actual_members = {member.name for member in ObserverMessages}
-        self.assertEqual(actual_members, expected_members)
-
-    def test_enum_auto_values(self):
-        """Test that enum values are unique and auto-assigned."""
-        values = {member.value for member in ObserverMessages}
-        self.assertEqual(len(values), len(ObserverMessages))
-
-    def test_enum_descriptions_are_present(self):
-        """ Test that all the enums have a non-default description """
-        for member in ObserverMessages:
-            with self.subTest(member=member):
-                description = member.description()
-                self.assertNotEqual(description, "No description available.",
-                                    f"{member.name} should have a custom description.")
+from ..common.messages import EnemyActions
 
 
 class TestEnemyActionsEnum(unittest.TestCase):
