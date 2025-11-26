@@ -106,7 +106,7 @@ class Enemy:
         if self.enemy_sleep_count == 2:
             self.enemy_sleep_count -= 1
             return SleepResult(success=True, reason=SleepReason.FIRST_ROUND_ENEMY_ASLEEP)
-        self.check_for_wake_up()        
+        return self.check_for_wake_up()        
 
     def check_for_wake_up(self):
         """ Determines if the enemy wakes up or not """
