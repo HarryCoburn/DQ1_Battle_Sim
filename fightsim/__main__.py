@@ -4,39 +4,35 @@ import logging
 import logging.config
 from fightsim.views.view import View
 from fightsim.controllers.controller import Controller
-from fightsim.models.game_state import Model
+from fightsim.models.game_state import GameState
 from fightsim.models.player import player_factory
 from fightsim.models.enemy import enemy_dummy_factory
-from fightsim.common.eventmanager import EventManager
+
 from fightsim.controllers.battle_controller import BattleController
 from fightsim.models.combat_engine import CombatEngine
 from fightsim.common.randomizer import Randomizer
 from fightsim.models.game_constants import GameConstants
 
-def create_event_manager():
-    return EventManager("DQ1 Model Observer")
-
 def create_view():
     return View()  
 
-def create_model(event_manager, combat_engine):
-    return Model(player=player_factory(combat_engine), enemy=enemy_dummy_factory(combat_engine), observer=event_manager)
+def create_game_state(combat_engine):
+    return GameState(player=player_factory(combat_engine), enemy=enemy_dummy_factory(combat_engine))
 
-def create_controller(model, view, event_manager):
-    return Controller(model, view, event_manager)
+def create_controller(game_state, view):
+    return Controller(game_state, view)
 
-def create_battle_controller(model, view):
-    return BattleController(model, view)
+def create_battle_controller(game_state, view):
+    return BattleController(game_state, view)
 
 def create_combat_engine():
     return CombatEngine(Randomizer(), GameConstants())
 
-def main(event_manager_factory=create_event_manager,
-        view_factory=create_view,
-        model_factory=create_model,
-        controller_factory=create_controller,
-        #  battle_presenter_factory=create_battle_presenter,
-        battle_controller_factory=create_battle_controller
+def main(view_factory=create_view,
+        game_state_factory=create_game_state,
+        controller_factory=create_controller,        
+        battle_controller_factory=create_battle_controller,
+        combat_engine_factory=create_combat_engine
         ):
         
     """ Entry Point for the Application """
@@ -45,14 +41,12 @@ def main(event_manager_factory=create_event_manager,
     logging.config.fileConfig('./fightsim/logging.ini')
     main_logger = logging.getLogger('main')
     
-    try:        
-        event_manager = event_manager_factory()
+    try:       
+        combat_engine = combat_engine_factory()
         view = view_factory()        
-        model = model_factory(event_manager)
-        controller = controller_factory(model, view, event_manager)
-        battle_controller = battle_controller_factory(model, view)
-        # battle_presenter = battle_presenter_factory(view)
-        
+        game_state = game_state_factory(combat_engine)
+        controller = controller_factory(game_state, view)
+        battle_controller = battle_controller_factory(game_state, view)
         view.set_controllers(controller, battle_controller)
         controller.initial_update()
 
