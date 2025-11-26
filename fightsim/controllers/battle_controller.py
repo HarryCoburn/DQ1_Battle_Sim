@@ -85,7 +85,7 @@ class BattleController:
             self.battle_presenter.no_herbs()
             return  # Player does not lose turn if they try to use an herb when they have none.
         elif result.reason == HerbFailureReason.MAX_HP:
-            result = self.player.use_herb()
+            self.battle_presenter.eat_herb_at_full_hp()
         else:
             self.player.raise_hp(result.healing)
             self.battle_presenter.eat_herb(None, result.healing)

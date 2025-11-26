@@ -110,7 +110,7 @@ class CombatEngine:
         return SpellResult(spell_name=spell, success=True, amount=0, reason=None)
     
     # Player herbs
-    def player_herb_healing(self, current_hp, max_hp):
+    def resolve_herb_healing(self, current_hp, max_hp):
         if current_hp >= max_hp:
             return HerbResult(success=False, healing=0, reason=HerbFailureReason.MAX_HP)
         herb_hp = self.randomizer.randint(*self.HERB_RANGE)
