@@ -241,6 +241,11 @@ class Player:
         """
         return self.current_hp <= 0
 
+    def add_herb(self):
+        if self.herb_count < 6:
+            self.herb_count += 1
+            return True
+        return False
 
 def player_factory(combat_engine):
     """

@@ -3,16 +3,16 @@
 from fightsim.presenters.battle_presenter import BattlePresenter
 from ..common.randomizer import Randomizer
 from ..common.messages import EnemyActions, HerbFailureReason, SleepReason, SpellFailureReason
-from ..models.spells import SpellResult, SpellType
+from ..models.spells import SpellType
 from ..models.combat_engine import CombatEngine
 
 
 class BattleController:
-    def __init__(self, model, view):
-        self.model = model
+    def __init__(self, game_state, view):
+        self.game_state = game_state
         self.view = view
-        self.player = self.model.player
-        self.enemy = self.model.enemy
+        self.player = self.game_state.player
+        self.enemy = self.game_state.enemy
         self.combat_engine = CombatEngine(Randomizer())
 
         self.battle_presenter = BattlePresenter(view)
@@ -21,18 +21,18 @@ class BattleController:
 
     def start_battle(self, *_):
         """Sanity check to ensure the player has selected an enemy"""
-        print(f"Entering start_battle, enemy is {self.model.enemy}")
-        if self.model.enemy is None:
+        print(f"Entering start_battle, enemy is {self.game_state.enemy}")
+        if self.game_state.enemy is None:
             pass
         else:
             self.setup_battle()
 
     def setup_battle(self):
         """All of the initial battle setup before the battle menu appears"""
-        self.view.update_player_info(self.model.player)
+        self.view.update_player_info(self.game_state.player)
         self.view.show_frame(self.view.battle_frame)                
-        self.player = self.model.player
-        self.enemy = self.model.enemy
+        self.player = self.game_state.player
+        self.enemy = self.game_state.enemy
         self.battle_presenter.start_fight_msg(None, self.enemy.name)  # test name here
         self.start_fight()
 

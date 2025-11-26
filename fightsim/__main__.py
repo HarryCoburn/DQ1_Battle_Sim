@@ -4,7 +4,7 @@ import logging
 import logging.config
 from fightsim.views.view import View
 from fightsim.controllers.controller import Controller
-from fightsim.models.model import Model
+from fightsim.models.game_state import Model
 from fightsim.models.player import player_factory
 from fightsim.models.enemy import enemy_dummy_factory
 from fightsim.common.eventmanager import EventManager

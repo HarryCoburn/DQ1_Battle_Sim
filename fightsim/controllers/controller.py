@@ -1,66 +1,67 @@
 # controller.py - Core controller for the simulation
 
-from fightsim.common.messages import ObserverMessages
 import logging
-from ..common.decorators import handle_errors
+from ..models.enemy_data import enemy_name_to_key
+from ..models.enemy import create_enemy
 
 
 class Controller:
     """ Main controller class"""
 
-    def __init__(self, model, view, observer):
+    def __init__(self, game_state, view):
         self.logger = logging.getLogger(__name__)  # Get a module-level logger
-        if not model or not view:
+        if not game_state or not view:
             self.logger.error("Model and View are required for Controller initialization.")
             raise ValueError("Model and View cannot be None.")
 
-        self.model = model
+        self.game_state = game_state
         self.view = view
-        self.observer = observer
-
-        self.setup_observers()
         self.initialize_view()
-
-    def setup_observers(self):
-        """ Attach the controller as an observer to model events """
-        messages = [
-            ObserverMessages.OUTPUT_CHANGE,
-            ObserverMessages.OUTPUT_CLEAR,
-            ObserverMessages.UPDATE_PLAYER_MAGIC
-        ]
-        for message in messages:
-            self.observer.attach(self, message)
-            self.logger.debug(f"Attached controller to model with message: {message}")
-
+   
     def initialize_view(self):
-        self.model.text("DQ1 Battle Sim")
+        self.view.update_output(None, "DQ1 Battle Sim")
         self.logger.info("View initialized with welcome message.")
 
     def update_player_attribute(self, attribute_type, value=None):
         """ Generic method to update player attributes """
         if attribute_type == "weapon":
-            self.model.player.equip_weapon(value)
+            self.game_state.player.equip_weapon(value)
         elif attribute_type == "armor":
-            self.model.player.equip_armor(value)
+            self.game_state.player.equip_armor(value)
         elif attribute_type == "shield":
-            self.model.player.equip_shield(value)
+            self.game_state.player.equip_shield(value)
         elif attribute_type == "level":
-            self.model.player.level_up(value)
+            self.game_state.player.level_up(value)
             self.view.battle_frame.update_player_magic_menu()
         elif attribute_type == "name":
-            self.model.player.change_name(value)
+            self.game_state.player.change_name(value)
         elif attribute_type == "herb":
-            self.model.buy_herb()
-        self.view.update_player_info(self.model.player)        
+            success = self.game_state.player.add_herb()
+            if success:
+                self.view.update_output(None, "Buying an herb.")
+            else:
+                self.view.update_output(None, "You have the maximum number of herbs.")
+
+        self.view.update_player_info(self.game_state.player)        
         self.logger.info(f"Updated {attribute_type} to {value}")
 
-    def update_enemy(self, value):
-        self.model.set_enemy(value)
-        self.view.update_enemy_info(self.model.enemy)
-        self.logger.info(f"Updated enemy to {value}")
+    def update_enemy(self, name):
+        # Handle no enemy selected
+        if name == "Select Enemy":
+            self.game_state.enemy = None
+        # Find the enemy
+        key = enemy_name_to_key(name)
+        if key:
+            self.game_state.enemy = create_enemy(key, self.game_state.combat_engine)
+        else:
+            self.game_state.enemy = None
+        
+        self.view.update_enemy_info(self.game_state.enemy)
+        self.logger.info(f"Updated enemy to {self.game_state.enemy}")
+    
 
     def initial_update(self):
-        self.view.update_player_info(self.model.player)            
+        self.view.update_player_info(self.game_state.player)            
 
     def get_chosen_magic(self):
         return self.view.battle_frame.magic_option_var.get()

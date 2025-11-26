@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List
 from .enemy_data import enemy_dict
 from ..common.randomizer import Randomizer
 from .combat_engine import CombatEngine
@@ -133,6 +133,7 @@ class Enemy:
 
 # Create enemy names
 enemy_names = [data['name'] for data in enemy_dict.values()]
+
 
 
 def enemy_dummy_factory(combat_engine):

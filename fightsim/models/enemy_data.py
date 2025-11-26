@@ -466,3 +466,5 @@ enemy_dict = {
         "void_critical_hit": True
     }
 }
+
+enemy_name_to_key = {data['name']: key for key, data in enemy_dict.items()}
