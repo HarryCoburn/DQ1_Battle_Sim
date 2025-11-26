@@ -158,7 +158,7 @@ class BattleController:
 
         if action == EnemyActions.ATTACK:
             self.battle_presenter.enemy_attacks(self.enemy.name, result.damage)
-            self.player.lower_hp(result.amount)
+            self.player.lower_hp(result.damage)
 
         if action in [EnemyActions.HURT, EnemyActions.HURTMORE]:
             if result.reason == SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED:            
