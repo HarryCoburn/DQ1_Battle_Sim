@@ -2,6 +2,7 @@ from ..common.randomizer import Randomizer
 from dataclasses import dataclass
 from .spells import SpellType, SpellResult
 from ..common.messages import SpellFailureReason, HerbFailureReason, HerbResult, EnemyActions
+from ..models.game_constants import GameConstants
 
 @dataclass
 class AttackResult:
@@ -11,22 +12,9 @@ class AttackResult:
     hit: bool = True
 
 class CombatEngine:
-    def __init__(self, randomizer):
+    def __init__(self, randomizer, constants = None):
         self.randomizer = randomizer if randomizer is not None else Randomizer()
-        self.CRIT_CHANCE = 32
-        self.ENEMY_SLEEP_ROUNDS = 2            
-
-        self.HEAL_RANGES = {
-            SpellType.HEAL: (10, 17),
-            SpellType.HEALMORE: (58, 85)
-        }
-
-        self.HURT_RANGES = {
-            SpellType.HURT: (5, 12),
-            SpellType.HURTMORE: (58, 65)
-        }
-
-        self.HERB_RANGE = (23, 30)
+        self.constants = constants or GameConstants()
 
     # Player Attack
 
@@ -47,10 +35,10 @@ class CombatEngine:
         return max((player_attack // 2), 0), max(player_attack, 1)
     
     def player_did_crit(self):
-        return self.randomizer.randint(1, self.CRIT_CHANCE) == 1
+        return self.randomizer.randint(1, self.constants.crit_chance) == 1
     
     def enemy_did_dodge(self, dodge_chance):
-        return self.randomizer.randint(1, 64) <= dodge_chance
+        return self.randomizer.randint(1, self.constants.enemy_dodge_limit) <= dodge_chance
 
     def calculate_player_attack_damage(self, crit, enemy_agility, player_strength, player_weapon):
         player_computed_attack = player_strength + player_weapon
@@ -83,29 +71,29 @@ class CombatEngine:
         return SpellResult(spell_name=spell, success=True, amount=0)
 
     def player_casts_heal(self, spell, heal_max):
-        heal_amount = min(heal_max, self.randomizer.randint(*self.HEAL_RANGES[spell]))  
+        heal_amount = min(heal_max, self.randomizer.randint(*self.constants.heal_ranges[spell]))  
         if heal_amount == 0:
             return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.HEALED_AT_MAX_HP)
         return SpellResult(spell_name=spell, success=True, amount=heal_amount, reason=None)
 
     def player_casts_hurt(self, spell, enemy_hurt_resist):
-        hurt_range = self.HURT_RANGES[spell]
+        hurt_range = self.constants.hurt_ranges[spell]
         hurt_amount = self.randomizer.randint(*hurt_range)
-        if self.randomizer.randint(1, 16) <= enemy_hurt_resist:
+        if self.randomizer.randint(1, self.constants.enemy_resist_limit) <= enemy_hurt_resist:
             return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.ENEMY_RESISTED_HURT)
         return SpellResult(spell_name=spell, success=True, amount=hurt_amount, reason=None)
 
     def player_casts_sleep(self, spell, enemy_sleep_count, enemy_sleep_resistance):
         if enemy_sleep_count > 0:  # enemy already asleep
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_ALREADY_ASLEEP)
-        if self.randomizer.randint(1, 16) <= enemy_sleep_resistance:  # enemy resists sleep
+        if self.randomizer.randint(1, self.constants.enemy_resist_limit) <= enemy_sleep_resistance:  # enemy resists sleep
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SLEEP)
-        return SpellResult(spell_name=spell, success=True, amount=self.ENEMY_SLEEP_ROUNDS, reason=None)
+        return SpellResult(spell_name=spell, success=True, amount=self.constants.enemy_sleep_rounds, reason=None)
     
     def player_casts_stopspell(self, spell, is_spellstopped, enemy_spellstop_resistance):
         if is_spellstopped:
             return SpellResult(spell_name=spell, success=False, reason=SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED)
-        if self.randomizer.randint(1, 16) <= enemy_spellstop_resistance:  
+        if self.randomizer.randint(1, self.constants.enemy_resist_limit) <= enemy_spellstop_resistance:  
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SPELLSTOP)
         return SpellResult(spell_name=spell, success=True, amount=0, reason=None)
     
@@ -113,7 +101,7 @@ class CombatEngine:
     def resolve_herb_healing(self, current_hp, max_hp):
         if current_hp >= max_hp:
             return HerbResult(success=False, healing=0, reason=HerbFailureReason.MAX_HP)
-        herb_hp = self.randomizer.randint(*self.HERB_RANGE)
+        herb_hp = self.randomizer.randint(*self.constants.herb_range)
         actual_hp_gained = min(herb_hp, max_hp - current_hp)
 
         return HerbResult(success=True, healing=actual_hp_gained)
@@ -123,10 +111,10 @@ class CombatEngine:
     #    
 
     def enemy_flees(self, enemy_strength, player_strength):
-        return player_strength > enemy_strength * 2 and self.randomizer.randint(1,4) == 4
+        return player_strength > enemy_strength * 2 and self.randomizer.randint(1,self.constants.enemy_flee_limit) == 4
     
     def enemy_wakes_up(self):
-        return Randomizer.randint(1, 3) == 3
+        return Randomizer.randint(1, self.constants.enemy_wakeup_limit) == 3
     
     def resolve_enemy_attack(self, enemy_strength, player_defense):
         if player_defense > enemy_strength:
@@ -147,15 +135,7 @@ class CombatEngine:
         if enemy_spell_stopped:
             return SpellResult(action.description, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
         
-        hurt_high = []
-        hurt_low = []
-
-        if action == EnemyActions.HURT:
-            hurt_high = [3, 10]
-            hurt_low = [2, 6]
-        elif action == EnemyActions.HURTMORE:
-            hurt_high = [30,45] 
-            hurt_low = [20,30]
+        hurt_high, hurt_low = self.constants.enemy_hurt_ranges[action]
 
         if player_defense:
             hurt_dmg = Randomizer.randint(*hurt_low)
@@ -166,15 +146,7 @@ class CombatEngine:
     
     def enemy_breathes_fire(self, action, reduce_fire_damage):        
         
-        fire_high = []
-        fire_low = []
-
-        if action == EnemyActions.FIRE:
-            fire_high = [16, 23]
-            fire_low = [10, 14]
-        elif action == EnemyActions.STRONGFIRE:
-            fire_high = [65,72] 
-            fire_low = [42,48]
+        fire_high, fire_low = self.constants.enemy_breathes_fire_ranges[action]
 
         if reduce_fire_damage:
             fire_dmg = Randomizer.randint(*fire_low)
@@ -187,17 +159,9 @@ class CombatEngine:
         if is_stopped:
             return SpellResult(action, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
         
-
-        heal_range = [20, 27]
-        healmore_range = [85, 100]
-        heal_rand = 0
-        if action == EnemyActions.HEALMORE:
-            heal_rand = self.randomizer.randint(healmore_range[0], healmore_range[1]) 
-        elif action == EnemyActions.HEAL:
-            heal_rand = self.randomizer.randint(heal_range[0], heal_range[1])
-
+        heal_range = self.constants.enemy_heal_ranges[action]
+        heal_rand = self.randomizer.randint(heal_range[0], heal_range[1])
         heal_amt = heal_rand if heal_rand < heal_max else heal_max
-
         
         return SpellResult(action, True, heal_amt)
     
@@ -210,7 +174,7 @@ class CombatEngine:
     def enemy_casts_stopspell(self, action, player, is_stopped):
         if is_stopped:
             return SpellResult(action, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
-        if self.randomizer.randint(1,2) == 2:
+        if self.randomizer.randint(1,self.constants.enemy_spellstop_limit) == 2:
             player.is_spellstopped = True
             return SpellResult(action, True, 0)        
         return SpellResult(action, False, 0)

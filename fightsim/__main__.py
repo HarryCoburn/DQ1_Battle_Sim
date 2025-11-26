@@ -11,6 +11,7 @@ from fightsim.common.eventmanager import EventManager
 from fightsim.controllers.battle_controller import BattleController
 from fightsim.models.combat_engine import CombatEngine
 from fightsim.common.randomizer import Randomizer
+from fightsim.models.game_constants import GameConstants
 
 def create_event_manager():
     return EventManager("DQ1 Model Observer")
@@ -28,7 +29,7 @@ def create_battle_controller(model, view):
     return BattleController(model, view)
 
 def create_combat_engine():
-    return CombatEngine(Randomizer())
+    return CombatEngine(Randomizer(), GameConstants)
 
 def main(event_manager_factory=create_event_manager,
         view_factory=create_view,
