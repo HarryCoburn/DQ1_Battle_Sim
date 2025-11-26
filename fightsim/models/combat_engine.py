@@ -129,7 +129,7 @@ class CombatEngine:
     
     def normal_damage_range(self, enemy_strength, player_defense):
         """ Returns a damage tuple for a strong attack. """
-        return ((enemy_strength - player_defense // 2) // 4), ((enemy_strength - player_defense // 2) // 2)
+        return ((enemy_strength - (player_defense // 2)) // 4), ((enemy_strength - (player_defense // 2)) // 2)
     
     def enemy_casts_hurt(self, action, player_defense, enemy_spell_stopped):
         if enemy_spell_stopped:

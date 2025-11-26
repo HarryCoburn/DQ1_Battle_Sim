@@ -1,7 +1,7 @@
 import unittest
 from ..models.combat_engine import CombatEngine
-from dataclasses import dataclass
 from ..models.spells import SpellType, SpellFailureReason
+from ..common.messages import HerbFailureReason, HerbResult
 
 class FakeRandomizer:
     """A deterministic randomizer for testing"""
@@ -117,3 +117,129 @@ class TestCombatEngine(unittest.TestCase):
         assert result.success == False
         assert result.reason == SpellFailureReason.PLAYER_SPELLSTOPPED
         
+    def test_player_casts_heal_success(self):
+        """Test healing when heal_max allows full heal amount"""
+        self.combat_engine.randomizer.sequence = [15]  # Roll 15 HP
+        
+        result = self.combat_engine.player_casts_heal(SpellType.HEAL, heal_max=50)
+        
+        assert result.success == True
+        assert result.amount == 15  # Got full random amount
+        assert result.reason == None
+
+    def test_player_casts_heal_capped_by_heal_max(self):
+       """Test healing when heal_max caps the amount"""
+       self.combat_engine.randomizer.sequence = [15]  # Roll 15 HP
+        
+       result = self.combat_engine.player_casts_heal(SpellType.HEAL, heal_max=5)
+        
+       assert result.success == True
+       assert result.amount == 5  # Capped at heal_max
+       assert result.reason == None
+
+    def test_player_casts_heal_at_max_hp(self):
+        """Test healing fails when already at max HP"""
+        result = self.combat_engine.player_casts_heal(SpellType.HEAL, heal_max=0)
+        
+        assert result.success == False
+        assert result.amount == 0
+        assert result.reason == SpellFailureReason.HEALED_AT_MAX_HP
+
+    def test_player_casts_hurt_success(self):
+        self.combat_engine.randomizer.sequence = [15] 
+
+        result = self.combat_engine.player_casts_hurt(SpellType.HURT, 0)
+
+        assert result.success == True
+        assert result.amount == 15
+        assert result.reason == None
+
+    def test_player_casts_hurt_enemy_resists(self):
+        self.combat_engine.randomizer.sequence = [15] 
+
+        result = self.combat_engine.player_casts_hurt(SpellType.HURT, 17)
+
+        assert result.success == False
+        assert result.amount == 0
+        assert result.reason == SpellFailureReason.ENEMY_RESISTED_HURT
+
+    def test_player_casts_sleep_success(self):
+        self.combat_engine.randomizer.sequence = [17]
+        
+        result = self.combat_engine.player_casts_sleep(SpellType.SLEEP, 0, 16) 
+
+        assert result.success == True
+
+    def test_player_casts_sleep_enemy_already_asleep(self):
+        result = self.combat_engine.player_casts_sleep(SpellType.SLEEP, 1, 16) 
+
+        assert result.success == False
+        assert result.reason == SpellFailureReason.ENEMY_ALREADY_ASLEEP
+
+    def test_player_casts_sleep_enemy_resists(self):
+        self.combat_engine.randomizer.sequence = [0, 16]
+        
+        result = self.combat_engine.player_casts_sleep(SpellType.SLEEP, 0, 16) 
+
+        assert result.success == False
+        assert result.reason == SpellFailureReason.ENEMY_RESISTED_SLEEP
+
+    def test_player_casts_spellstop_success(self):
+        self.combat_engine.randomizer.sequence = [17]
+        
+        result = self.combat_engine.player_casts_stopspell(SpellType.STOPSPELL, False, 16) 
+
+        assert result.success == True
+
+    def test_player_casts_spellstop_enemy_already_spellstopped(self):
+        result = self.combat_engine.player_casts_stopspell(SpellType.STOPSPELL, True, 16) 
+
+        assert result.success == False
+        assert result.reason == SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED
+
+    def test_player_casts_spellstop_enemy_resists(self):
+        self.combat_engine.randomizer.sequence = [0, 16]
+        
+        result = self.combat_engine.player_casts_stopspell(SpellType.STOPSPELL, False, 16) 
+
+        assert result.success == False
+        assert result.reason == SpellFailureReason.ENEMY_RESISTED_SPELLSTOP
+
+    def test_resolve_herb_healing_success(self):
+        self.combat_engine.randomizer.sequence = [12]
+
+        result = self.combat_engine.resolve_herb_healing(10, 999)
+
+        assert result.success == True
+        assert result.healing == 12
+
+    def test_resolve_herb_healing_max_hp(self):
+        self.combat_engine.randomizer.sequence = [12]
+
+        result = self.combat_engine.resolve_herb_healing(999, 999)
+
+        assert result.success == False
+        assert result.healing == 0
+        assert result.reason == HerbFailureReason.MAX_HP
+
+    def test_resolve_herb_healing_reduce_healing(self):
+        self.combat_engine.randomizer.sequence = [12]
+
+        result = self.combat_engine.resolve_herb_healing(996, 999)
+
+        assert result.success == True
+        assert result.healing == 3
+
+    def test_resolve_enemy_attack_normal(self):
+
+        result = self.combat_engine.resolve_enemy_attack(20, 5)
+
+        assert result.damage >= 4
+        assert result.damage <= 9
+
+    def test_resolve_enemy_attack_weak(self):
+
+        result = self.combat_engine.resolve_enemy_attack(5, 20)
+
+        assert result.damage >= 0
+        assert result.damage <= 1
