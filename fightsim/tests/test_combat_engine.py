@@ -1,5 +1,7 @@
 import unittest
 from ..models.combat_engine import CombatEngine
+from dataclasses import dataclass
+from ..models.spells import SpellType, SpellFailureReason
 
 class FakeRandomizer:
     """A deterministic randomizer for testing"""
@@ -23,9 +25,11 @@ class FakeRandomizer:
             return (low + high) // 2
 
 
+
 class TestCombatEngine(unittest.TestCase):
     def setUp(self):
         self.combat_engine = CombatEngine(FakeRandomizer())
+        
 
     def test_combat_engine_attack_calculation(self):
         # No crit, no dodge
@@ -81,6 +85,7 @@ class TestCombatEngine(unittest.TestCase):
         assert result.dodge == True  # or True depending on your logic
 
     def test_combat_engine_crits_cancel_dodge(self):
+
         # No crit, dodge
         
         self.combat_engine.randomizer.sequence = [1,1]
@@ -96,3 +101,19 @@ class TestCombatEngine(unittest.TestCase):
         assert result.hit == True
         assert result.dodge == True  # or True depending on your logic
         assert result.crit == True
+
+    def test_resolve_player_magic_when_successful(self):
+        result = self.combat_engine.resolve_player_magic(SpellType.HEAL, 10, False)
+        assert result.success == True
+        assert result.reason == None
+
+    def test_resolve_player_magic_when_not_enough_mp(self):
+        result = self.combat_engine.resolve_player_magic(SpellType.HEAL, 0, False)
+        assert result.success == False
+        assert result.reason == SpellFailureReason.NOT_ENOUGH_MP
+
+    def test_resolve_player_magic_when_spellstopped(self):
+        result = self.combat_engine.resolve_player_magic(SpellType.HEAL, 10, True)
+        assert result.success == False
+        assert result.reason == SpellFailureReason.PLAYER_SPELLSTOPPED
+        
