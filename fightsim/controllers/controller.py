@@ -46,7 +46,7 @@ class Controller:
             self.model.player.equip_shield(value)
         elif attribute_type == "level":
             self.model.player.level_up(value)
-            self.observer.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
+            self.view.battle_frame.update_player_magic_menu()
         elif attribute_type == "name":
             self.model.player.change_name(value)
         elif attribute_type == "herb":
@@ -54,30 +54,13 @@ class Controller:
         self.view.update_player_info(self.model.player)        
         self.logger.info(f"Updated {attribute_type} to {value}")
 
-
     def update_enemy(self, value):
         self.model.set_enemy(value)
         self.view.update_enemy_info(self.model.enemy)
         self.logger.info(f"Updated enemy to {value}")
 
     def initial_update(self):
-        self.view.update_player_info(self.model.player)        
-
-    def update(self, property_name, data=None):
-        if property_name == ObserverMessages.OUTPUT_CHANGE:
-            self.view.update_output(property_name, data)
-        if property_name == ObserverMessages.OUTPUT_CLEAR:
-            self.view.clear_output()
-        if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
-            self.view.battle_frame.update_player_magic_menu()
-
-    # def update_player_info(self):
-    #     """Updates the view with current player information from the model."""
-    #     self.view.update_player_info(self.model.player)
-    #     self.logger.info("Player info updated in the view.")
-
-    # def update_enemy_info(self):
-    #     self.view.update_enemy_info(self.model.enemy)
+        self.view.update_player_info(self.model.player)            
 
     def get_chosen_magic(self):
         return self.view.battle_frame.magic_option_var.get()
@@ -87,7 +70,7 @@ class Controller:
 
     def clear_output(self):
         """ Clear the output var"""
-        self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
+        self.view.clear_output()
 
     def enable_main_frame_text(self):
         self.view.main_frame.txt["state"] = 'normal'

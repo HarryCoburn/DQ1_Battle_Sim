@@ -30,8 +30,7 @@ class BattleController:
     def setup_battle(self):
         """All of the initial battle setup before the battle menu appears"""
         self.view.update_player_info(self.model.player)
-        self.view.show_frame(self.view.battle_frame)
-        # self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
+        self.view.show_frame(self.view.battle_frame)                
         self.player = self.model.player
         self.enemy = self.model.enemy
         self.battle_presenter.start_fight_msg(None, self.enemy.name)  # test name here
