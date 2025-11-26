@@ -15,20 +15,10 @@ class Model:
         self.player: Player = player if player else Player()  # Add a player
         self.enemy: Optional[Enemy] = enemy if enemy else Enemy.create_dummy(combat_engine=combat_engine)
         self.observed: EventManager = observer if observer else EventManager("Generic Model Observer")
-        
-
-        self.clean_text: bool = False
-        self.in_battle: bool = False  # Are we in battle mode or not? If not, we're in setup mode.
-        self.initiative: bool = False  # Do we have initiative?
-        self.crit_hit: bool = False  # Was there a critical hit?
-
         self.initialize_game()
 
     def initialize_game(self):
-        """ Inject the model into player, reset battle variables, and notify the observer. """
-        self.in_battle = False
-        self.initiative = False
-        self.crit_hit = False
+        """ Inject the model into player, reset battle variables, and notify the observer. """                        
         self.observed.notify(ObserverMessages.RESET_GAME)
 
     def __repr__(self):
