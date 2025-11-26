@@ -23,7 +23,10 @@ class AttackResult:
     damage: int
     hit: bool
 
-
+@dataclass
+class SleepResult:
+    still_asleep: bool
+    just_woke_up: bool
 
 
 
@@ -198,15 +201,15 @@ class Player:
         Returns the status of the player's sleep
         """
         if not self.is_asleep:
-            return False
+            return SleepResult(still_asleep=False, just_woke_up=False)
         else:
             self.sleep_count -= 1
             if random.randint(1, 2) == 2 or self.sleep_count <= 0:
                 self.is_asleep = False
                 self.sleep_count = 6
-                return "awake"
+                return SleepResult(still_asleep=False, just_woke_up=True)
             else:
-                return True
+                return SleepResult(still_asleep=True, just_woke_up=False)
 
     # Handle fleeing
 

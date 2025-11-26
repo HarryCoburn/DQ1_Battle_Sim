@@ -57,13 +57,12 @@ class BattleController:
     def player_turn(self):
         """Runs at the start of player turn. Checks for sleep status and updates it, then waits for user to
         enter a command."""
-        sleep_check = (
-            self.player.handle_sleep()
-        )  # TODO: expand on this. If the player is asleep, switch to the enemy's turn.
-        if sleep_check is True:
+        sleep_check = self.player.handle_sleep()
+        
+        if sleep_check.still_asleep:
             self.battle_presenter.player_is_sleeping()
             self.enemy_turn()
-        if sleep_check == "awake":
+        if sleep_check.just_woke_up:
             self.battle_presenter.player_woke_up()
         # Stopspell does not lift once the player is under that status.
 
