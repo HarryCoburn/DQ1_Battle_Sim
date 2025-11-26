@@ -51,7 +51,7 @@ class Enemy:
             EnemyActions.HEAL: lambda: self.combat_engine.enemy_casts_heal(chosen_action, self.enemy_spell_stopped, (self.max_hp - self.current_hp)),
             EnemyActions.HEALMORE: lambda: self.combat_engine.enemy_casts_heal(chosen_action, self.enemy_spell_stopped, (self.max_hp - self.current_hp)),
             EnemyActions.SLEEP: lambda: self.combat_engine.enemy_casts_sleep(chosen_action, player, self.enemy_spell_stopped),
-            EnemyActions.STOPSPELL: lambda: self.casts_stopspell(player),
+            EnemyActions.STOPSPELL: lambda: self.combat_engine.enemy_casts_stopspell(chosen_action, player, self.enemy_spell_stopped),
             EnemyActions.FIRE: lambda: self.combat_engine.enemy_breathes_fire(chosen_action, player.armor.reduce_fire_damage),
             EnemyActions.STRONGFIRE: lambda: self.combat_engine.enemy_breathes_fire(chosen_action, player.armor.reduce_fire_damage)
         }
@@ -87,26 +87,13 @@ class Enemy:
 
     def set_sleep(self, amount):
         self.enemy_sleep_count = amount    
-    
-
-    def casts_stopspell(self, player):
-        # 50% chance
-        if random.randint(1,2) == 2:
-            player.is_spellstopped = True
-            return True
-        else:
-            return False
-
+        
     def reset_battle_state(self):
         """Resets the enemy's mutable state back to default for a new battle."""
         self.max_hp = Randomizer.randint(self.base_hp[0], self.base_hp[1])
         self.current_hp = self.max_hp
         self.enemy_sleep_count = 0
-        self.enemy_spell_stopped = False
-
-    def did_dodge(self):
-        """ Returns True if the enemy dodges """
-        return Randomizer.randint(1, 64) <= self.dodge
+        self.enemy_spell_stopped = False    
 
     def is_defeated(self):
         """ Returns True if the enemy is defeated """
@@ -139,9 +126,6 @@ class Enemy:
 
     def gain_hp(self, amount):
         self.current_hp += amount
-
-   
-
 
 # Create enemy objects
 enemy_instances = {k: Enemy(**v) for k, v in enemy_dict.items()}

@@ -205,3 +205,11 @@ class CombatEngine:
             return SpellResult(action, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
         player.is_asleep = True
         return SpellResult(action, True, 0)
+    
+    def enemy_casts_stopspell(self, action, player, is_stopped):
+        if is_stopped:
+            return SpellResult(action, False, 0, SpellFailureReason.ENEMY_SPELLSTOPPED)
+        if self.randomizer.randint(1,2) == 2:
+            player.is_spellstopped = True
+            return SpellResult(action, True, 0)        
+        return SpellResult(action, False, 0)
