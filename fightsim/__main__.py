@@ -29,7 +29,7 @@ def create_battle_controller(model, view):
     return BattleController(model, view)
 
 def create_combat_engine():
-    return CombatEngine(Randomizer(), GameConstants)
+    return CombatEngine(Randomizer(), GameConstants())
 
 def main(event_manager_factory=create_event_manager,
         view_factory=create_view,
