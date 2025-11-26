@@ -1,7 +1,7 @@
 import unittest
 from ..models.combat_engine import CombatEngine
 from ..models.spells import SpellType, SpellFailureReason
-from ..common.messages import HerbFailureReason, HerbResult
+from ..common.messages import HerbFailureReason, HerbResult, EnemyActions
 
 class FakeRandomizer:
     """A deterministic randomizer for testing"""
@@ -243,3 +243,37 @@ class TestCombatEngine(unittest.TestCase):
 
         assert result.damage >= 0
         assert result.damage <= 1
+
+    def test_enemy_casts_hurt_stopped(self):
+        result = self.combat_engine.enemy_casts_hurt(EnemyActions.HURT, False, True)
+
+        assert result.success == False
+        assert result.reason == SpellFailureReason.ENEMY_SPELLSTOPPED
+
+    def test_enemy_casts_hurt_success_no_defense(self):
+        result = self.combat_engine.enemy_casts_hurt(EnemyActions.HURT, False, False)
+
+        assert result.success == True
+        assert result.amount >= 0
+        assert result.reason == None
+
+    def test_enemy_casts_hurt_success_with_defense(self):
+        result = self.combat_engine.enemy_casts_hurt(EnemyActions.HURT, True, False)
+
+        assert result.success == True
+        assert result.amount >= 0
+        assert result.reason == None
+
+    def test_enemy_casts_breathes_fire_success_no_defense(self):
+        result = self.combat_engine.enemy_breathes_fire(EnemyActions.FIRE, False)
+
+        assert result.success == True
+        assert result.amount >= 0
+        assert result.reason == None
+
+    def test_enemy_breathes_fire_success_with_defense(self):
+        result = self.combat_engine.enemy_breathes_fire(EnemyActions.FIRE, True)
+
+        assert result.success == True
+        assert result.amount >= 0
+        assert result.reason == None

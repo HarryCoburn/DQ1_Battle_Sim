@@ -118,9 +118,9 @@ class CombatEngine:
     
     def resolve_enemy_attack(self, enemy_strength, player_defense):
         if player_defense > enemy_strength:
-            enemy_damage_dealt = Randomizer.randint(*self.weak_damage_range(enemy_strength))
+            enemy_damage_dealt = self.randomizer.randint(*self.weak_damage_range(enemy_strength))
         else:
-            enemy_damage_dealt = Randomizer.randint(*self.normal_damage_range(enemy_strength, player_defense))
+            enemy_damage_dealt = self.randomizer.randint(*self.normal_damage_range(enemy_strength, player_defense))
         return AttackResult(damage=enemy_damage_dealt)
     
     def weak_damage_range(self, enemy_strength):
@@ -138,9 +138,9 @@ class CombatEngine:
         hurt_high, hurt_low = self.constants.enemy_hurt_ranges[action]
 
         if player_defense:
-            hurt_dmg = Randomizer.randint(*hurt_low)
+            hurt_dmg = self.randomizer.randint(*hurt_low)
         else:
-            hurt_dmg = Randomizer.randint(*hurt_high)
+            hurt_dmg = self.randomizer.randint(*hurt_high)
 
         return SpellResult(action.description, True, hurt_dmg)
     
@@ -149,9 +149,9 @@ class CombatEngine:
         fire_high, fire_low = self.constants.enemy_breathes_fire_ranges[action]
 
         if reduce_fire_damage:
-            fire_dmg = Randomizer.randint(*fire_low)
+            fire_dmg = self.randomizer.randint(*fire_low)
         else:
-            fire_dmg = Randomizer.randint(*fire_high)
+            fire_dmg = self.randomizer.randint(*fire_high)
 
         return SpellResult(action.description, True, fire_dmg)
     
