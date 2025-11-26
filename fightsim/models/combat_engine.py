@@ -2,11 +2,12 @@ from ..common.randomizer import Randomizer
 from dataclasses import dataclass
 from .spells import SpellType, SpellResult
 from ..common.messages import SpellFailureReason, HerbFailureReason, HerbResult, EnemyActions
+
 @dataclass
 class AttackResult:
-    crit: bool = False
-    dodge: bool = False
     damage: int
+    crit: bool = False
+    dodge: bool = False    
     hit: bool = True
 
 class CombatEngine:

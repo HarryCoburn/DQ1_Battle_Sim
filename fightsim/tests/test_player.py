@@ -2,7 +2,7 @@ import unittest
 # from unittest.mock import patch
 from ..models.player import player_factory
 from ..models.combat_engine import CombatEngine
-from ..models.enemy import enemy_instances
+from ..models.enemy import create_enemy
 
 class FakeRandomizer:
     """A deterministic randomizer for testing"""
@@ -30,7 +30,7 @@ class TestPlayer(unittest.TestCase):
     def setUp(self):        
         self.player = player_factory(CombatEngine(FakeRandomizer()))
         self.player.equip_weapon("Copper Sword") # Equip copper sword
-        self.enemy = enemy_instances["slime"]        
+        self.enemy = create_enemy('slime', combat_engine=CombatEngine)
 
     def test_player_attack_normal_hit(self):
         self.player.combat_engine.randomizer.sequence = [2, 10, 20]

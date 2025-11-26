@@ -21,13 +21,14 @@ class Enemy:
     agility: int
     base_hp: List[int]
     dodge: int
+    combat_engine: CombatEngine
     sleep_resist: int = 0
     stopspell_resist: int = 15
     hurt_resist: int = 0
     pattern: List[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
     run: int = 0
     void_critical_hit: bool = False
-    combat_engine: CombatEngine
+    
     
 
     def __post_init__(self):
@@ -128,11 +129,19 @@ class Enemy:
         self.current_hp += amount
 
 # Create enemy objects
-enemy_instances = {k: Enemy(**v) for k, v in enemy_dict.items()}
+# enemy_instances = {k: Enemy(**v) for k, v in enemy_dict.items()}
 
 # Create enemy names
-enemy_names = [enemy.name for enemy in enemy_instances.values()]
+enemy_names = [data['name'] for data in enemy_dict.values()]
 
 
 def enemy_dummy_factory(combat_engine):
     return Enemy.create_dummy(combat_engine)
+
+
+def create_enemy(enemy_key, combat_engine):
+    if enemy_key not in enemy_dict:
+        raise ValueError(f"Unknown enemy: {enemy_key}")
+    
+    enemy_data = enemy_dict[enemy_key]
+    return Enemy(**enemy_data, combat_engine=combat_engine)

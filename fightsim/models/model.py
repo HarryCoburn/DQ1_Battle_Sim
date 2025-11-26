@@ -4,7 +4,7 @@ from typing import Optional
 from fightsim.common.messages import ObserverMessages
 from ..common.eventmanager import EventManager
 from fightsim.models.player import Player # For type checking
-from fightsim.models.enemy import Enemy, enemy_instances # For type checking
+from fightsim.models.enemy import Enemy, create_enemy # For type checking
 from fightsim.models.combat_engine import CombatEngine
 
 
@@ -13,7 +13,7 @@ class Model:
     def __init__(self, player: Optional[Player] = None, enemy: Optional[Enemy] = None, observer: EventManager = None, combat_engine: CombatEngine = None):
         self.combat_engine = combat_engine
         self.player: Player = player if player else Player()  # Add a player
-        self.enemy: Optional[Enemy] = enemy if enemy else Enemy.create_dummy()
+        self.enemy: Optional[Enemy] = enemy if enemy else Enemy.create_dummy(combat_engine=combat_engine)
         self.observed: EventManager = observer if observer else EventManager("Generic Model Observer")
         
 
@@ -46,22 +46,22 @@ class Model:
         return None
     
     def set_enemy(self, enemy_name):
-        print(f"Entering model.set_enemy, receiving {enemy_name}")
+        # print(f"Entering model.set_enemy, receiving {enemy_name}")
         if enemy_name == "Select Enemy":
             self.enemy = None
             self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
         else:
-            print("Searching for enemy")
+            # print("Searching for enemy")
             """Set the current enemy based on a key."""
-            key = self.find_key_by_value(enemy_instances, enemy_name)
-            print(f"The key is {key}")
-            enemy_instance = enemy_instances.get(key)
-            print(f"The enemy_instance is is {enemy_instance}")
-            if enemy_instance:
-                self.enemy = enemy_instance                
+            key = self.find_key_by_value(enemy_dict, enemy_name)
+            #print(f"The key is {key}")
+            # enemy_instance = enemy_instances.get(key)
+            # print(f"The enemy_instance is is {enemy_instance}")
+            if key:
+                self.enemy = create_enemy(key, self.combat_engine)                
                 self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
             else:
-                print("Selected an enemy that doesn't exist nor the default message. This should not happen!")
+                # print("Selected an enemy that doesn't exist nor the default message. This should not happen!")
                 self.enemy = None
         
     def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
