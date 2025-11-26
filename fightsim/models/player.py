@@ -2,7 +2,6 @@
 Player class
 """
 
-import random
 from typing import List, Optional
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
@@ -204,7 +203,7 @@ class Player:
             return SleepResult(still_asleep=False, just_woke_up=False)
         else:
             self.sleep_count -= 1
-            if random.randint(1, 2) == 2 or self.sleep_count <= 0:
+            if self.randomizer.randint(1, 2) == 2 or self.sleep_count <= 0:
                 self.is_asleep = False
                 self.sleep_count = 6
                 return SleepResult(still_asleep=False, just_woke_up=True)

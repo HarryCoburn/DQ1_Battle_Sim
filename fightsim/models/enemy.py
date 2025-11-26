@@ -100,7 +100,7 @@ class Enemy:
         """ Returns True if the enemy is defeated """
         return self.current_hp <= 0
 
-    def is_asleep(self):
+    def process_enemy_sleep(self):
         if self.enemy_sleep_count <= 0:
             return SleepResult(success=False, reason=SleepReason.NOT_ASLEEP)
         if self.enemy_sleep_count == 2:

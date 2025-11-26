@@ -134,7 +134,7 @@ class BattleController:
 
     def enemy_turn(self):
 
-        sleep_result = self.enemy.is_asleep()
+        sleep_result = self.enemy.process_sleep_turn()
         # First, handle if the enemy's sleep status
         if sleep_result.success is True: # Enemy is asleep
             if sleep_result.reason == SleepReason.FIRST_ROUND_ENEMY_ASLEEP:
