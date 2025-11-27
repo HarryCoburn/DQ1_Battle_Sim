@@ -70,7 +70,7 @@ class CombatEngine:
             )
         return SpellResult(spell_name=spell, success=True, amount=0)
 
-    def player_casts_heal(self, spell, heal_max):
+    def player_casts_heal(self, spell, heal_max):        
         heal_amount = min(heal_max, self.randomizer.randint(*self.constants.heal_ranges[spell]))  
         if heal_amount == 0:
             return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.HEALED_AT_MAX_HP)
@@ -83,15 +83,15 @@ class CombatEngine:
             return SpellResult(spell_name=spell, success=False, amount=0, reason=SpellFailureReason.ENEMY_RESISTED_HURT)
         return SpellResult(spell_name=spell, success=True, amount=hurt_amount, reason=None)
 
-    def player_casts_sleep(self, spell, enemy_sleep_count, enemy_sleep_resistance):
+    def player_casts_sleep(self, spell, enemy_sleep_count, enemy_sleep_resistance):        
         if enemy_sleep_count > 0:  # enemy already asleep
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_ALREADY_ASLEEP)
         if self.randomizer.randint(1, self.constants.enemy_resist_limit) <= enemy_sleep_resistance:  # enemy resists sleep
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SLEEP)
         return SpellResult(spell_name=spell, success=True, amount=self.constants.enemy_sleep_rounds, reason=None)
     
-    def player_casts_stopspell(self, spell, is_spellstopped, enemy_spellstop_resistance):
-        if is_spellstopped:
+    def player_casts_stopspell(self, spell, enemy_is_spellstopped, enemy_spellstop_resistance):
+        if enemy_is_spellstopped:
             return SpellResult(spell_name=spell, success=False, reason=SpellFailureReason.ENEMY_ALREADY_SPELLSTOPPED)
         if self.randomizer.randint(1, self.constants.enemy_resist_limit) <= enemy_spellstop_resistance:  
             return SpellResult(spell_name="Sleep", success=False, reason=SpellFailureReason.ENEMY_RESISTED_SPELLSTOP)
@@ -114,7 +114,7 @@ class CombatEngine:
         return player_strength > enemy_strength * 2 and self.randomizer.randint(1,self.constants.enemy_flee_limit) == 4
     
     def enemy_wakes_up(self):
-        return Randomizer.randint(1, self.constants.enemy_wakeup_limit) == 3
+        return self.randomizer.randint(1, self.constants.enemy_wakeup_limit) == 3
     
     def resolve_enemy_attack(self, enemy_strength, player_defense):
         if player_defense > enemy_strength:
