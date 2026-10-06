@@ -113,6 +113,10 @@ class Battle:
         enemy_roll = self.enemy.agility * self.rng.randint(0,254) * 0.25
         return player_roll < enemy_roll
 
+    def resist(self, chance: int) -> bool:
+        return self.rng.randint(1, 16) <= chance
+
+
     # Player Actions
 
     # Player Attack
