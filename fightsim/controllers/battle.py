@@ -184,6 +184,10 @@ class Battle:
         }
 
         cost = spell_cost.get(spell, 0)
+        if cost == 0:
+            self.model.text(f"Unknown spell cost! Tried casting {spell}. Returning.")
+            return
+
         if self.model.player.current_mp < cost:
             self.model.text(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
             self.is_enemy_defeated()  # Player loses turn if they try to cast a spell without enough mp
