@@ -348,16 +348,6 @@ class Battle:
 
         return choice or EnemyActions.ATTACK
 
-    def end_fight(self):
-        """Triggers the flag that tells the controller battle is over"""
-        self.fight_over.set(True)
-
-    def is_player_defeated(self):
-        if self.model.player.is_defeated():
-            self.model.text(f"You have been defeated by the {self.enemy.name}!\n")
-            self.end_fight()
-
-
     @staticmethod
     def resist(chance):
         return Randomizer.randint(1, 16) <= chance
@@ -370,7 +360,7 @@ class Battle:
         self.controller.player_manager.update_player_info()
 
         self.model.text(f"{self.model.enemy.name} attacks! {self.model.enemy.name} hits you for {enemy_damage_dealt} damage.\n")
-        self.is_player_defeated()
+
 
     def enemy_casts_hurt(self, more):
         """ Enemy handling of hurt and hurtmore"""
@@ -397,7 +387,7 @@ class Battle:
 
         self.model.player.current_hp -= hurt_dmg
         self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.player.name} is hurt for {hurt_dmg} damage!\n""")
-        self.is_player_defeated()
+
 
     def enemy_casts_heal(self, more):
         """ Enemy handling of heal and healmore"""
@@ -464,4 +454,3 @@ class Battle:
 
         self.model.player.current_hp -= fire_dmg
         self.model.text(f"""The {self.model.enemy.name} breathes {spell_name}! {self.model.player.name} is hurt for {fire_dmg} damage!\n""")
-        self.is_player_defeated()
