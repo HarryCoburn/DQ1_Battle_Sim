@@ -154,15 +154,15 @@ class Controller:
         self.view.show_frame(self.view.setup_frame)
 
     def attack(self) -> None:
-        self._active_battle().take_turn(self.battle.player_attack)
+        self._active_battle().take_turn(self._active_battle().player_attack)
         self.refresh()
 
     def use_herb(self) -> None:
-        self._active_battle().take_turn(self.battle.use_herb)
+        self._active_battle().take_turn(self._active_battle().use_herb)
         self.refresh()
 
     def flee(self) -> None:
-        self._active_battle().take_turn(self.battle.player_flees)
+        self._active_battle().take_turn(self._active_battle().player_flees)
         self.refresh()
 
     def cast_spell(self) -> None:
