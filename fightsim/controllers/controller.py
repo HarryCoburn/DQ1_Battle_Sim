@@ -180,3 +180,24 @@ class Controller:
             self.model.text(f"You successfully flee!\n")
         else:
             self.model.text(f"""...but the {self.model.enemy.name} blocks you from running away!\n""")
+
+    def attack(self) -> None:
+        self.battle.take_turn(self.battle.player_attack)
+        self.refresh()
+
+    def use_herb(self) -> None:
+        self.battle.take_turn(self.battle.use_herb)
+        self.refresh()
+
+    def flee(self) -> None:
+        self.battle.take_turn(self.battle.player_flees)
+        self.refresh()
+
+    def cast_spell(self) -> None:
+        spell = self.get_chosen_magic()
+        self.battle.take_turn(lambda: self.battle.player_cast_magic(spell))
+        self.refresh()
+
+    def refresh(self) -> None:
+        self.view.update_player_info(self.model.player)
+        self.view.update_enemy_info(self.model.enemy)

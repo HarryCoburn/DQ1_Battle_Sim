@@ -3,10 +3,11 @@ battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 """
 
 import random
+from collections.abc import Callable
 import tkinter as tk
 from ..common.messages import EnemyActions
 from ..common.randomizer import Randomizer
-from collections.abc import Callable
+
 
 
 class Battle:
@@ -23,8 +24,7 @@ class Battle:
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
         self.herb_range = (23, 30)
-        self.over = tk.BooleanVar()
-        self.over.set(False)
+        self.over = False
 
         # Aliases for now
         self.log = self.model.text
@@ -45,7 +45,7 @@ class Battle:
         self.controller.start_battle_interaction()
         surprise_check = self.does_enemy_surprise()
         if surprise_check:
-            self.log(f"{self.enemy.name} surprises you!\n")
+            self.log(f"The {self.enemy.name} surprises you!\n")
             self.advance()
         # Now we wait for the UI to call turn_engine
 
@@ -73,15 +73,6 @@ class Battle:
     def finish(self) -> None:
         self.over = True
         self.on_end()
-
-
-    def first_turn(self, enemy_surprises):
-        """ Determines the first turn. """
-        if enemy_surprises:
-            self.controller.player_surprised()
-            self.enemy_turn()
-        else:
-            self.player_turn()
 
     def does_enemy_surprise(self):
         """ Determine if the enemy surprises the player based on agility and randomness. """
@@ -117,12 +108,6 @@ class Battle:
         if crit or not dodge:
             self.enemy.take_damage(damage)
         return True
-
-
-#     def apply_attack_damage_to_enemy(self, damage):
-#         self.enemy.take_damage(damage)
-#         self.controller.enemy_manager.update_enemy_info()
-#         self.is_enemy_defeated()
 
     # Player uses an herb
     def use_herb(self) -> bool:
@@ -167,8 +152,7 @@ class Battle:
 
     # Player Magic
 
-    def player_cast_magic(self) -> bool:
-        spell = self.controller.get_chosen_magic()
+    def player_cast_magic(self, spell) -> bool:
 
         if spell in ["Select Spell", "No Magic Available"]:
             self.model.text(
@@ -195,8 +179,7 @@ class Battle:
 
         cost = spell_cost.get(spell, 0)
         if cost == 0:
-            self.model.text(f"Unknown spell cost! Tried casting {spell}. Returning.")
-            return False # This is a game bug, not part of the normal game.
+            raise ValueError(f"No cost defined for spell {spell!r}")
 
         if self.model.player.current_mp < cost:
             self.model.text(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
@@ -284,17 +267,13 @@ class Battle:
     def enemy_turn(self):
         """ Handles the Enemy's turn """
 
-        if self.model.enemy.enemy_sleep_count > 0:
-            if self.enemy.is_asleep():
-                return
-
-        elif self.should_enemy_flee():
-            # Handle fleeing
+        if self.model.enemy.enemy_sleep_count > 0 and self.enemy.is_asleep():
+            self.log(f"The {self.enemy.name} is asleep.\n")
+            return
+        if self.should_enemy_flee():
             self.enemy_flees()
-            self.finish()
-        else:
-            # Do a combat action
-            self.perform_enemy_action()
+            return
+        self.perform_enemy_action()
 
     def should_enemy_flee(self):
         return self.model.player.strength > self.model.enemy.strength * 2 and random.randint(1, 4) == 4
@@ -366,6 +345,7 @@ class Battle:
         """ Enemy handling of hurt and hurtmore"""
         spell_name = "Hurtmore" if more else "Hurt"
         if self.enemy.is_spell_stopped(spell_name):
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
             return
 
         hurt_high = [3, 10]
