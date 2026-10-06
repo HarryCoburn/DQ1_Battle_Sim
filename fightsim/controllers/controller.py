@@ -164,16 +164,7 @@ class Controller:
 
     def player_wins(self):
         self.model.text(f"""You have defeated the {self.model.enemy.name}!\n""")
-
-    def no_herbs(self):
-        self.model.text(f"You have no herbs!")
-
-    def eat_herb_at_full_hp(self):
-        self.model.text(f"You eat a herb, but your hit points are already at maximum!\n")
-
-    def eat_herb(self, heal_amt):
-        self.model.text(f"""You eat a herb and regain {heal_amt} hit points!\n""")
-
+ 
     def fleeing(self, succeed):
         self.model.text(f"You attempt to run away...\n")
         if succeed:
