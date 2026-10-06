@@ -1,13 +1,8 @@
 """
 battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 """
-
-import random
 from collections.abc import Callable
-import tkinter as tk
 from ..common.messages import EnemyActions
-from ..common.randomizer import Randomizer
-
 
 
 class Battle:
@@ -15,7 +10,7 @@ class Battle:
     Main battle controller
     """
 
-    def __init__(self, player, enemy, log, rng: random.Random, on_end):
+    def __init__(self, player, enemy, log, rng: self.rng.Random, on_end):
 
         self.player = player
         self.enemy = enemy
@@ -118,7 +113,7 @@ class Battle:
 
     def calculate_player_herb_heal_amount(self):
         """ Calculates the amount of health an herb will restore. """
-        heal_amt = Randomizer.randint(*self.herb_range)
+        heal_amt = self.rng.randint(*self.herb_range)
         return min(heal_amt, self.player.max_hp - self.player.current_hp)
 
     # Player Flees
@@ -225,7 +220,7 @@ class Battle:
 
     @staticmethod
     def calc_hurt(hurt_range):
-        return Randomizer.randint(*hurt_range)
+        return self.rng.randint(*hurt_range)
 
     def player_casts_sleep(self):
         """ Player tries to cast Sleep on the enemy"""
@@ -299,7 +294,7 @@ class Battle:
         choice = None
         for item in atk_list:
             chance = item["weight"]
-            if random.randint(1, 100) <= chance:
+            if self.rng.randint(1, 100) <= chance:
                 action = item["id"]
                 if action in [EnemyActions.ATTACK, EnemyActions.HURT, EnemyActions.FIRE, EnemyActions.HURTMORE, EnemyActions.STRONGFIRE]:
                     choice = action
@@ -316,9 +311,9 @@ class Battle:
 
         return choice or EnemyActions.ATTACK
 
-    @staticmethod
-    def resist(chance):
-        return Randomizer.randint(1, 16) <= chance
+
+    def resist(self, chance):
+        return self.rng.randint(1, 16) <= chance
 
     def enemy_attack(self):
         """Enemy attacks normally"""
@@ -345,13 +340,13 @@ class Battle:
         hurt_dmg = 0
 
         if mag_def and more:
-            hurt_dmg = random.randint(hurtmore_low[0], hurtmore_low[1])
+            hurt_dmg = self.rng.randint(hurtmore_low[0], hurtmore_low[1])
         elif mag_def and not more:
-            hurt_dmg = random.randint(hurt_low[0], hurt_low[1])
+            hurt_dmg = self.rng.randint(hurt_low[0], hurt_low[1])
         elif more:
-            hurt_dmg = random.randint(hurtmore_high[0], hurtmore_high[1])
+            hurt_dmg = self.rng.randint(hurtmore_high[0], hurtmore_high[1])
         else:
-            hurt_dmg = random.randint(hurt_high[0], hurt_high[1])
+            hurt_dmg = self.rng.randint(hurt_high[0], hurt_high[1])
 
         self.player.current_hp -= hurt_dmg
         self.log(f"""The {self.enemy.name} casts {spell_name}! {self.player.name} is hurt for {hurt_dmg} damage!\n""")
@@ -369,7 +364,7 @@ class Battle:
 
         heal_max = self.enemy.max_hp - self.enemy.current_hp
 
-        heal_rand = random.randint(healmore_range[0], healmore_range[1]) if more else random.randint(heal_range[0],
+        heal_rand = self.rng.randint(healmore_range[0], healmore_range[1]) if more else self.rng.randint(heal_range[0],
                                                                                                      heal_range[1])
 
         heal_amt = heal_rand if heal_rand < heal_max else heal_max
@@ -392,7 +387,7 @@ class Battle:
         spell_name = "Stopspell"
         if self.enemy.enemy_spell_stopped:
             self.log(f"The {self.enemy.name} casts {spell_name}, but their spell has been blocked!\n")
-        elif random.randint(1, 2) == 2:
+        elif self.rng.randint(1, 2) == 2:
             self.player.is_spellstopped = True
             self.log(f"""The {self.enemy.name} casts {spell_name}! Your magic has been blocked!\n""")
         else:
@@ -412,13 +407,13 @@ class Battle:
         fire_dmg = 0
 
         if fire_def and more:
-            fire_dmg = random.randint(strongfire_low[0], strongfire_low[1])
+            fire_dmg = self.rng.randint(strongfire_low[0], strongfire_low[1])
         elif fire_def and not more:
-            fire_dmg = random.randint(fire_low[0], fire_low[1])
+            fire_dmg = self.rng.randint(fire_low[0], fire_low[1])
         elif more:
-            fire_dmg = random.randint(strongfire_high[0], strongfire_high[1])
+            fire_dmg = self.rng.randint(strongfire_high[0], strongfire_high[1])
         else:
-            fire_dmg = random.randint(fire_high[0], fire_high[1])
+            fire_dmg = self.rng.randint(fire_high[0], fire_high[1])
 
         self.player.current_hp -= fire_dmg
         self.log(f"""The {self.enemy.name} breathes {spell_name}! {self.player.name} is hurt for {fire_dmg} damage!\n""")
