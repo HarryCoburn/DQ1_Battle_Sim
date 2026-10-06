@@ -27,13 +27,11 @@ class Battle:
 
     # Core Fight Routines
 
-    def setup_battle(self):
-        """Performs setup tasks for the battle prior to start"""
-        self.over = False
-        self.start_fight()
+
 
     def start_fight(self):
         """Starts the battle loop"""
+        self.log(f"""You are fighting the {self.enemy.name}!\n""")
 
         surprise_check = self.does_enemy_surprise()
         if surprise_check:
@@ -68,8 +66,8 @@ class Battle:
 
     def does_enemy_surprise(self):
         """ Determine if the enemy surprises the player based on agility and randomness. """
-        player_roll = self.player.agility * self.rng.randint(1,255)
-        enemy_roll = self.player.agility * self.rng.randint(1,255) * 0.25
+        player_roll = self.player.agility * self.rng.randint(0,254)
+        enemy_roll = self.enemy.agility * self.rng.randint(0,254) * 0.25
         return player_roll < enemy_roll
 
     # Player Actions

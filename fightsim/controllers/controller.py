@@ -64,29 +64,6 @@ class EnemyManager:
         self.view.update_enemy_info(self.model.enemy)
         logger.info(f"Updated enemy to {value}")
 
-class BattleManager:
-    def __init__(self, controller):
-        self.controller = controller
-
-
-    def start_battle(self, *_):
-        self.logger.info(f"Entering start_battle, enemy is {self.controller.model.enemy}")
-        """ Performs the handoff to battle.py for battle control"""
-        if self.controller.model.enemy is None:
-            logger.warning("No enemy selected for battle.")
-        else:
-            self.controller.battle.setup_battle()
-
-    def end_battle(self, *_):
-        """Cleans up after the battle is done and resets the simulator"""
-        self.controller.model.enemy.current_hp = self.controller.model.enemy.max_hp
-        self.controller.model.player.current_hp = self.controller.model.player.max_hp
-        self.controller.model.player.current_mp = self.controller.model.player.max_mp
-        self.controller.model.player.herb_count = 0
-        self.controller.view.main_frame.txt["state"] = "disabled"
-        self.controller.enemy_manager.update_enemy_info()
-        self.controller.player_manager.update_player_info()
-        self.controller.view.show_frame(self.controller.view.setup_frame)
 
 class Controller:
     """ Main controller class"""
@@ -102,9 +79,8 @@ class Controller:
         self.observer_manager = ObserverManager(observer)
         self.player_manager = PlayerManager(model, view)
         self.enemy_manager = EnemyManager(model, view)
-        self.battle_manager = BattleManager(self)
         self.observer = observer
-        self.battle = Battle(self)
+        self.battle = None
         self.messages = [
             ObserverMessages.OUTPUT_CHANGE,
             ObserverMessages.OUTPUT_CLEAR,
@@ -127,7 +103,7 @@ class Controller:
 
     def initial_update(self):
         self.player_manager.update_player_info()
-        self.battle.fight_over.trace('w', lambda *args: self.battle_manager.end_battle())
+
 
     def update(self, property_name, data=None):
         if property_name == ObserverMessages.OUTPUT_CHANGE:
@@ -155,16 +131,36 @@ class Controller:
         self.switch_battle_frame()
         self.clear_output()
 
-    def start_battle_interaction(self):
+    def start_battle(self) -> None:
+        self.battle = Battle(
+            player=self.model.player,
+            enemy=self.model.enemy,
+            log=self.model.text,
+            rng=self.rng,
+            on_end=self.end_battle,
+        )
+        self.prepare_battle()
         self.enable_main_frame_text()
-        self.model.text(f"""You are fighting the {self.model.enemy.name}!\n""")
+        self.battle.start_fight()
+
+        def end_battle(self):
+            """Cleans up after the battle is done and resets the simulator"""
+            self.controller.model.enemy.current_hp = self.controller.model.enemy.max_hp
+            self.controller.model.player.current_hp = self.controller.model.player.max_hp
+            self.controller.model.player.current_mp = self.controller.model.player.max_mp
+            self.controller.model.player.herb_count = 0
+            self.controller.view.main_frame.txt["state"] = "disabled"
+            self.controller.enemy_manager.update_enemy_info()
+            self.controller.player_manager.update_player_info()
+            self.controller.view.show_frame(self.controller.view.setup_frame)
+
 
     def player_surprised(self):
         self.model.text(f"""The {self.model.enemy.name} surprises you! They attack first!\n""")
 
     def player_wins(self):
         self.model.text(f"""You have defeated the {self.model.enemy.name}!\n""")
- 
+
     def fleeing(self, succeed):
         self.model.text(f"You attempt to run away...\n")
         if succeed:
