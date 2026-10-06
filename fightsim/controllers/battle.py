@@ -261,9 +261,10 @@ class Battle:
 
         if self.enemy.is_asleep:
             self.process_enemy_sleep()
-        if self.should_enemy_flee():
+        elif self.should_enemy_flee():
             self.enemy_flees()
-        self.perform_enemy_action()
+        else:
+            self.perform_enemy_action()
 
     def enemy_did_dodge(self):
         return self.rng.randint(1,64) <= self.enemy.dodge
