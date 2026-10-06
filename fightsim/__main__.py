@@ -2,48 +2,46 @@
 
 import logging
 import logging.config
-from fightsim.views.view import View
+import sys
+from pathlib import Path
+
+from fightsim.common.eventmanager import EventManager
 from fightsim.controllers.controller import Controller
+from fightsim.models.enemy import enemy_dummy_factory
 from fightsim.models.model import Model
 from fightsim.models.player import player_factory
-from fightsim.models.enemy import enemy_dummy_factory
-from fightsim.common.eventmanager import EventManager
+from fightsim.views.view import View
 
-def create_event_manager():
-    return EventManager("DQ1 Model Observer")
+LOGGING_CONFIG = Path(__file__).parent / "logging.ini"
 
-def create_view():
-    return View()
+logger = logging.getLogger("fightsim.main")
 
-def create_model(event_manager):
-    return Model(player=player_factory(), enemy=enemy_dummy_factory(), observer=event_manager)
+def build_app() -> Controller:
+    event_manager = EventManager("DQ1 Model Observer")
+    model = Model(
+        player=player_factory(),
+        enemy=enemy_dummy_factory(),
+        observer=event_manager,
+    )
+    view = View()
+    controller = Controller(model, view, event_manager)
+    view.set_controller(controller)
+    controller.initial_update()
+    return controller
 
-def create_controller(model, view, event_manager):
-    return Controller(model, view, event_manager)
 
-def main(event_manager_factory=create_event_manager,
-         view_factory=create_view,
-         model_factory=create_model,
-         controller_factory=create_controller):
-    """ Entry Point for the Application """
-
-    logging.config.fileConfig('./fightsim/logging.ini')
-    main_logger = logging.getLogger('main')
-
+def main() -> int:
+    logging.config.fileConfig(LOGGING_CONFIG, disable_existing_loggers=False)
     try:
-        event_manager = event_manager_factory()
-        view = view_factory()
-        model = model_factory(event_manager)
-        controller = controller_factory(model, view, event_manager)
+        controller = build_app()
+    except Exception:
+        logger.exception("Failed to start the application")
+        return 1
 
-        view.set_controller(controller)
-        controller.initial_update()
-
-        main_logger.info("Starting the application GUI")
-        controller.view.mainloop()
-    except Exception as e:
-        main_logger.error(f"Failed to start the application: {e}", exc_info=True)
+    logger.info("Starting the application GUI")
+    controller.run()
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
