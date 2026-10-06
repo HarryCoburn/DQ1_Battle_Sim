@@ -3,9 +3,55 @@ battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 """
 import random
 from collections.abc import Callable
+from typing import NamedTuple
 
+
+from fightsim.common.messages import EnemyActions
+from fightsim.common.spells import Spell
 from fightsim.models.player import CRIT_CHANCE
-from ..common.messages import EnemyActions
+
+class EnemyDamage(NamedTuple):
+    normal: tuple[int,int]
+    reduced: tuple[int,int]
+    is_breath: bool
+    verb: str
+
+
+HERB_HEAL = (23,30)
+RUN_MODIFIERS = (0.25, 0.375, 0.75, 1)
+
+SPELL_COST = {
+    Spell.HEAL: 4,
+    Spell.HURT: 2,
+    Spell.SLEEP: 2,
+    Spell.STOPSPELL: 2,
+    Spell.HEALMORE: 10,
+    Spell.HURTMORE: 5,
+}
+
+PLAYER_HEAL = {
+    Spell.HEAL: (10, 17),
+    Spell.HEALMORE: (85, 100),
+}
+
+PLAYER_HURT = {
+    Spell.HURT: (5, 12),
+    Spell.HURTMORE: (58, 65),
+}
+
+ENEMY_HEAL = {
+    EnemyActions.HEAL: (20, 27),
+    EnemyActions.HEALMORE: (85, 100),
+}
+
+# Breath attacks ignore Stopspell; spells are blocked by it.
+ENEMY_DAMAGE = {
+    EnemyActions.HURT: EnemyDamage((3, 10), (2, 6), False, "casts Hurt"),
+    EnemyActions.HURTMORE: EnemyDamage((30, 45), (20, 30), False, "casts Hurtmore"),
+    EnemyActions.FIRE: EnemyDamage((16, 23), (10, 14), True, "breathes fire"),
+    EnemyActions.STRONGFIRE: EnemyDamage((65, 72), (42, 48), True, "breathes strong flames at you!"),
+}
+
 
 
 class Battle:
@@ -20,7 +66,6 @@ class Battle:
         self.rng = rng
         self.log = log
         self.on_end = on_end
-        self.herb_range = (23, 30)
         self.over = False
 
     # Core Fight Routines
@@ -31,8 +76,7 @@ class Battle:
         self.enemy.current_hp = self.enemy.max_hp
         self.log(f"""You are fighting the {self.enemy.name}!\n""")
 
-        surprise_check = self.does_enemy_surprise()
-        if surprise_check:
+        if self.does_enemy_surprise():
             self.log(f"The {self.enemy.name} surprises you!\n")
             self.advance()
         # Now we wait for the UI to call take_turn
@@ -48,15 +92,16 @@ class Battle:
             if self.enemy.is_defeated():
                 self.log(f"You have defeated the {self.enemy.name}!\n")
                 return self.finish()
+            self.log("\nEnemy turn\n")
             self.enemy_turn()
             if self.over:
                 return
             if self.player.is_defeated():
                 self.log(f"You have been defeated by the {self.enemy.name}!\n")
                 return self.finish()
-            if not self.check_player_sleep():
+            if not self.player_sleeps_through():
                 return
-            # Player is asleep: Loop so enemy attacks again.
+
 
     def finish(self) -> None:
         self.over = True
@@ -72,40 +117,32 @@ class Battle:
 
     # Player Attack
 
-    def check_player_sleep(self) -> bool:
+    def player_sleeps_through(self) -> bool:
         if not self.player.is_asleep:
             return False
-        else:
-            self.player.advance_sleep()
-            if self.rng.randint(1,2) == 2 or not self.player.is_asleep:
-                self.player.wake()
-                self.log("You wake up!\n")
-                return False
-            else:
-                self.log("You're still asleep...\n")
-                return True
-
+        self.player.advance_sleep()
+        if self.rng.randint(1,2) == 2 or not self.player.is_asleep:
+            self.player.wake()
+            self.log("You wake up!\n")
+            return False
+        self.log("You're still asleep...\n")
+        return True
 
     def did_player_critical_hit(self):
         return self.rng.randint(1, CRIT_CHANCE) == 1 and self.enemy.void_critical_hit is False
 
-    def calculate_player_critical_hit_damage(self):
-        low, high = self.player.crit_range(self.player.attack_num())
-        return self.rng.randint(low, high)
-
-    def calculate_player_attack_damage(self, critical_hit):
+    def roll_player_damage(self, critical_hit: bool) -> int:
+        attack = self.player.attack_num()
         if critical_hit:
-            return self.calculate_player_critical_hit_damage()
-        return self.calculate_player_normal_hit_damage()
-
-    def calculate_player_normal_hit_damage(self):
-        low, high = self.player.damage_range(self.player.attack_num(), self.enemy.agility)
-        return self.rng.randint(low, high)
+            low, high = self.player.crit_range(attack)
+        else:
+            low, high = self.player.damage_range(attack, self.enemy.agility)
+        return self.rng.randint(low,high)
 
     def player_attack(self) -> bool:
         crit = self.did_player_critical_hit()
         dodge = self.enemy_did_dodge()
-        damage = self.calculate_player_attack_damage(crit)
+        damage = self.roll_player_damage(crit)
         self.player.attack_msg(crit, dodge, damage, self.enemy.name)
         if crit or not dodge:
             self.enemy.take_damage(damage)
@@ -123,9 +160,8 @@ class Battle:
             self.log("You eat a herb, but your hit points are already at maximum!\n")
             return True
 
-        heal_amt = self.rng.randint(*self.herb_range)
-        actual_healed = self.player.heal(heal_amt)
-        self.log(f"""You eat a herb and regain {actual_healed} hit points!\n""")
+        healed = self.player.heal(self.rng.randint(*HERB_HEAL))
+        self.log(f"""You eat a herb and regain {healed} hit points!\n""")
         return True
 
 
@@ -133,10 +169,9 @@ class Battle:
 
     def is_flee_successful(self):
         """ Return True if the player flees successfully """
-        enemy_run_modifiers = [0.25, 0.375, 0.75, 1]
-        player_flee_chance = self.player.agility * self.rng.randint(0, 254)
-        enemy_block_chance = self.enemy.agility * self.rng.randint(0, 254) * enemy_run_modifiers[self.enemy.run]
-        return player_flee_chance > enemy_block_chance
+        player_roll = self.player.agility * self.rng.randint(0, 254)
+        enemy_roll = self.enemy.agility * self.rng.randint(0, 254) * RUN_MODIFIERS[self.enemy.run]
+        return player_roll > enemy_roll
 
     def player_flees(self) -> bool:
         """Player attempts to flee battle."""
@@ -150,34 +185,9 @@ class Battle:
 
     # Player Magic
 
-    def player_cast_magic(self, spell) -> bool:
-        # TODO: Remove this check entirely once controller/view can handle it instead.
-        if spell in ["Select Spell", "No Magic Available"]:
-            self.log(
-                "You must select a valid spell first." if spell == "Select Spell" else "Your level is too low to cast magic.\n")
-            return False
+    def player_cast_magic(self, spell: Spell) -> bool:
+        cost = SPELL_COST[spell]
 
-        spell_switch = {
-            "Heal": lambda: self.player_heal(False),
-            "Healmore": lambda: self.player_heal(True),
-            "Hurt": lambda: self.player_hurt(False),
-            "Hurtmore": lambda: self.player_hurt(True),
-            "Sleep": self.player_casts_sleep,
-            "Stopspell": self.player_casts_stopspell
-        }
-
-        spell_cost = {
-            "Heal": 4,
-            "Healmore": 10,
-            "Hurt": 2,
-            "Hurtmore": 5,
-            "Sleep": 2,
-            "Stopspell": 2
-        }
-
-        cost = spell_cost.get(spell, 0)
-        if cost == 0:
-            raise ValueError(f"No cost defined for spell {spell!r}\n")
 
         if self.player.current_mp < cost:
             self.log(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
@@ -188,54 +198,42 @@ class Battle:
             self.log(f"""Player casts {spell}, but their magic has been sealed!\n""")
             return True
 
-        # Execute the spell function
-        spell_function = spell_switch.get(spell, lambda: None)
-        spell_function()
+        match spell:
+            case Spell.HEAL | Spell.HEALMORE:
+                self.player_heal(spell)
+            case Spell.HURT | Spell.HURTMORE:
+                self.player_hurt(spell)
+            case Spell.SLEEP:
+                self.player_casts_sleep()
+            case Spell.STOPSPELL:
+                self.player_casts_stopspell()
+            case _:
+                raise ValueError(f"No battle effect defined for spell {spell!r}")
         return True
 
-    def player_heal(self, more):
-        heal_ranges = {
-            "Heal": [10, 17],
-            "Healmore": [85,100]
-        }
-        spell_name = "Healmore" if more else "Heal"
-        heal_range = heal_ranges[spell_name]
 
-        heal_amt = self.rng.randint(*heal_range)
-        healed = self.player.heal(heal_amt)
+    def player_heal(self, spell: Spell):
+        healed = self.player.heal(self.rng.randint(*PLAYER_HEAL[spell]))
         if healed == 0:
-            self.log(f"""Player casts {spell_name}, but their hit points were already at maximum!\n""")
+            self.log(f"""Player casts {spell}, but their hit points were already at maximum!\n""")
         else:
-            self.log(f"""Player casts {spell_name}! Player is healed {healed} hit points!\n""")
+            self.log(f"""Player casts {spell}! Player is healed {healed} hit points!\n""")
 
-    def player_hurt(self, more):
-        """ Handles player casting of Hurt and Hurtmore"""
-        hurt_ranges = {
-            "Hurt": [5, 12],
-            "Hurtmore": [58, 65]
-        }
-        spell_name = "Hurtmore" if more else "Hurt"
-        hurt_range = hurt_ranges[spell_name]
-        enemy_hurt_resistance = self.enemy.hurt_resist
+    def player_hurt(self, spell: Spell):
+        damage = self.rng.randint(*PLAYER_HURT[spell])
 
-        hurt_total = self.calc_hurt(hurt_range)
-
-        if self.resist(enemy_hurt_resistance):
-            self.log(f"""Player casts {spell_name}, but the enemy resisted!\n""")
+        if self.resist(self.enemy.hurt_resist):
+            self.log(f"""Player casts {spell}, but the enemy resisted!\n""")
         else:
-            self.enemy.take_damage(hurt_total)
-            self.log(f"""Player casts {spell_name}! {self.enemy.name} is hurt by {str(hurt_total)} hit points!\n""")
+            self.enemy.take_damage(damage)
+            self.log(f"""Player casts {spell}! {self.enemy.name} is hurt by {damage} hit points!\n""")
 
-
-    def calc_hurt(self, hurt_range):
-        return self.rng.randint(*hurt_range)
 
     def player_casts_sleep(self):
         """ Player tries to cast Sleep on the enemy"""
-        enemy_sleep_resistance = self.enemy.sleep_resist
         if self.enemy.is_asleep:
             self.log(f"""Player casts Sleep! But the {self.enemy.name} is already asleep!\n""")
-        elif self.resist(enemy_sleep_resistance):
+        elif self.resist(self.enemy.sleep_resist):
             self.log(f"""Player casts Sleep! But the {self.enemy.name} resisted!\n""")
         else:
             self.log(f"""Player casts Sleep! The {self.enemy.name} is now asleep!\n""")
@@ -243,15 +241,13 @@ class Battle:
 
     def player_casts_stopspell(self):
         """ Player tries to cast Stopspell on the enemy"""
-        enemy_stop_resistance = self.enemy.stopspell_resist
         if self.enemy.is_spellstopped:
             self.log(f"""Player casts Stopspell! But the {self.enemy.name}'s magic was already blocked!\n""")
-        elif self.resist(enemy_stop_resistance):
+        elif self.resist(self.enemy.stopspell_resist):
             self.log(f"""Player casts Stopspell! But the {self.enemy.name} resisted!\n""")
         else:
             self.log(f"""Player casts Stopspell! The {self.enemy.name}'s magic is now blocked!!\n""")
             self.enemy.is_spellstopped = True
-
 
 
     # Enemy Actions
@@ -261,186 +257,112 @@ class Battle:
 
         if self.enemy.is_asleep:
             self.process_enemy_sleep()
-            return
         if self.should_enemy_flee():
             self.enemy_flees()
-            return
         self.perform_enemy_action()
 
     def enemy_did_dodge(self):
         return self.rng.randint(1,64) <= self.enemy.dodge
 
-    def process_enemy_sleep(self) -> bool:
+    def process_enemy_sleep(self)-> None:
         self.enemy.advance_sleep()
         if self.enemy.is_asleep:
             self.log(f"The {self.enemy.name} is asleep\n")
-            return True
+        elif self.rng.randint(1,3) == 3:
+            self.enemy.wake()
+            self.log(f"The {self.enemy.name} woke up!\n")
         else:
-            # Enemy has a chance to sleep longer than the limit...
-            if self.rng.randint(1,3) == 3:
-                self.enemy.wake()
-                self.log(f"The {self.enemy.name} woke up!\n")
-                return False
-            else:
-                self.log(f"The {self.enemy.name} is still asleep...\n")
-                self.enemy.stay_asleep()
-                return True
+            self.log(f"The {self.enemy.name} is still asleep...\n")
+            self.enemy.stay_asleep()
 
     def should_enemy_flee(self):
         return self.player.strength > self.enemy.strength * 2 and self.rng.randint(1, 4) == 4
-
-    def perform_enemy_action(self):
-        """Selects and performs an action from the enemy's set of possible actions."""
-        action_methods = {
-            EnemyActions.ATTACK: self.enemy_attack,
-            EnemyActions.HURT: lambda: self.enemy_casts_hurt(False),
-            EnemyActions.HURTMORE: lambda: self.enemy_casts_hurt(True),
-            EnemyActions.HEAL: lambda: self.enemy_casts_heal(False),
-            EnemyActions.HEALMORE: lambda: self.enemy_casts_heal(True),
-            EnemyActions.SLEEP: self.enemy_casts_sleep,
-            EnemyActions.STOPSPELL: self.enemy_casts_stopspell,
-            EnemyActions.FIRE: lambda: self.enemy_breathes_fire(False),
-            EnemyActions.STRONGFIRE: lambda: self.enemy_breathes_fire(True)
-        }
-
-        chosen_attack = self.enemy_choose_attack()
-        action = action_methods.get(chosen_attack, self.handle_unknown_action)
-        action()
-
-    def handle_unknown_action(self):
-        """ Handles unknown enemy actions """
-        raise NotImplementedError("Enemy tried to attack with something not programmed yet!!\n")
 
     def enemy_flees(self):
         """ Enemy runs away. End the combat"""
         self.log(f"The {self.enemy.name} flees from your superior strength!\n")
         self.finish()
 
-    def enemy_choose_attack(self):
-        atk_list = self.enemy.pattern
-        choice = None
-        for item in atk_list:
-            chance = item["weight"]
-            if self.rng.randint(1, 100) <= chance:
-                action = item["id"]
-                if action in [EnemyActions.ATTACK, EnemyActions.HURT, EnemyActions.FIRE, EnemyActions.HURTMORE, EnemyActions.STRONGFIRE]:
-                    choice = action
-                    break
-                if action in [EnemyActions.HEAL, EnemyActions.HEALMORE] and self.enemy.trigger_healing():
-                    choice = action
-                    break
-                if action == EnemyActions.SLEEP and not self.player.is_asleep:
-                    choice = action
-                    break
-                if action == EnemyActions.STOPSPELL and not self.player.is_spellstopped:
-                    choice = action
-                    break
+    def enemy_can_use(self, action: EnemyActions) -> bool:
+        """Skip actions that would be pointless right now."""
+        match action:
+            case EnemyActions.HEAL | EnemyActions.HEALMORE:
+                return self.enemy.trigger_healing()
+            case EnemyActions.SLEEP:
+                return not self.player.is_asleep
+            case EnemyActions.STOPSPELL:
+                return not self.player.is_spellstopped
+            case _:
+                return True
 
-        return choice or EnemyActions.ATTACK
+    def enemy_choose_attack(self) -> EnemyActions:
+        for item in self.enemy.pattern:
+            if self.rng.randint(1, 100) <= item["weight"] and self.enemy_can_use(item["id"]):
+                return item["id"]
+        return EnemyActions.ATTACK
 
+    def perform_enemy_action(self) -> None:
+        action = self.enemy_choose_attack()
+        match action:
+            case EnemyActions.ATTACK:
+                self.enemy_attack()
+            case EnemyActions.HEAL | EnemyActions.HEALMORE:
+                self.enemy_casts_heal(action)
+            case EnemyActions.SLEEP:
+                self.enemy_casts_sleep()
+            case EnemyActions.STOPSPELL:
+                self.enemy_casts_stopspell()
+            case _ if action in ENEMY_DAMAGE:
+                self.enemy_deals_damage(action)
+            case _:
+                raise NotImplementedError(f"No battle effect defined for enemy action {action!r}")
 
-    def resist(self, chance):
-        return self.rng.randint(1, 16) <= chance
-
-    def enemy_attack(self):
-        """Enemy attacks normally"""
-        self.log(f"\nEnemy turn\n")
-        damage_range = self.enemy.attack_range(self.player.defense())
-        damage_rolled = self.rng.randint(*damage_range)
-        damage_dealt = self.player.take_damage(damage_rolled)
-
-        self.log(f"{self.enemy.name} attacks! {self.enemy.name} hits you for {damage_dealt} damage.\n")
-
-
-    def enemy_casts_hurt(self, more):
-        """ Enemy handling of hurt and hurtmore"""
-        spell_name = "Hurtmore" if more else "Hurt"
-        if self.enemy.is_spell_stopped:
-            self.log(f"""The {self.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
-            return
-
-        hurt_high = [3, 10]
-        hurt_low = [2, 6]
-        hurtmore_high = [30, 45]
-        hurtmore_low = [20, 30]
-
-        mag_def = self.player.reduce_hurt_damage
-        hurt_dmg = 0
-
-        if mag_def and more:
-            hurt_dmg = self.rng.randint(hurtmore_low[0], hurtmore_low[1])
-        elif mag_def and not more:
-            hurt_dmg = self.rng.randint(hurt_low[0], hurt_low[1])
-        elif more:
-            hurt_dmg = self.rng.randint(hurtmore_high[0], hurtmore_high[1])
-        else:
-            hurt_dmg = self.rng.randint(hurt_high[0], hurt_high[1])
-
-        damage_dealt = self.player.take_damage(hurt_dmg)
-        self.log(f"""The {self.enemy.name} casts {spell_name}! {self.player.name} is hurt for {damage_dealt} damage!\n""")
-
-
-    def enemy_casts_heal(self, more):
-        """ Enemy handling of heal and healmore"""
-        spell_name = "Healmore" if more else "Heal"
+    def enemy_spell_blocked(self, verb: str) -> bool:
+        """Log and return True if the enemy's magic is sealed."""
         if self.enemy.is_spellstopped:
-            self.log(f"""The {self.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
+            self.log(f"The {self.enemy.name} {verb}, but their spell has been blocked!\n")
+            return True
+        return False
+
+    def enemy_attack(self) -> None:
+        damage = self.rng.randint(*self.enemy.attack_range(self.player.defense()))
+        dealt = self.player.take_damage(damage)
+        self.log(f"The {self.enemy.name} attacks! You are hit for {dealt} damage.\n")
+
+    def enemy_deals_damage(self, action: EnemyActions) -> None:
+        """Hurt, Hurtmore and the breath attacks."""
+        attack = ENEMY_DAMAGE[action]
+        if not attack.is_breath and self.enemy_spell_blocked(attack.verb):
             return
 
-        heal_range = [20, 27]
-        healmore_range = [85, 100]
+        protected = self.player.reduce_fire_damage if attack.is_breath else self.player.reduce_hurt_damage
+        damage = self.rng.randint(*(attack.reduced if protected else attack.normal))
+        dealt = self.player.take_damage(damage)
+        self.log(f"The {self.enemy.name} {attack.verb}! You are hurt for {dealt} damage!\n")
 
-        heal_rand = self.rng.randint(healmore_range[0], healmore_range[1]) if more else self.rng.randint(heal_range[0],
-                                                                                                   heal_range[1])
+    def enemy_casts_heal(self, action: EnemyActions) -> None:
+        verb = f"casts {action.name.title()}"
+        if self.enemy_spell_blocked(verb):
+            return
 
-        healed = self.enemy.heal(heal_rand)
+        healed = self.enemy.heal(self.rng.randint(*ENEMY_HEAL[action]))
         if healed == 0:
-            self.log(f"""Player casts {spell_name}, but their hit points were already at maximum!\n""")
+            self.log(f"The {self.enemy.name} {verb}, but its hit points were already at maximum!\n")
         else:
-            self.log(f"""The {self.enemy.name} casts {spell_name}! {self.enemy.name} is healed {healed} hit points!\n""")
+            self.log(f"The {self.enemy.name} {verb}! The {self.enemy.name} regains {healed} hit points!\n")
 
+    def enemy_casts_sleep(self) -> None:
+        if self.enemy_spell_blocked("casts Sleep"):
+            return
+        self.player.fall_asleep()
+        self.log(f"The {self.enemy.name} casts Sleep. You fall asleep!!\n")
 
-    def enemy_casts_sleep(self):
-        """Enemy attempts to cast sleep"""
-        spell_name = "Sleep"
-        if self.enemy.is_spellstopped:
-            self.log(f"""The {self.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
-        else:
-            self.player.fall_asleep()
-            self.log(f"""The {self.enemy.name} casts {spell_name}. You fall asleep!!\n""")
-
-    def enemy_casts_stopspell(self):
-        """ Enemy attempts to cast stopspell. 50% chance of failure"""
-        spell_name = "Stopspell"
-        if self.enemy.is_spellstopped:
-            self.log(f"The {self.enemy.name} casts {spell_name}, but their spell has been blocked!\n")
-        elif self.rng.randint(1, 2) == 2:
+    def enemy_casts_stopspell(self) -> None:
+        """50% chance of failure."""
+        if self.enemy_spell_blocked("casts Stopspell"):
+            return
+        if self.rng.randint(1, 2) == 2:
             self.player.is_spellstopped = True
-            self.log(f"""The {self.enemy.name} casts {spell_name}! Your magic has been blocked!\n""")
+            self.log(f"The {self.enemy.name} casts Stopspell! Your magic has been blocked!\n")
         else:
-            self.log(f"""The {self.enemy.name} casts {spell_name}, but the spell fails!\n""")
-
-    def enemy_breathes_fire(self, more):
-        """ Enemy handling of breath attacks"""
-        # Stopspell does not affect breath attacks.
-        spell_name = "strong flames at you!" if more else "fire"
-
-        fire_high = [16, 23]
-        fire_low = [10, 14]
-        strongfire_high = [65, 72]
-        strongfire_low = [42, 48]
-
-        fire_def = self.player.reduce_fire_damage
-        fire_dmg = 0
-
-        if fire_def and more:
-            fire_dmg = self.rng.randint(strongfire_low[0], strongfire_low[1])
-        elif fire_def and not more:
-            fire_dmg = self.rng.randint(fire_low[0], fire_low[1])
-        elif more:
-            fire_dmg = self.rng.randint(strongfire_high[0], strongfire_high[1])
-        else:
-            fire_dmg = self.rng.randint(fire_high[0], fire_high[1])
-
-        damage_dealt = self.player.take_damage(fire_dmg)
-        self.log(f"""The {self.enemy.name} breathes {spell_name}! {self.player.name} is hurt for {damage_dealt} damage!\n""")
+            self.log(f"The {self.enemy.name} casts Stopspell, but the spell fails!\n")
