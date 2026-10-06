@@ -401,6 +401,7 @@ class Battle:
         spell_name = "Healmore" if more else "Heal"
         if self.model.enemy.enemy_spell_stopped:
             self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
+            self.player_turn()
             return
 
         heal_range = [20, 27]
