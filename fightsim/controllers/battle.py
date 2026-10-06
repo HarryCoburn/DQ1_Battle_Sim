@@ -314,12 +314,12 @@ class Battle:
 
     def handle_unknown_action(self):
         """ Handles unknown enemy actions """
-        raise NotImplementedError("Enemy tried to attack with something not programmed yet!!")
+        raise NotImplementedError("Enemy tried to attack with something not programmed yet!!\n")
 
     def enemy_flees(self):
         """ Enemy runs away. End the combat"""
-        self.model.text(f"The {self.enemy.name} flees from your superior strength!")
-        self.fight_over.set(True)
+        self.model.text(f"The {self.enemy.name} flees from your superior strength!\n")
+        self.end_fight()
 
     def enemy_choose_attack(self):
         atk_list = self.model.enemy.pattern
@@ -393,14 +393,14 @@ class Battle:
             hurt_dmg = random.randint(hurt_high[0], hurt_high[1])
 
         self.model.player.current_hp -= hurt_dmg
-        self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.player.name} is hurt for {hurt_dmg} damage!""")
+        self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.player.name} is hurt for {hurt_dmg} damage!\n""")
         self.is_player_defeated()
 
     def enemy_casts_heal(self, more):
         """ Enemy handling of heal and healmore"""
         spell_name = "Healmore" if more else "Heal"
         if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
             self.player_turn()
             return
 
@@ -415,7 +415,7 @@ class Battle:
         heal_amt = heal_rand if heal_rand < heal_max else heal_max
 
         self.model.enemy.current_hp += heal_amt
-        self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.enemy.name} is healed {heal_amt} hit points!""")
+        self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.enemy.name} is healed {heal_amt} hit points!\n""")
         self.controller.enemy_manager.update_enemy_info()
         self.player_turn()
 
@@ -423,22 +423,22 @@ class Battle:
         """Enemy attempts to cast sleep"""
         spell_name = "Sleep"
         if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
         else:
             self.model.player.is_asleep = True
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}. You fall asleep!!""")
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}. You fall asleep!!\n""")
         self.player_turn()
 
     def enemy_casts_stopspell(self):
         """ Enemy attempts to cast stopspell. 50% chance of failure"""
         spell_name = "Stopspell"
         if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!")
+            self.model.text(f"The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!\n")
         elif random.randint(1, 2) == 2:
             self.model.player.is_spellstopped = True
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! Your magic has been blocked!""")
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! Your magic has been blocked!\n""")
         else:
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but the spell fails!""")
+            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but the spell fails!\n""")
         self.player_turn()
 
     def enemy_breathes_fire(self, more):
@@ -464,5 +464,5 @@ class Battle:
             fire_dmg = random.randint(fire_high[0], fire_high[1])
 
         self.model.player.current_hp -= fire_dmg
-        self.model.text(f"""The {self.model.enemy.name} breathes {spell_name}! {self.model.player.name} is hurt for {fire_dmg} damage!""")
+        self.model.text(f"""The {self.model.enemy.name} breathes {spell_name}! {self.model.player.name} is hurt for {fire_dmg} damage!\n""")
         self.is_player_defeated()
