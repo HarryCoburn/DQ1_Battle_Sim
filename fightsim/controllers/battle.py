@@ -411,7 +411,7 @@ class Battle:
         heal_amt = heal_rand if heal_rand < heal_max else heal_max
 
         self.model.enemy.current_hp += heal_amt
-        self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}! {self.model.enemy["name"]} is healed {heal_amt} hit points!""")
+        self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.enemy.name} is healed {heal_amt} hit points!""")
         self.controller.enemy_manager.update_enemy_info()
         self.player_turn()
 

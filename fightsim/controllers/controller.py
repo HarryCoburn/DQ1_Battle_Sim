@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class ObserverManager:
     def __init__(self, observer):
         self.observer = observer
-        
+
 
     def attach_observers(self, controller, messages):
         for message in messages:
@@ -22,7 +22,7 @@ class PlayerManager:
     def __init__(self, model, view):
         self.model = model
         self.view = view
-        
+
 
     def update_player_attribute(self, attribute_type, value=None):
         print(value)
@@ -35,8 +35,8 @@ class PlayerManager:
             AttributeType.NAME: self.model.player.change_name,
             AttributeType.HERB: self.model.buy_herb
         }
-                
-        if attribute_type in update_methods: 
+
+        if attribute_type in update_methods:
             if attribute_type == AttributeType.HERB:
                 update_methods[attribute_type]()
             else:
@@ -51,12 +51,12 @@ class PlayerManager:
         """Updates the view with current player information from the model."""
         self.view.update_player_info(self.model.player)
         logger.info("Player info updated in the view.")
-        
+
 class EnemyManager:
     def __init__(self, model, view):
         self.model = model
         self.view = view
-        
+
 
     def update_enemy_info(self, value = None):
         if value is not None:
@@ -67,7 +67,7 @@ class EnemyManager:
 class BattleManager:
     def __init__(self, controller):
         self.controller = controller
-        
+
 
     def start_battle(self, *_):
         self.logger.info(f"Entering start_battle, enemy is {self.controller.model.enemy}")
@@ -108,23 +108,26 @@ class Controller:
         self.messages = [
             ObserverMessages.OUTPUT_CHANGE,
             ObserverMessages.OUTPUT_CLEAR,
-            ObserverMessages.UPDATE_PLAYER_MAGIC            
+            ObserverMessages.UPDATE_PLAYER_MAGIC
         ]
 
         self.setup_observers()
         self.initialize_view()
 
+    def run(self) -> None:
+        self.view.mainloop()
+
     def setup_observers(self):
-        """ Attach the controller as an observer to model events """        
-        self.observer_manager.attach_observers(self, self.messages)        
+        """ Attach the controller as an observer to model events """
+        self.observer_manager.attach_observers(self, self.messages)
 
     def initialize_view(self):
         self.model.text("DQ1 Battle Sim")
-        logger.info("View initialized with welcome message.")       
+        logger.info("View initialized with welcome message.")
 
     def initial_update(self):
         self.player_manager.update_player_info()
-        self.battle.fight_over.trace('w', lambda *args: self.battle_manager.end_battle())    
+        self.battle.fight_over.trace('w', lambda *args: self.battle_manager.end_battle())
 
     def update(self, property_name, data=None):
         if property_name == ObserverMessages.OUTPUT_CHANGE:
@@ -133,7 +136,7 @@ class Controller:
             self.view.clear_output()
         if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
             self.view.battle_frame.update_player_magic_menu()
-    
+
     def get_chosen_magic(self):
         return self.view.battle_frame.magic_option_var.get()
 
