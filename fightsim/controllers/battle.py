@@ -68,8 +68,8 @@ class Battle:
 
     def does_enemy_surprise(self):
         """ Determine if the enemy surprises the player based on agility and randomness. """
-        player_roll = self.rng.agility_roll(self.player.agility)
-        enemy_roll = self.rng.agility_roll(self.enemy.agility, surprise_factor=0.25)
+        player_roll = self.player.agility * self.rng.randint(1,255)
+        enemy_roll = self.player.agility * self.rng.randint(1,255) * 0.25
         return player_roll < enemy_roll
 
     # Player Actions

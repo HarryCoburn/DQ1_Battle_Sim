@@ -16,7 +16,3 @@ class Randomizer:
     def choice(sequence):
         """Return a randomly selected element from the non-empty sequence."""
         return random.choice(sequence)
-
-    @staticmethod
-    def agility_roll(agility, surprise_factor=1):
-        return agility * random.randint(1, 255) * surprise_factor
