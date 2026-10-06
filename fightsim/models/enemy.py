@@ -48,11 +48,6 @@ class Enemy:
         return cls(name="Dummy", strength=0, agility=0, base_hp=[1, 1], sleep_resist=0,
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
 
-    def is_spell_stopped(self, spell_name):
-        if self.is_spellstopped:
-            self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!""")
-            return True
-        return False
 
     def set_model(self, model):
         self.model = model  # Method to inject the model dependency

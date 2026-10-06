@@ -27,7 +27,7 @@ class Battle:
 
     def start_fight(self):
         """Starts the battle loop"""
-        self.enemy.max_hp = self.rng.randint(self.enemy.base_hp[0], self.enemy.base_hp[1])
+        self.enemy.max_hp = self.rng.randint(*self.enemy.base_hp)
         self.enemy.current_hp = self.enemy.max_hp
         self.log(f"""You are fighting the {self.enemy.name}!\n""")
 
@@ -259,7 +259,7 @@ class Battle:
     def enemy_turn(self):
         """ Handles the Enemy's turn """
 
-        if self.enemy.is_asleep():
+        if self.enemy.is_asleep:
             self.process_enemy_sleep()
             return
         if self.should_enemy_flee():
@@ -346,8 +346,8 @@ class Battle:
         """Enemy attacks normally"""
         self.log(f"\nEnemy turn\n")
         damage_range = self.enemy.attack_range(self.player.defense())
-        damage_max = self.rng.randint(*damage_range)
-        damage_dealt = self.player.take_damage(damage_max)
+        damage_rolled = self.rng.randint(*damage_range)
+        damage_dealt = self.player.take_damage(damage_rolled)
 
         self.log(f"{self.enemy.name} attacks! {self.enemy.name} hits you for {damage_dealt} damage.\n")
 
@@ -355,7 +355,7 @@ class Battle:
     def enemy_casts_hurt(self, more):
         """ Enemy handling of hurt and hurtmore"""
         spell_name = "Hurtmore" if more else "Hurt"
-        if self.enemy.is_spell_stopped(spell_name):
+        if self.enemy.is_spell_stopped:
             self.log(f"""The {self.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
             return
 
@@ -394,7 +394,10 @@ class Battle:
                                                                                                    heal_range[1])
 
         healed = self.enemy.heal(heal_rand)
-        self.log(f"""The {self.enemy.name} casts {spell_name}! {self.enemy.name} is healed {healed} hit points!\n""")
+        if healed == 0:
+            self.log(f"""Player casts {spell_name}, but their hit points were already at maximum!\n""")
+        else:
+            self.log(f"""The {self.enemy.name} casts {spell_name}! {self.enemy.name} is healed {healed} hit points!\n""")
 
 
     def enemy_casts_sleep(self):
@@ -403,7 +406,7 @@ class Battle:
         if self.enemy.is_spellstopped:
             self.log(f"""The {self.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
         else:
-            self.player.is_asleep = True
+            self.player.fall_asleep()
             self.log(f"""The {self.enemy.name} casts {spell_name}. You fall asleep!!\n""")
 
     def enemy_casts_stopspell(self):
