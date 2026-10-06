@@ -373,6 +373,7 @@ class Battle:
         spell_name = "Hurtmore" if more else "Hurt"
         if self.enemy.is_spell_stopped(spell_name):
             self.player_turn()
+            return
 
         hurt_high = [3, 10]
         hurt_low = [2, 6]
