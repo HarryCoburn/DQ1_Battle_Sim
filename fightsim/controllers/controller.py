@@ -68,7 +68,7 @@ class Controller:
         self.observer_manager = ObserverManager(observer)
         self.player_manager = PlayerManager(model, view)
         self.observer = observer
-        self.battle = None
+        self.battle: Battle | None = None
         self.messages = [
             ObserverMessages.OUTPUT_CHANGE,
             ObserverMessages.OUTPUT_CLEAR,
@@ -120,6 +120,11 @@ class Controller:
     def enable_main_frame_text(self):
         self.view.main_frame.txt["state"] = 'normal'
 
+    def _active_battle(self) -> Battle:
+        if self.battle is None:
+            raise RuntimeError("Battle action called with no battle in progress")
+        return self.battle
+
     def prepare_battle(self):
         self.player_manager.update_player_info()
         self.switch_battle_frame()
@@ -149,15 +154,15 @@ class Controller:
         self.view.show_frame(self.view.setup_frame)
 
     def attack(self) -> None:
-        self.battle.take_turn(self.battle.player_attack)
+        self._active_battle().take_turn(self.battle.player_attack)
         self.refresh()
 
     def use_herb(self) -> None:
-        self.battle.take_turn(self.battle.use_herb)
+        self._active_battle().take_turn(self.battle.use_herb)
         self.refresh()
 
     def flee(self) -> None:
-        self.battle.take_turn(self.battle.player_flees)
+        self._active_battle().take_turn(self.battle.player_flees)
         self.refresh()
 
     def cast_spell(self) -> None:
@@ -165,7 +170,7 @@ class Controller:
         if label not in Spell:
             self.model.text("You must select a spell first.\n")
             return
-        self.battle.take_turn(lambda: self.battle.player_cast_magic(Spell(label)))
+        self._active_battle().take_turn(lambda: self._active_battle().player_cast_magic(Spell(label)))
         self.refresh()
 
     def refresh(self) -> None:
