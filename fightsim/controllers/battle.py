@@ -3,6 +3,8 @@ battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 """
 import random
 from collections.abc import Callable
+
+from fightsim.models.player import CRIT_CHANCE
 from ..common.messages import EnemyActions
 
 
@@ -25,6 +27,8 @@ class Battle:
 
     def start_fight(self):
         """Starts the battle loop"""
+        self.enemy.max_hp = self.rng.randint(self.enemy.base_hp[0], self.enemy.base_hp[1])
+        self.enemy.current_hp = self.enemy.max_hp
         self.log(f"""You are fighting the {self.enemy.name}!\n""")
 
         surprise_check = self.does_enemy_surprise()
@@ -50,7 +54,7 @@ class Battle:
             if self.player.is_defeated():
                 self.log(f"You have been defeated by the {self.enemy.name}!\n")
                 return self.finish()
-            if not self.player.check_sleep():
+            if not self.check_player_sleep():
                 return
             # Player is asleep: Loop so enemy attacks again.
 
@@ -68,8 +72,23 @@ class Battle:
 
     # Player Attack
 
+    def check_player_sleep(self) -> bool:
+        if not self.player.is_asleep:
+            return False
+        else:
+            self.player.sleep_count -= 1
+            if self.rng.randint(1,2) == 2 or self.player.sleep_count <= 0:
+                self.player.is_asleep = False
+                self.player.sleep_count = 6
+                self.log("You wake up!\n")
+                return False
+            else:
+                self.log("You're still asleep...\n")
+                return True
+
+
     def did_player_critical_hit(self):
-        return self.player.did_crit() and self.enemy.void_critical_hit is False
+        return self.rng.randint(1, CRIT_CHANCE) == 1 and self.enemy.void_critical_hit is False
 
     def calculate_player_critical_hit_damage(self):
         low, high = self.player.crit_range(self.player.attack_num())
@@ -86,7 +105,7 @@ class Battle:
 
     def player_attack(self) -> bool:
         crit = self.did_player_critical_hit()
-        dodge = self.enemy.did_dodge()
+        dodge = self.enemy_did_dodge()
         damage = self.calculate_player_attack_damage(crit)
         self.player.attack_msg(crit, dodge, damage, self.enemy.name)
         if crit or not dodge:
@@ -137,7 +156,7 @@ class Battle:
     # Player Magic
 
     def player_cast_magic(self, spell) -> bool:
-
+        # TODO: Remove this check entirely once controller/view can handle it instead.
         if spell in ["Select Spell", "No Magic Available"]:
             self.log(
                 "You must select a valid spell first." if spell == "Select Spell" else "Your level is too low to cast magic.\n")
@@ -250,13 +269,29 @@ class Battle:
     def enemy_turn(self):
         """ Handles the Enemy's turn """
 
-        if self.enemy.enemy_sleep_count > 0 and self.enemy.is_asleep():
-            self.log(f"The {self.enemy.name} is asleep.\n")
+        if self.enemy.enemy_sleep_count > 0 and self.enemy_is_asleep():
             return
         if self.should_enemy_flee():
             self.enemy_flees()
             return
         self.perform_enemy_action()
+
+    def enemy_did_dodge(self):
+        return self.rng.randint(1,64) <= self.enemy.dodge
+
+    def enemy_is_asleep(self) -> bool:
+        if self.enemy.enemy_sleep_count == 2:
+            self.enemy.enemy_sleep_count -= 1
+            self.log(f"The {self.enemy.name} is asleep\n")
+            return True
+        else:
+            if self.rng.randint(1,3) == 3:
+                self.log(f"The {self.enemy.name} woke up!\n")
+                self.enemy.enemy_sleep_count = 0
+                return False
+            else:
+                self.log(f"The {self.enemy.name} is still asleep...\n")
+                return True
 
     def should_enemy_flee(self):
         return self.player.strength > self.enemy.strength * 2 and self.rng.randint(1, 4) == 4
@@ -317,10 +352,11 @@ class Battle:
     def enemy_attack(self):
         """Enemy attacks normally"""
         self.log(f"\nEnemy turn\n")
-        enemy_damage_dealt = self.enemy.attack(self.player.defense())
-        self.player.current_hp -= enemy_damage_dealt
+        damage_range = self.enemy.attack_range(self.player.defense())
+        damage_dealt = self.rng.randint(*damage_range)
+        self.player.current_hp -= damage_dealt
 
-        self.log(f"{self.enemy.name} attacks! {self.enemy.name} hits you for {enemy_damage_dealt} damage.\n")
+        self.log(f"{self.enemy.name} attacks! {self.enemy.name} hits you for {damage_dealt} damage.\n")
 
 
     def enemy_casts_hurt(self, more):

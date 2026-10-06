@@ -5,8 +5,6 @@ Player class
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
 from ..common.messages import ObserverMessages
-import math
-import random
 from typing import List, Optional
 from .player_leveling import _Levelling
 
@@ -36,7 +34,7 @@ class Player:
     leveler: _Levelling = _Levelling()
     model: Optional = None  # Placeholder
 
-    
+
     def __post_init__(self):
         self.player_magic = []
         if not 1 <= self.level <= 30:
@@ -120,13 +118,6 @@ class Player:
         Sets a new shield on the player. Keeps the same shield if it is not found.
         """
         self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
-    
-    @staticmethod
-    def did_crit():
-        """
-        Returns if the player had a critical hit or not.
-        """
-        return random.randint(1, CRIT_CHANCE) == 1
 
     @staticmethod
     def damage_range(attack, agility):
@@ -135,7 +126,7 @@ class Player:
         min must be at least 0, max can be no lower than 1
         """
         return max(((attack - agility // 2) // 4), 0), max(((attack - agility // 2) // 2), 1)
-    
+
     @staticmethod
     def crit_range(attack):
         """
@@ -150,22 +141,6 @@ class Player:
         """
         return self.current_hp <= 0
 
-    def check_sleep(self):
-        """
-        Returns if the player is asleep or not.
-        """
-        if not self.is_asleep:
-            return False
-        else:
-            self.sleep_count -= 1
-            if random.randint(1, 2) == 2 or self.sleep_count <= 0:
-                self.is_asleep = False
-                self.sleep_count = 6
-                self.model.text(f"You wake up!\n")
-                return False
-            else:
-                self.model.text(f"You're still asleep...'\n")
-                return True
 
     def attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
         """
