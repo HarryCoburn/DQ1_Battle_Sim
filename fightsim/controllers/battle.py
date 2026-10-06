@@ -103,7 +103,7 @@ class Battle:
     def process_player_attack_result(self, crit, dodge, damage):
         self.player.attack_msg(crit, dodge, damage, self.enemy.name)
         if dodge and not crit:
-            self.enemy_attack()
+            self.enemy_turn()
         else:
             self.apply_attack_damage_to_enemy(damage)
 
