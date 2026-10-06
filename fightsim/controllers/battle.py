@@ -442,9 +442,8 @@ class Battle:
 
     def enemy_breathes_fire(self, more):
         """ Enemy handling of breath attacks"""
+        # Stopspell does not affect breath attacks.
         spell_name = "strong flames at you!" if more else "fire"
-        if self.model.enemy.enemy_spell_stopped:
-            self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!""")
 
         fire_high = [16, 23]
         fire_low = [10, 14]
