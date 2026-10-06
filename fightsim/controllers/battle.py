@@ -118,12 +118,13 @@ class Battle:
         """ Handle herb consumption by the player """
         if self.model.player.herb_count <= 0:
             self.controller.no_herbs()
-            return  # Use return here so player can select another option.
+            return
 
         self.model.player.herb_count -= 1
         if self.model.player.current_hp >= self.model.player.max_hp:
             self.controller.eat_herb_at_full_hp()
             self.is_enemy_defeated()
+            return
 
         heal_amt = self.calculate_player_herb_heal_amount()
         self.model.player.current_hp += heal_amt
