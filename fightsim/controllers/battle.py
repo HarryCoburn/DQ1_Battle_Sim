@@ -109,7 +109,7 @@ class Battle:
 
     def apply_attack_damage_to_enemy(self, damage):
         self.enemy.take_damage(damage)
-        self.controller.update_enemy_info()
+        self.controller.enemy_manager.update_enemy_info()
         self.is_enemy_defeated()
 
     # Player uses an herb
@@ -195,7 +195,7 @@ class Battle:
         # Execute the spell function
         spell_function = spell_switch.get(spell, lambda: None)
         spell_function()
-        self.controller.update_player_info()
+        self.controller.player_manager.update_player_info()
         self.is_enemy_defeated()
 
     def player_heal(self, more):
@@ -361,7 +361,7 @@ class Battle:
         self.model.text(f"\nEnemy turn\n")
         enemy_damage_dealt = self.enemy.attack(self.player.defense())
         self.model.player.current_hp -= enemy_damage_dealt
-        self.controller.update_player_info()
+        self.controller.player_manager.update_player_info()
 
         self.model.text(f"{self.model.enemy.name} attacks! {self.model.enemy.name} hits you for {enemy_damage_dealt} damage.\n")
         self.is_player_defeated()
@@ -412,7 +412,7 @@ class Battle:
 
         self.model.enemy.current_hp += heal_amt
         self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}! {self.model.enemy["name"]} is healed {heal_amt} hit points!""")
-        self.controller.update_enemy_info()
+        self.controller.enemy_manager.update_enemy_info()
         self.player_turn()
 
     def enemy_casts_sleep(self):

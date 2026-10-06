@@ -1,5 +1,5 @@
 import unittest
-from ..common.messages import ObserverMessages, EnemyActions
+from fightsim.common.messages import ObserverMessages, EnemyActions
 
 
 class TestObserverMessagesEnum(unittest.TestCase):

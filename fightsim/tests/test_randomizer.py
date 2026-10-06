@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from ..common.randomizer import Randomizer
+from fightsim.common.randomizer import Randomizer
 
 class TestRandomizer(unittest.TestCase):
     """ Unit tests for the Randomizer class. """

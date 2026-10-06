@@ -23,7 +23,7 @@ class Enemy:
 
     def __post_init__(self):
         self.max_hp = Randomizer.randint(self.base_hp[0], self.base_hp[1])
-        self.curr_hp = self.max_hp
+        self.current_hp = self.max_hp
         self.enemy_sleep_count = 0  # was e_sleep
         self.enemy_spell_stopped = False  # was e_stop
 
@@ -45,7 +45,7 @@ class Enemy:
     def reset_battle_state(self):
         """Resets the enemy's mutable state back to default for a new battle."""
         self.max_hp = Randomizer.randint(self.base_hp[0], self.base_hp[1])
-        self.curr_hp = self.max_hp
+        self.current_hp = self.max_hp
         self.enemy_sleep_count = 0
         self.enemy_spell_stopped = False
 
@@ -55,7 +55,7 @@ class Enemy:
 
     def is_defeated(self):
         """ Returns True if the enemy is defeated """
-        return self.curr_hp <= 0
+        return self.current_hp <= 0
 
     def is_asleep(self):
         """
@@ -88,7 +88,7 @@ class Enemy:
         return True
 
     def trigger_healing(self):
-        return self.curr_hp / self.max_hp < 0.25
+        return self.current_hp / self.max_hp < 0.25
 
     def attack(self, hero_defense):
         """ Enemy makes a successful attack. Returns a damage amount. """
@@ -100,7 +100,7 @@ class Enemy:
         return Randomizer.randint(*damage_range)
 
     def take_damage(self, damage):
-        self.curr_hp -= damage
+        self.current_hp -= damage
 
     @staticmethod
     def weak_damage_range(x):

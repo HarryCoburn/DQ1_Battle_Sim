@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 import logging
-from ..common.eventmanager import EventManager
+from fightsim.common.eventmanager import EventManager
 
 
 class TestEventManager(unittest.TestCase):

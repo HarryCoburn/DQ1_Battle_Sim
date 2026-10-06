@@ -1,7 +1,7 @@
 import tkinter as tk
 from fightsim.models.items import weapon_names, armor_names, shield_names
 from fightsim.models.enemy import enemy_names
-
+from fightsim.common.attribute_type import AttributeType
 
 class SetupFrame(tk.Frame):
     """
@@ -48,7 +48,7 @@ class SetupFrame(tk.Frame):
         self.level_spinbox.grid(row=1, column=1, sticky="w", pady=5)
 
         self.weapon_menu = tk.OptionMenu(self, self.weapon_var, *weapon_names,
-                                         command=lambda value: self.controller.update_player_attribute("weapon", value))
+                                         command=lambda value: self.controller.player_manager.update_player_attribute(AttributeType.WEAPON, value))
         self.weapon_menu.grid(row=2,
                               column=0,
                               columnspan=2,
@@ -57,7 +57,7 @@ class SetupFrame(tk.Frame):
                               pady=5)
 
         self.armor_menu = tk.OptionMenu(self, self.armor_var, *armor_names,
-                                        command=lambda value: self.controller.update_player_attribute("armor", value))
+                                        command=lambda value: self.controller.player_manager.update_player_attribute(AttributeType.ARMOR, value))
         self.armor_menu.grid(row=3,
                              column=0,
                              columnspan=2,
@@ -65,7 +65,7 @@ class SetupFrame(tk.Frame):
                              padx=5,
                              pady=5)
         self.shield_menu = tk.OptionMenu(self, self.shield_var, *shield_names,
-                                         command=lambda value: self.controller.update_player_attribute("shield", value))
+                                         command=lambda value: self.controller.player_manager.update_player_attribute(AttributeType.SHIELD, value))
         self.shield_menu.grid(row=4,
                               column=0,
                               columnspan=2,
@@ -73,23 +73,23 @@ class SetupFrame(tk.Frame):
                               padx=5,
                               pady=5)
         self.enemy_menu = tk.OptionMenu(self, self.enemy_var, "Select Enemy", *enemy_names,
-                                        command=lambda value: self.controller.update_enemy(value))
+                                        command=lambda value: self.controller.enemy_manager.update_enemy_info(value))
         self.enemy_menu.grid(row=5, column=0,
                              columnspan=2, sticky="ew",
                              padx=5, pady=5)
 
         self.buy_herb_button = tk.Button(self, text="Buy Herb",
-                                         command=lambda: self.controller.update_player_attribute("herb"))
+                                         command=lambda: self.controller.player_manager.update_player_attribute(AttributeType.HERB))
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_battle)
+        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.battle_manager.start_battle)
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
 
     def set_traces(self):
         self.level_var.trace("w",
                              lambda name, index, mode,
-                                    value=self.level_var: self.controller.update_player_attribute("level", value.get()))
-        self.name_var.trace("w", lambda name, index, mode, value=self.name_var: self.controller.update_player_attribute(
-            "name", value.get()))
+                                        value=self.level_var: self.controller.player_manager.update_player_attribute(AttributeType.LEVEL, value.get()))
+        self.name_var.trace("w", lambda name, index, mode, value=self.name_var: self.controller.player_manager.update_player_attribute(
+            AttributeType.NAME, value.get()))
 
     @staticmethod
     def level_validate(p):

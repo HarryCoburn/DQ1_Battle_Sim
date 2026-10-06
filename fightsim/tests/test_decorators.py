@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch, call
 import logging
-from ..common.decorators import *
+from fightsim.common.decorators import *
 
 class TestLogFunctionCall(unittest.TestCase):
     def test_log_function_call(self):

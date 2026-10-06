@@ -7,6 +7,7 @@ class ItemType(Enum):
     SHIELD = "shield"
     ARMOR = "armor"
 
+
 @dataclass
 class Item:
     name: str
@@ -20,6 +21,8 @@ class Item:
 
 
 def create_item(item_type: ItemType, item_name: str, item_data: dict) -> Item:
+    if item_name not in ITEM_DATA[item_type.value]:
+        raise ValueError(f"Unknown item: {item_name} for type: {item_type}")
     return Item(
         name=item_name,
         modifier=item_data["modifier"],
@@ -29,8 +32,8 @@ def create_item(item_type: ItemType, item_name: str, item_data: dict) -> Item:
     )
 
 
-item_data = {
-    "weapons": {
+ITEM_DATA = {
+    ItemType.WEAPON.value: {
         "Unarmed": {
             "modifier": 0
         },
@@ -56,7 +59,7 @@ item_data = {
             "modifier": 40
         }
     },
-    "armors": {
+    ItemType.ARMOR.value: {
         "Naked": {
             "modifier": 0
         },
@@ -85,7 +88,7 @@ item_data = {
             "reduce_fire_damage": True
         }
     },
-    "shields": {
+    ItemType.SHIELD.value: {
         "No Shield": {
             "modifier": 0
         },
@@ -104,7 +107,7 @@ item_data = {
 
 items = {
     item_type.value: {
-        name: create_item(item_type, name, data) for name, data in item_data[item_type.value + "s"].items()
+        name: create_item(item_type, name, data) for name, data in ITEM_DATA[item_type.value].items()
     }
     for item_type in ItemType
 }

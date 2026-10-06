@@ -1,4 +1,4 @@
-# DQ1 Battle Simulator - App
+"""DQ1 Battle Simulator entry point."""
 
 import logging
 import logging.config
@@ -27,16 +27,15 @@ def main(event_manager_factory=create_event_manager,
          controller_factory=create_controller):
     """ Entry Point for the Application """
 
-    
     logging.config.fileConfig('./fightsim/logging.ini')
     main_logger = logging.getLogger('main')
-    
+
     try:
         event_manager = event_manager_factory()
         view = view_factory()
         model = model_factory(event_manager)
         controller = controller_factory(model, view, event_manager)
-        
+
         view.set_controller(controller)
         controller.initial_update()
 
