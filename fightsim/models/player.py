@@ -28,12 +28,24 @@ class Player:
     herb_count: int = 0
     reduce_hurt_damage: bool = False
     reduce_fire_damage: bool = False
-    is_asleep: bool = False
     is_spellstopped: bool = False
-    sleep_count: int = SLEEP_COUNT
     leveler: _Levelling = _Levelling()
     model: Optional = None  # Placeholder
+    sleep_turns: int = 0
 
+
+    @property
+    def is_asleep(self) -> bool:
+        return self.sleep_turns > 0
+
+    def advance_sleep(self):
+        self.sleep_turns -= 1
+
+    def wake(self):
+        self.sleep_turns = 0
+
+    def fall_asleep(self):
+        self.sleep_turns = SLEEP_COUNT
 
     def __post_init__(self):
         self.player_magic = []
@@ -141,6 +153,21 @@ class Player:
         """
         return self.current_hp <= 0
 
+    def take_damage(self, amount: int) -> int:
+        dealt = min(amount, self.current_hp)
+        self.current_hp -= dealt
+        return dealt
+
+    def heal(self, amount: int) -> int:
+        healed = min(amount, self.max_hp - self.current_hp)
+        self.current_hp += healed
+        return healed
+
+    def consume_herb(self):
+        self.herb_count -= 1
+
+    def consume_mp(self, cost):
+        self.current_hp -= cost
 
     def attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
         """

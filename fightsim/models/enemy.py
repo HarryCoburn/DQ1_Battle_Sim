@@ -15,8 +15,8 @@ class Enemy:
     dodge: int
     max_hp: int = 0
     current_hp: int = 0
-    enemy_sleep_count: int = 0
-    enemy_spell_Stopped: bool = False
+    sleep_count: int = 0
+    is_spellstopped: bool = False
     sleep_resist: int = 0
     stopspell_resist: int = 15
     hurt_resist: int = 0
@@ -24,6 +24,23 @@ class Enemy:
     run: int = 0
     void_critical_hit: bool = False
     model: Optional[any] = None
+    sleep_turns: int = 0
+
+    @property
+    def is_asleep(self) -> bool:
+        return self.sleep_turns > 0
+
+    def advance_sleep(self):
+        self.sleep_turns -= 1
+
+    def wake(self):
+        self.sleep_turns = 0
+
+    def stay_asleep(self):
+        self.sleep_turns = 1
+
+    def fall_asleep(self):
+        self.sleep_turns = 2
 
     @classmethod
     def create_dummy(cls):
@@ -32,7 +49,7 @@ class Enemy:
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
 
     def is_spell_stopped(self, spell_name):
-        if self.enemy_spell_stopped:
+        if self.is_spellstopped:
             self.model.text(f"""The {self.model.enemy["name"]} casts {spell_name}, but their spell has been blocked!""")
             return True
         return False
@@ -58,6 +75,11 @@ class Enemy:
 
     def take_damage(self, damage):
         self.current_hp -= damage
+
+    def heal(self, amount: int) -> int:
+        healed = min(amount, self.max_hp - self.current_hp)
+        self.current_hp += healed
+        return healed
 
     @staticmethod
     def weak_damage_range(x):
