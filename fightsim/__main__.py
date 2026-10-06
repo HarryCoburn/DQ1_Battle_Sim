@@ -4,6 +4,7 @@ import logging
 import logging.config
 import sys
 from pathlib import Path
+from random import Random
 
 from fightsim.common.eventmanager import EventManager
 from fightsim.controllers.controller import Controller
@@ -24,7 +25,8 @@ def build_app() -> Controller:
         observer=event_manager,
     )
     view = View()
-    controller = Controller(model, view, event_manager)
+    rng = Random()
+    controller = Controller(model, view, event_manager, rng)
     view.set_controller(controller)
     controller.initial_update()
     return controller

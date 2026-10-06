@@ -68,7 +68,7 @@ class EnemyManager:
 class Controller:
     """ Main controller class"""
 
-    def __init__(self, model, view, observer):
+    def __init__(self, model, view, observer, rng):
         self.logger = logging.getLogger(__name__)  # Get a module-level logger
         if not model or not view:
             logger.error("Model and View are required for Controller initialization.")
@@ -76,6 +76,7 @@ class Controller:
 
         self.model = model
         self.view = view
+        self.rng = rng
         self.observer_manager = ObserverManager(observer)
         self.player_manager = PlayerManager(model, view)
         self.enemy_manager = EnemyManager(model, view)
@@ -143,16 +144,16 @@ class Controller:
         self.enable_main_frame_text()
         self.battle.start_fight()
 
-        def end_battle(self):
-            """Cleans up after the battle is done and resets the simulator"""
-            self.controller.model.enemy.current_hp = self.controller.model.enemy.max_hp
-            self.controller.model.player.current_hp = self.controller.model.player.max_hp
-            self.controller.model.player.current_mp = self.controller.model.player.max_mp
-            self.controller.model.player.herb_count = 0
-            self.controller.view.main_frame.txt["state"] = "disabled"
-            self.controller.enemy_manager.update_enemy_info()
-            self.controller.player_manager.update_player_info()
-            self.controller.view.show_frame(self.controller.view.setup_frame)
+    def end_battle(self):
+        """Cleans up after the battle is done and resets the simulator"""
+        self.model.enemy.current_hp = self.model.enemy.max_hp
+        self.model.player.current_hp = self.model.player.max_hp
+        self.model.player.current_mp = self.model.player.max_mp
+        self.model.player.herb_count = 0
+        self.view.main_frame.txt["state"] = "disabled"
+        self.enemy_manager.update_enemy_info()
+        self.player_manager.update_player_info()
+        self.view.show_frame(self.view.setup_frame)
 
 
     def player_surprised(self):

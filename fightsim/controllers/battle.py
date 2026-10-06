@@ -1,6 +1,7 @@
 """
 battle.py - Battle code for DQ1 sim. Holds both player and enemy code.
 """
+import random
 from collections.abc import Callable
 from ..common.messages import EnemyActions
 
@@ -10,7 +11,7 @@ class Battle:
     Main battle controller
     """
 
-    def __init__(self, player, enemy, log, rng: self.rng.Random, on_end):
+    def __init__(self, player, enemy, log: Callable[[str], None], rng: random.Random, on_end: Callable[[], None]) -> None:
 
         self.player = player
         self.enemy = enemy
@@ -22,8 +23,6 @@ class Battle:
 
     # Core Fight Routines
 
-
-
     def start_fight(self):
         """Starts the battle loop"""
         self.log(f"""You are fighting the {self.enemy.name}!\n""")
@@ -32,7 +31,7 @@ class Battle:
         if surprise_check:
             self.log(f"The {self.enemy.name} surprises you!\n")
             self.advance()
-        # Now we wait for the UI to call turn_engine
+        # Now we wait for the UI to call take_turn
 
     def take_turn(self, action: Callable[[], bool]) -> None:
         if self.over or not action():
@@ -98,7 +97,7 @@ class Battle:
     def use_herb(self) -> bool:
         """ Handle herb consumption by the player """
         if self.player.herb_count <= 0:
-            self.log("You have no herbs!")
+            self.log("You have no herbs!\n")
             return False
 
         self.player.herb_count -= 1
@@ -141,7 +140,7 @@ class Battle:
 
         if spell in ["Select Spell", "No Magic Available"]:
             self.log(
-                "You must select a valid spell first." if spell == "Select Spell" else "Your level is too low to cast magic.")
+                "You must select a valid spell first." if spell == "Select Spell" else "Your level is too low to cast magic.\n")
             return False
 
         spell_switch = {
@@ -164,7 +163,7 @@ class Battle:
 
         cost = spell_cost.get(spell, 0)
         if cost == 0:
-            raise ValueError(f"No cost defined for spell {spell!r}")
+            raise ValueError(f"No cost defined for spell {spell!r}\n")
 
         if self.player.current_mp < cost:
             self.log(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
@@ -218,8 +217,8 @@ class Battle:
             self.enemy.take_damage(hurt_total)
             self.log(f"""Player casts {spell_name}! {self.enemy.name} is hurt by {str(hurt_total)} hit points!\n""")
 
-    @staticmethod
-    def calc_hurt(hurt_range):
+
+    def calc_hurt(self, hurt_range):
         return self.rng.randint(*hurt_range)
 
     def player_casts_sleep(self):
