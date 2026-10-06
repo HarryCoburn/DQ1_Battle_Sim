@@ -235,7 +235,6 @@ class Battle:
 
         if self.resist(enemy_hurt_resistance):
             self.model.text(f"""Player casts {spell_name}, but the enemy resisted!\n""")
-            self.is_enemy_defeated()
         else:
             self.model.enemy.take_damage(hurt_total)
             self.model.text(f"""Player casts {spell_name}! {self.model.enemy.name} is hurt by {str(hurt_total)} hit points!\n""")
