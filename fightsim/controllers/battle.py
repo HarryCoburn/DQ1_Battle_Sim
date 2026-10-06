@@ -187,11 +187,13 @@ class Battle:
         if self.model.player.current_mp < cost:
             self.model.text(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
             self.is_enemy_defeated()  # Player loses turn if they try to cast a spell without enough mp
+            return
 
         self.model.player.current_mp -= cost
         if self.model.player.is_spellstopped:
             self.model.text(f"""Player casts {spell}, but their magic has been sealed!\n""")
             self.is_enemy_defeated()  # Player loses turn if they try to cast a spell while stopspelled.
+            return
 
         # Execute the spell function
         spell_function = spell_switch.get(spell, lambda: None)
