@@ -5,6 +5,8 @@ from .battle import Battle
 import logging
 from ..common.decorators import handle_errors
 from ..common.attribute_type import AttributeType
+from ..common.spells import Spell
+
 # Module-level logger
 logger = logging.getLogger(__name__)
 
@@ -52,24 +54,10 @@ class PlayerManager:
         self.view.update_player_info(self.model.player)
         logger.info("Player info updated in the view.")
 
-class EnemyManager:
-    def __init__(self, model, view):
-        self.model = model
-        self.view = view
-
-
-    def update_enemy_info(self, value = None):
-        if value is not None:
-            self.model.set_enemy(value)
-        self.view.update_enemy_info(self.model.enemy)
-        logger.info(f"Updated enemy to {value}")
-
-
 class Controller:
     """ Main controller class"""
 
     def __init__(self, model, view, observer, rng):
-        self.logger = logging.getLogger(__name__)  # Get a module-level logger
         if not model or not view:
             logger.error("Model and View are required for Controller initialization.")
             raise ValueError("Model and View cannot be None.")
@@ -79,7 +67,6 @@ class Controller:
         self.rng = rng
         self.observer_manager = ObserverManager(observer)
         self.player_manager = PlayerManager(model, view)
-        self.enemy_manager = EnemyManager(model, view)
         self.observer = observer
         self.battle = None
         self.messages = [
@@ -113,6 +100,12 @@ class Controller:
             self.view.clear_output()
         if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
             self.view.battle_frame.update_player_magic_menu()
+
+    def update_enemy_info(self, value = None):
+        if value is not None:
+            self.model.set_enemy(value)
+        self.view.update_enemy_info(self.model.enemy)
+        logger.info(f"Updated enemy to {value}")
 
     def get_chosen_magic(self):
         return self.view.battle_frame.magic_option_var.get()
@@ -151,23 +144,9 @@ class Controller:
         self.model.player.current_mp = self.model.player.max_mp
         self.model.player.herb_count = 0
         self.view.main_frame.txt["state"] = "disabled"
-        self.enemy_manager.update_enemy_info()
+        self.update_enemy_info()
         self.player_manager.update_player_info()
         self.view.show_frame(self.view.setup_frame)
-
-
-    def player_surprised(self):
-        self.model.text(f"""The {self.model.enemy.name} surprises you! They attack first!\n""")
-
-    def player_wins(self):
-        self.model.text(f"""You have defeated the {self.model.enemy.name}!\n""")
-
-    def fleeing(self, succeed):
-        self.model.text(f"You attempt to run away...\n")
-        if succeed:
-            self.model.text(f"You successfully flee!\n")
-        else:
-            self.model.text(f"""...but the {self.model.enemy.name} blocks you from running away!\n""")
 
     def attack(self) -> None:
         self.battle.take_turn(self.battle.player_attack)
@@ -182,8 +161,11 @@ class Controller:
         self.refresh()
 
     def cast_spell(self) -> None:
-        spell = self.get_chosen_magic()
-        self.battle.take_turn(lambda: self.battle.player_cast_magic(spell))
+        label = self.get_chosen_magic()
+        if label not in Spell:
+            self.model.text("You must select a spell first.\n")
+            return
+        self.battle.take_turn(lambda: self.battle.player_cast_magic(Spell(label)))
         self.refresh()
 
     def refresh(self) -> None:
