@@ -6,6 +6,7 @@ import random
 import tkinter as tk
 from ..common.messages import EnemyActions
 from ..common.randomizer import Randomizer
+from collections.abc import Callable
 
 
 class Battle:
@@ -22,6 +23,12 @@ class Battle:
         self.fight_over = tk.BooleanVar()
         self.fight_over.set(False)
         self.herb_range = (23, 30)
+        self.over = tk.BooleanVar()
+        self.over.set(False)
+
+        # Aliases for now
+        self.log = self.model.text
+        self.on_end = lambda: self.fight_over.set(True)
 
     # Core Fight Routines
 
@@ -29,6 +36,7 @@ class Battle:
         """Performs setup tasks for the battle prior to start"""
         self.player = self.model.player
         self.enemy = self.model.enemy
+        self.over = False
         self.controller.prepare_battle()
         self.start_fight()
 
@@ -36,7 +44,36 @@ class Battle:
         """Starts the battle loop"""
         self.controller.start_battle_interaction()
         surprise_check = self.does_enemy_surprise()
-        self.first_turn(surprise_check)
+        if surprise_check:
+            self.log(f"{self.enemy.name} surprises you!\n")
+            self.advance()
+        # Now we wait for the UI to call turn_engine
+
+    def take_turn(self, action: Callable[[], bool]) -> None:
+        if self.over or not action():
+            return
+        self.advance()
+
+    def advance(self) -> None:
+        """Resolve everything until the player needs to choose again."""
+        while not self.over:
+            if self.enemy.is_defeated():
+                self.log(f"You have defeated the {self.enemy.name}!\n")
+                return self.finish()
+            self.enemy_turn()
+            if self.over:
+                return
+            if self.player.is_defeated():
+                self.log(f"You have been defeated by the {self.enemy.name}!\n")
+                return self.finish()
+            if not self.player.check_sleep():
+                return
+            # Player is asleep: Loop so enemy attacks again.
+
+    def finish(self) -> None:
+        self.over = True
+        self.on_end()
+
 
     def first_turn(self, enemy_surprises):
         """ Determines the first turn. """
@@ -54,30 +91,10 @@ class Battle:
 
     # Player Actions
 
-    def player_turn(self):
-        """Runs at the start of player turn. Checks for sleep status and updates it, then waits for user to
-        enter a command."""
-        if self.player.check_sleep():  # If the player is asleep, switch to the enemy's turn.
-            self.enemy_turn()
-
-    def is_enemy_defeated(self):
-        """ Checks if the enemy is defeated. Ends fight if true. Starts enemy turn if false. """
-        if self.enemy.is_defeated():
-            self.controller.player_wins()
-            self.end_fight()
-        else:
-            self.enemy_turn()
-
     # Player Attack
 
     def did_player_critical_hit(self):
         return self.player.did_crit() and self.enemy.void_critical_hit is False
-
-    def check_for_player_critical_hit(self):
-        return self.did_player_critical_hit()
-
-    def check_for_enemy_dodge(self):
-        return self.enemy.did_dodge()
 
     def calculate_player_critical_hit_damage(self):
         low, high = self.player.crit_range(self.player.attack_num())
@@ -92,44 +109,37 @@ class Battle:
         low, high = self.player.damage_range(self.player.attack_num(), self.enemy.agility)
         return Randomizer.randint(low, high)
 
-    def player_attack(self, *_):
-        """ Orchestrates what happens when the player clicks the attack button on their turn. """
-        player_crit_this_turn = self.check_for_player_critical_hit()
-        enemy_dodge_this_turn = self.check_for_enemy_dodge()
-
-        damage_dealt = self.calculate_player_attack_damage(player_crit_this_turn)
-        self.process_player_attack_result(player_crit_this_turn, enemy_dodge_this_turn, damage_dealt)
-
-    def process_player_attack_result(self, crit, dodge, damage):
+    def player_attack(self) -> bool:
+        crit = self.did_player_critical_hit()
+        dodge = self.enemy.did_dodge()
+        damage = self.calculate_player_attack_damage(crit)
         self.player.attack_msg(crit, dodge, damage, self.enemy.name)
-        if dodge and not crit:
-            self.enemy_turn()
-        else:
-            self.apply_attack_damage_to_enemy(damage)
+        if crit or not dodge:
+            self.enemy.take_damage(damage)
+        return True
 
-    def apply_attack_damage_to_enemy(self, damage):
-        self.enemy.take_damage(damage)
-        self.controller.enemy_manager.update_enemy_info()
-        self.is_enemy_defeated()
+
+#     def apply_attack_damage_to_enemy(self, damage):
+#         self.enemy.take_damage(damage)
+#         self.controller.enemy_manager.update_enemy_info()
+#         self.is_enemy_defeated()
 
     # Player uses an herb
-
-    def use_herb(self):
+    def use_herb(self) -> bool:
         """ Handle herb consumption by the player """
         if self.model.player.herb_count <= 0:
             self.controller.no_herbs()
-            return
+            return False
 
         self.model.player.herb_count -= 1
         if self.model.player.current_hp >= self.model.player.max_hp:
             self.controller.eat_herb_at_full_hp()
-            self.is_enemy_defeated()
-            return
+            return True
 
         heal_amt = self.calculate_player_herb_heal_amount()
         self.model.player.current_hp += heal_amt
         self.controller.eat_herb(heal_amt)
-        self.is_enemy_defeated()
+        return True
 
     def calculate_player_herb_heal_amount(self):
         """ Calculates the amount of health an herb will restore. """
@@ -145,25 +155,25 @@ class Battle:
         enemy_block_chance = self.model.enemy.agility * Randomizer.randint(0, 254) * enemy_run_modifiers[self.model.enemy.run]
         return player_flee_chance > enemy_block_chance
 
-    def player_flees(self):
+    def player_flees(self) -> bool:
         """Player attempts to flee battle."""
-
+        self.log("You attempt to run away...\n")
         if self.is_flee_successful():
-            self.controller.fleeing(True)
-            self.end_fight()
+            self.log("You successfully flee!\n")
+            self.finish()
         else:
-            self.controller.fleeing(False)
-            self.enemy_turn()
+            self.log(f"...but the {self.enemy.name} blocks you from running away!\n")
+        return True
 
     # Player Magic
 
-    def player_cast_magic(self):
+    def player_cast_magic(self) -> bool:
         spell = self.controller.get_chosen_magic()
 
         if spell in ["Select Spell", "No Magic Available"]:
             self.model.text(
                 "You must select a valid spell first." if spell == "Select Spell" else "Your level is too low to cast magic.")
-            return
+            return False
 
         spell_switch = {
             "Heal": lambda: self.player_heal(False),
@@ -186,24 +196,22 @@ class Battle:
         cost = spell_cost.get(spell, 0)
         if cost == 0:
             self.model.text(f"Unknown spell cost! Tried casting {spell}. Returning.")
-            return
+            return False # This is a game bug, not part of the normal game.
 
         if self.model.player.current_mp < cost:
             self.model.text(f"Player tries to cast {spell}, but doesn't have enough MP!\n")
-            self.is_enemy_defeated()  # Player loses turn if they try to cast a spell without enough mp
-            return
+            return True # Intended. Casting without enough MP wastes turn.
 
         self.model.player.current_mp -= cost
         if self.model.player.is_spellstopped:
             self.model.text(f"""Player casts {spell}, but their magic has been sealed!\n""")
-            self.is_enemy_defeated()  # Player loses turn if they try to cast a spell while stopspelled.
-            return
+            return True
 
         # Execute the spell function
         spell_function = spell_switch.get(spell, lambda: None)
         spell_function()
         self.controller.player_manager.update_player_info()
-        self.is_enemy_defeated()
+        return True
 
     def player_heal(self, more):
         heal_ranges = {
@@ -272,31 +280,24 @@ class Battle:
 
 
     # Enemy Actions
-
-    def handle_enemy_sleep(self):
-        if self.enemy.is_asleep():
-            self.player_turn()
-        elif self.should_enemy_flee():
-            self.enemy_flees()
-        else:
-            self.perform_enemy_action()
-
-    def should_enemy_flee(self):
-        return self.model.player.strength > self.model.enemy.strength * 2 and random.randint(1, 4) == 4
-
+    #
     def enemy_turn(self):
         """ Handles the Enemy's turn """
 
         if self.model.enemy.enemy_sleep_count > 0:
-            self.handle_enemy_sleep()
-            # Enemy is asleep. Handle sleep.
+            if self.enemy.is_asleep():
+                return
 
         elif self.should_enemy_flee():
             # Handle fleeing
             self.enemy_flees()
+            self.finish()
         else:
             # Do a combat action
             self.perform_enemy_action()
+
+    def should_enemy_flee(self):
+        return self.model.player.strength > self.model.enemy.strength * 2 and random.randint(1, 4) == 4
 
     def perform_enemy_action(self):
         """Selects and performs an action from the enemy's set of possible actions."""
@@ -323,7 +324,7 @@ class Battle:
     def enemy_flees(self):
         """ Enemy runs away. End the combat"""
         self.model.text(f"The {self.enemy.name} flees from your superior strength!\n")
-        self.end_fight()
+        self.finish()
 
     def enemy_choose_attack(self):
         atk_list = self.model.enemy.pattern
@@ -355,8 +356,7 @@ class Battle:
         if self.model.player.is_defeated():
             self.model.text(f"You have been defeated by the {self.enemy.name}!\n")
             self.end_fight()
-        else:
-            self.player_turn()
+
 
     @staticmethod
     def resist(chance):
@@ -376,7 +376,6 @@ class Battle:
         """ Enemy handling of hurt and hurtmore"""
         spell_name = "Hurtmore" if more else "Hurt"
         if self.enemy.is_spell_stopped(spell_name):
-            self.player_turn()
             return
 
         hurt_high = [3, 10]
@@ -405,7 +404,6 @@ class Battle:
         spell_name = "Healmore" if more else "Heal"
         if self.model.enemy.enemy_spell_stopped:
             self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but their spell has been blocked!\n""")
-            self.player_turn()
             return
 
         heal_range = [20, 27]
@@ -421,7 +419,6 @@ class Battle:
         self.model.enemy.current_hp += heal_amt
         self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! {self.model.enemy.name} is healed {heal_amt} hit points!\n""")
         self.controller.enemy_manager.update_enemy_info()
-        self.player_turn()
 
     def enemy_casts_sleep(self):
         """Enemy attempts to cast sleep"""
@@ -431,7 +428,6 @@ class Battle:
         else:
             self.model.player.is_asleep = True
             self.model.text(f"""The {self.model.enemy.name} casts {spell_name}. You fall asleep!!\n""")
-        self.player_turn()
 
     def enemy_casts_stopspell(self):
         """ Enemy attempts to cast stopspell. 50% chance of failure"""
@@ -443,7 +439,6 @@ class Battle:
             self.model.text(f"""The {self.model.enemy.name} casts {spell_name}! Your magic has been blocked!\n""")
         else:
             self.model.text(f"""The {self.model.enemy.name} casts {spell_name}, but the spell fails!\n""")
-        self.player_turn()
 
     def enemy_breathes_fire(self, more):
         """ Enemy handling of breath attacks"""
