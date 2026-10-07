@@ -1,11 +1,12 @@
 # controller.py - Core controller for the simulation
 
-from fightsim.common.messages import ObserverMessages
-from .battle import Battle
 import logging
-from ..common.decorators import handle_errors
-from ..common.attribute_type import AttributeType
-from ..common.spells import Spell
+from fightsim.common.messages import ObserverMessages
+from fightsim.controllers.battle import Battle
+from fightsim.common.attribute_type import AttributeType
+from fightsim.common.spells import Spell
+from fightsim.models.model import Model
+from fightsim.views.view import View
 
 # Module-level logger
 logger = logging.getLogger(__name__)
@@ -27,7 +28,6 @@ class PlayerManager:
 
 
     def update_player_attribute(self, attribute_type, value=None):
-        print(value)
         """ Generic method to update player attributes """
         update_methods = {
             AttributeType.WEAPON: self.model.player.equip_weapon,
@@ -46,7 +46,7 @@ class PlayerManager:
             self.update_player_info()
             logger.info(f"Updated {attribute_type} to {value}")
         else:
-            logger.warning(f"Unknown attribute type: {attribute_type}")
+            raise AttributeError(f"Unknown attribute type: {attribute_type}")
 
 
     def update_player_info(self):
@@ -57,11 +57,7 @@ class PlayerManager:
 class Controller:
     """ Main controller class"""
 
-    def __init__(self, model, view, observer, rng):
-        if not model or not view:
-            logger.error("Model and View are required for Controller initialization.")
-            raise ValueError("Model and View cannot be None.")
-
+    def __init__(self, model: Model, view: View, observer, rng):
         self.model = model
         self.view = view
         self.rng = rng
