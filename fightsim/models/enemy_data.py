@@ -1,4 +1,4 @@
-from ..common.messages import EnemyActions
+from fightsim.common.enemy_actions import EnemyActions
 
 # See enemy.py for default values and what is required for a valid enemy entry
 

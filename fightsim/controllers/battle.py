@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import NamedTuple
 
 
-from fightsim.common.messages import EnemyActions
+from fightsim.common.enemy_actions import EnemyActions
 from fightsim.common.spells import Spell
 from fightsim.models.player import CRIT_CHANCE
 

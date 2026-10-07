@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from fightsim.models.enemy_data import enemy_dict
-from fightsim.common.messages import EnemyActions
+from fightsim.common.enemy_actions import EnemyActions
 
 # Sleep counter set by the Sleep spell. Each enemy turn counts it down first, so the
 # enemy is certain to sleep through its next turn and then rolls to wake each turn after.
