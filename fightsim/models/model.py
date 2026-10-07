@@ -1,8 +1,6 @@
 # model.py - Default model for the simulation
 
 from typing import Optional
-from fightsim.common.messages import ObserverMessages
-from ..common.eventmanager import EventManager
 from fightsim.models.player import Player # For type checking
 from fightsim.models.enemy import Enemy, create_enemy
 
@@ -10,10 +8,9 @@ from fightsim.models.enemy import Enemy, create_enemy
 
 class Model:
     """ Model class for the MVC pattern """
-    def __init__(self, player: Optional[Player] = None, enemy: Optional[Enemy] = None, observer: EventManager = None):
+    def __init__(self, player: Optional[Player] = None, enemy: Optional[Enemy] = None):
         self.player: Player = player if player else Player()  # Add a player
         self.enemy: Optional[Enemy] = enemy if enemy else Enemy.create_dummy()
-        self.observed: EventManager = observer if observer else EventManager("Generic Model Observer")
 
         self.clean_text: bool = False
         self.in_battle: bool = False  # Are we in battle mode or not? If not, we're in setup mode.
@@ -23,11 +20,10 @@ class Model:
         self.initialize_game()
 
     def initialize_game(self):
-        """ Reset battle variables and notify the observer. """
+        """ Reset battle variables. """
         self.in_battle = False
         self.initiative = False
         self.crit_hit = False
-        self.observed.notify(ObserverMessages.RESET_GAME)
 
     def __repr__(self):
         props = vars(self)
@@ -47,33 +43,18 @@ class Model:
         print(f"Entering model.set_enemy, receiving {enemy_name}")
         if enemy_name == "Select Enemy":
             self.enemy = None
-            self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
         else:
             """Set the current enemy to a fresh instance by name."""
             try:
                 self.enemy = create_enemy(enemy_name)
             except KeyError:
                 raise ValueError(f"Unknown enemy name: {enemy_name!r}") from None
-            self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
 
-    def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
+    def change_player_hp(self, delta_hp):  # TODO, what if this hits zero?
         """Change the player's HP by a delta amount."""
         self.player.current_hp += delta_hp
         if self.player.max_hp < self.player.current_hp:
             self.player.current_hp = self.player.max_hp
-        self.observed.notify(ObserverMessages.PLAYER_HP_CHANGE)  # Notify observers about the specific change
-
-    def notify_armor_change(self):
-        """ Notify there's been a change in armor """
-        self.observed.notify(ObserverMessages.ARMOR_CHANGE)
-
-    def notify_weapon_change(self):
-        """ Notify there's been a change in weapon """
-        self.observed.notify(ObserverMessages.WEAPON_CHANGE)
-
-    def notify_shield_change(self):
-        """ Notify there's been a change in shield """
-        self.observed.notify(ObserverMessages.SHIELD_CHANGE)
 
     def reset_after_battle(self):
         if self.enemy is not None:

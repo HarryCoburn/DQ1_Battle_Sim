@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 from random import Random
 
-from fightsim.common.eventmanager import EventManager
 from fightsim.controllers.controller import Controller
 from fightsim.models.enemy import enemy_dummy_factory
 from fightsim.models.model import Model
@@ -18,11 +17,9 @@ LOGGING_CONFIG = Path(__file__).parent / "logging.ini"
 logger = logging.getLogger("fightsim.main")
 
 def build_app() -> Controller:
-    event_manager = EventManager("DQ1 Model Observer")
     model = Model(
         player=player_factory(),
         enemy=enemy_dummy_factory(),
-        observer=event_manager,
     )
     view = View()
     rng = Random()

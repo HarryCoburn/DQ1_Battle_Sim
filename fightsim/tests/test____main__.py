@@ -1,40 +1,47 @@
 import unittest
+from random import Random
 from unittest.mock import patch, MagicMock
-import logging
-from fightsim.__main__ import create_event_manager, create_view, create_model, create_controller, main
+from fightsim.__main__ import build_app, main
 
 
-class TestMain(unittest.TestCase):
+class TestBuildApp(unittest.TestCase):
 
-    @patch('fightsim.__main__.EventManager')
-    def test_create_event_manager(self, MockEventManager):
-        event_manager = create_event_manager()
-        MockEventManager.assert_called_once_with("DQ1 Model Observer")
-        self.assertTrue(MockEventManager.called)
-
+    @patch('fightsim.__main__.Controller')
     @patch('fightsim.__main__.View')
-    def test_create_view(self, MockView):
-        view = create_view()
-        MockView.assert_called_once()
-        self.assertTrue(MockView.called)
-
     @patch('fightsim.__main__.Model')
     @patch('fightsim.__main__.player_factory')
     @patch('fightsim.__main__.enemy_dummy_factory')
-    def test_create_model(self, MockEnemyFactory, MockPlayerFactory, MockModel):
-        mock_event_manager = MagicMock()
-        model = create_model(mock_event_manager)
-        MockModel.assert_called_once_with(player=MockPlayerFactory(), enemy=MockEnemyFactory(), observer=mock_event_manager)
-        self.assertTrue(MockModel.called)
+    def test_build_app_wires_model_view_and_controller(self, MockEnemyFactory, MockPlayerFactory,
+                                                       MockModel, MockView, MockController):
+        controller = build_app()
 
-    @patch('fightsim.__main__.Controller')
-    def test_create_controller(self, MockController):
-        mock_model = MagicMock()
-        mock_view = MagicMock()
-        mock_event_manager = MagicMock()
-        controller = create_controller(mock_model, mock_view, mock_event_manager)
-        MockController.assert_called_once_with(mock_model, mock_view, mock_event_manager)
-        self.assertTrue(MockController.called)
+        MockModel.assert_called_once_with(player=MockPlayerFactory.return_value,
+                                          enemy=MockEnemyFactory.return_value)
+        MockView.assert_called_once_with()
+
+        model, view, rng = MockController.call_args.args
+        self.assertIs(model, MockModel.return_value)
+        self.assertIs(view, MockView.return_value)
+        self.assertIsInstance(rng, Random)
+
+        MockView.return_value.set_controller.assert_called_once_with(MockController.return_value)
+        MockController.return_value.initial_update.assert_called_once_with()
+        self.assertIs(controller, MockController.return_value)
+
+
+@patch('fightsim.__main__.logging.config.fileConfig')
+class TestMain(unittest.TestCase):
+
+    @patch('fightsim.__main__.build_app')
+    def test_main_runs_app_and_returns_zero(self, MockBuildApp, _):
+        self.assertEqual(main(), 0)
+        MockBuildApp.return_value.run.assert_called_once_with()
+
+    @patch('fightsim.__main__.build_app', side_effect=RuntimeError("no display"))
+    def test_main_returns_one_when_startup_fails(self, MockBuildApp, _):
+        with self.assertLogs('fightsim.main', level='ERROR'):
+            self.assertEqual(main(), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,29 +1,6 @@
 from enum import Enum, auto
 
 
-class ObserverMessages(Enum):
-    """
-    Observer Messages for sending commands
-    """
-    ENEMY_CHANGE = auto()
-    PLAYER_HP_CHANGE = auto()
-    WEAPON_CHANGE = auto()
-    SHIELD_CHANGE = auto()
-    ARMOR_CHANGE = auto()
-    RESET_GAME = auto()
-
-    def description(self):
-        descriptions = {
-            ObserverMessages.ENEMY_CHANGE: "The enemy has changed",
-            ObserverMessages.PLAYER_HP_CHANGE: "The player's Hit Points have changed.",
-            ObserverMessages.WEAPON_CHANGE: "The player's weapon has changed.",
-            ObserverMessages.SHIELD_CHANGE: "The player's shield has changed.",
-            ObserverMessages.ARMOR_CHANGE: "The player's armor has changed.",
-            ObserverMessages.RESET_GAME: "Resets the game.",
-        }
-        return descriptions.get(self, "No description available.")
-
-
 # Enemy Actions
 class EnemyActions(Enum):
     """
