@@ -77,19 +77,6 @@ class Model:
         """ Notify there's been a change in shield """
         self.observed.notify(ObserverMessages.SHIELD_CHANGE)
 
-    def text(self, output):
-        """ Notify there is a message for the output window. """
-        self.observed.notify(ObserverMessages.OUTPUT_CHANGE, output)
-
-    def clear_output(self):
-        """ Clear the output var"""
-        self.observed.notify(ObserverMessages.OUTPUT_CLEAR)
-
-    def clear_and_set_output(self, output):
-        """ Clear out the output var, then add something new. Blanks the output window """
-        self.observed.notify(ObserverMessages.OUTPUT_CLEAR)
-        self.observed.notify(ObserverMessages.OUTPUT_CHANGE, output)
-
     def reset_after_battle(self):
         if self.enemy is not None:
             self.enemy = create_enemy(self.enemy.name)

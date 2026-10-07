@@ -113,9 +113,9 @@ class View(tk.Tk):
         """ Refreshes the enemy label in _main_frame """
         self._main_frame.update_enemy_label(enemy_info)
 
-    def update_output(self, event_type, message):
+    def append_output(self, message):
         """ Adds message to the output widget in _main_frame """
-        self._main_frame.update_output(event_type, message)
+        self._main_frame.append_output(message)
 
     def clear_output(self):
         """ Clears the output widget in _main_frame """

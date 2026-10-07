@@ -22,8 +22,6 @@ class Controller:
         self.observer = observer
         self.battle: Battle | None = None
         self.messages = [
-            ObserverMessages.OUTPUT_CHANGE,
-            ObserverMessages.OUTPUT_CLEAR,
             ObserverMessages.UPDATE_PLAYER_MAGIC
         ]
 
@@ -40,17 +38,13 @@ class Controller:
             logger.debug("Attached controller to model with message: %s", message)
 
     def initialize_view(self):
-        self.model.text("DQ1 Battle Sim")
+        self.view.append_output("DQ1 Battle Sim")
         logger.info("View initialized with welcome message.")
 
     def initial_update(self):
         self.update_player_info()
 
     def update(self, property_name, data=None):
-        if property_name == ObserverMessages.OUTPUT_CHANGE:
-            self.view.update_output(property_name, data)
-        if property_name == ObserverMessages.OUTPUT_CLEAR:
-            self.view.clear_output()
         if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
             self.view.update_magic_menu()
 
@@ -63,10 +57,6 @@ class Controller:
     def get_chosen_magic(self):
         return self.view.get_chosen_magic_from_menu()
 
-    def clear_output(self):
-        """ Clear the output var"""
-        self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
-
     def _active_battle(self) -> Battle:
         if self.battle is None:
             raise RuntimeError("Battle action called with no battle in progress")
@@ -76,13 +66,13 @@ class Controller:
         self.battle = Battle(
             player=self.model.player,
             enemy=self.model.enemy,
-            log=self.model.text,
+            log=self.view.append_output,
             rng=self.rng,
             on_end=self.end_battle,
         )
         self.update_player_info()
         self.view.show_battle_screen()
-        self.clear_output()
+        self.view.clear_output()
         self.battle.start_fight()
 
     def end_battle(self):
@@ -107,7 +97,7 @@ class Controller:
     def cast_spell(self) -> None:
         label = self.get_chosen_magic()
         if label not in Spell:
-            self.model.text("You must select a spell first.\n")
+            self.view.append_output("You must select a spell first.\n")
             return
         self._active_battle().take_turn(lambda: self._active_battle().player_cast_magic(Spell(label)))
         self.refresh()
@@ -135,9 +125,9 @@ class Controller:
         if attribute_type in update_methods:
             if attribute_type == AttributeType.HERB:
                 if update_methods[attribute_type]():
-                    self.model.text("Buying an herb.")
+                    self.view.append_output("Buying an herb.")
                 else:
-                    self.model.text("You have the maximum number of herbs.")
+                    self.view.append_output("You have the maximum number of herbs.")
             else:
                 update_methods[attribute_type](value)
             self.update_player_info()

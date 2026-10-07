@@ -6,7 +6,7 @@ class TestObserverMessagesEnum(unittest.TestCase):
     def test_enum_members_exist(self):
         """Test that all expected enum members exist."""
         expected_members = {
-            'OUTPUT_CHANGE', 'OUTPUT_CLEAR', 'ENEMY_CHANGE',
+            'ENEMY_CHANGE',
             'PLAYER_HP_CHANGE', 'WEAPON_CHANGE', 'SHIELD_CHANGE',
             'ARMOR_CHANGE', 'RESET_GAME', 'UPDATE_PLAYER_MAGIC'
         }

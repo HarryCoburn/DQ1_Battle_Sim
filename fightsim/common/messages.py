@@ -5,8 +5,6 @@ class ObserverMessages(Enum):
     """
     Observer Messages for sending commands
     """
-    OUTPUT_CHANGE = auto()
-    OUTPUT_CLEAR = auto()
     ENEMY_CHANGE = auto()
     PLAYER_HP_CHANGE = auto()
     WEAPON_CHANGE = auto()
@@ -17,8 +15,6 @@ class ObserverMessages(Enum):
 
     def description(self):
         descriptions = {
-            ObserverMessages.OUTPUT_CLEAR: "Clears the output window.",
-            ObserverMessages.OUTPUT_CHANGE: "Appends new data to the output window.",
             ObserverMessages.ENEMY_CHANGE: "The enemy has changed",
             ObserverMessages.PLAYER_HP_CHANGE: "The player's Hit Points have changed.",
             ObserverMessages.WEAPON_CHANGE: "The player's weapon has changed.",
