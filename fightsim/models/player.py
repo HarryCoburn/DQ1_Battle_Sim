@@ -5,7 +5,6 @@ Player class
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
 from ..common.spells import Spell
-from typing import Optional
 from .player_leveling import _Levelling
 
 CRIT_CHANCE: int = 32
@@ -40,7 +39,6 @@ class Player:
     reduce_fire_damage: bool = False
     is_spellstopped: bool = False
     leveler: _Levelling = _Levelling()
-    model: Optional = None  # Placeholder
     sleep_turns: int = 0
 
 
@@ -72,12 +70,6 @@ class Player:
         Calculate and return attack number
         """
         return self.strength + self.weapon.modifier
-
-    def set_model(self, model):
-        """
-        Injects model dependence into Player.
-        """
-        self.model = model
 
     def change_name(self, name):
         """

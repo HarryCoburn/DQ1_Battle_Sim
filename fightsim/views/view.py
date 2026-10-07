@@ -105,9 +105,10 @@ class View(tk.Tk):
         logging.debug(f"Switched to frame: {new_frame}")
 
     def update_player_info(self, player_info):
-        """ Refreshes the player label in _main_frame and the magic menu in _battle_frame """
+        """ Refreshes the player label in _main_frame, the magic menu in _battle_frame and the level in _setup_frame """
         self._main_frame.update_player_label(player_info)
-        self._battle_frame.update_player_magic_menu(player_info.player_magic)
+        self._battle_frame.update_magic_menu(player_info.player_magic)
+        self._setup_frame.set_player_level(player_info.level)
 
     def update_enemy_info(self, enemy_info):
         """ Refreshes the enemy label in _main_frame """

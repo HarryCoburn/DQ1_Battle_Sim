@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List
 from .enemy_data import enemy_dict
 
 from ..common.messages import EnemyActions
@@ -23,7 +23,6 @@ class Enemy:
     pattern: List[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
     run: int = 0
     void_critical_hit: bool = False
-    model: Optional[any] = None
     sleep_turns: int = 0
 
     @property
@@ -47,10 +46,6 @@ class Enemy:
         """Creates a dummy enemy with neutral stats"""
         return cls(name="Dummy", strength=0, agility=0, base_hp=[1, 1], sleep_resist=0,
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
-
-
-    def set_model(self, model):
-        self.model = model  # Method to inject the model dependency
 
     def is_defeated(self):
         """ Returns True if the enemy is defeated """

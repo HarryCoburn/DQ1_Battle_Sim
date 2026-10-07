@@ -23,8 +23,7 @@ class Model:
         self.initialize_game()
 
     def initialize_game(self):
-        """ Inject the model into player, reset battle variables, and notify the observer. """
-        self.player.set_model(self)
+        """ Reset battle variables and notify the observer. """
         self.in_battle = False
         self.initiative = False
         self.crit_hit = False
@@ -55,7 +54,6 @@ class Model:
                 self.enemy = create_enemy(enemy_name)
             except KeyError:
                 raise ValueError(f"Unknown enemy name: {enemy_name!r}") from None
-            self.enemy.set_model(self)
             self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
 
     def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
@@ -80,7 +78,6 @@ class Model:
     def reset_after_battle(self):
         if self.enemy is not None:
             self.enemy = create_enemy(self.enemy.name)
-            self.enemy.set_model(self)
         self.player.restore()
 
 

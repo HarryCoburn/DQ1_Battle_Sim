@@ -39,7 +39,7 @@ class BattleFrame(tk.Frame):
         self.magic_menu.grid(row=3, column=1, padx=5, pady=5)
         self.magic_option_var.set(NO_MAGIC)
 
-    def update_player_magic_menu(self, spells):
+    def update_magic_menu(self, spells):
         """ Update the options available in the magic menu from the player's known spells. """
         menu = self.magic_menu['menu']
         menu.delete(0, 'end')

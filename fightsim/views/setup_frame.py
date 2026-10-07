@@ -14,6 +14,7 @@ class SetupFrame(tk.Frame):
         self.buy_herb_button = None
         self.controller = None
         self.level_spinbox = None
+        self.player_level = 1
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.weapon_var = tk.StringVar(value="Unarmed")
@@ -101,7 +102,11 @@ class SetupFrame(tk.Frame):
     def refill_level(self) -> None:
         """Put the player's current level back in the box if it was left empty."""
         if self.level_spinbox.get() == "":
-            self.level_var.set(self.controller.model.player.level)
+            self.level_var.set(self.player_level)
+
+    def set_player_level(self, level: int) -> None:
+        """Remember the player's current level for refilling the level box."""
+        self.player_level = level
 
     def on_enemy_selected(self, name:str) -> None:
         """Pass the chosen enemy to the controller and allow the fight to start."""
