@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fightsim"
+version = "0.1.0"
+description = "A battle simulator for the NES game Dragon Quest 1 (Dragon Warrior)"
+readme = "README.md"
+# StrEnum needs 3.11; testing a plain string with `in` on an Enum needs 3.12
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+fightsim = "fightsim.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["fightsim*"]
+exclude = ["fightsim.tests*"]
+
+[tool.setuptools.package-data]
+fightsim = ["logging.ini"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+include = ["fightsim"]
