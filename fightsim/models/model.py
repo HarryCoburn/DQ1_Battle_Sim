@@ -54,9 +54,7 @@ class Model:
             try:
                 self.enemy = create_enemy(enemy_name)
             except KeyError:
-                print("Selected an enemy that doesn't exist nor the default message. This should not happen!")
-                self.enemy = None
-                return
+                raise ValueError(f"Unknown enemy name: {enemy_name!r}") from None
             self.enemy.set_model(self)
             self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
 

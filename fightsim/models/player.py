@@ -56,7 +56,7 @@ class Player:
         """
         Calculate and return defense value
         """
-        return (self.agility + self.armor.modifier + self.shield.modifier) // 2
+        return (self.agility // 2) + self.armor.modifier + self.shield.modifier
 
     def attack_num(self):
         """
