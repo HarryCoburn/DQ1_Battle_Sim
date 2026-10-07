@@ -6,17 +6,13 @@ import logging
 from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
-from typing import Optional, Dict, Union, Type, TYPE_CHECKING
-
-
-if TYPE_CHECKING:
-    from fightsim.controllers.controller import Controller
+from fightsim.views.actions import ViewActions
+from typing import Optional, Dict, Union, Type
 
 class View(tk.Tk):
     """
     View class for the application
     """
-    controller: Controller | None = None
     name_text: tk.StringVar
     level_change: tk.StringVar
     chosen_weapon: tk.StringVar
@@ -77,12 +73,10 @@ class View(tk.Tk):
         self.resizable(width=True, height=True)
         self._main_frame.pack(fill='x', expand=True)
 
-    def set_controller(self, controller):
-        """ Attaches the controller to the frames """
-        self.controller = controller
-        self._main_frame.set_controller(controller)
-        self._battle_frame.set_controller(controller)
-        self._setup_frame.set_controller(controller)
+    def bind_actions(self, actions: ViewActions):
+        """ Gives the frames the actions their controls call """
+        self._battle_frame.bind_actions(actions)
+        self._setup_frame.bind_actions(actions)
         # Initialize and display frames
         self.show_frame(self._setup_frame)
 
@@ -121,10 +115,6 @@ class View(tk.Tk):
     def clear_output(self):
         """ Clears the output widget in _main_frame """
         self._main_frame.clear_output()
-
-
-    def get_chosen_magic_from_menu(self):
-        return self._battle_frame.magic_option_var.get()
 
     def show_battle_screen(self) -> None:
         self.show_frame(self._battle_frame)

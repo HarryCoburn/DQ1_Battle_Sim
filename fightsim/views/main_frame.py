@@ -12,7 +12,6 @@ class MainFrame(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.configure(bg='purple')
         self.parent = parent
-        self.controller = None
 
         top_spacer = tk.Frame(self, height=12, bg='purple')
         top_spacer.pack(fill='both', expand=True)
@@ -61,9 +60,6 @@ class MainFrame(tk.Frame):
         )
         self.txt.pack(fill='both', expand=True, padx=10, pady=10)  # Fill both horizontally and vertically
         self.txt.configure(state="disabled")
-
-    def set_controller(self, controller):
-        self.controller = controller
 
     def update_player_label(self, player_info):
         """

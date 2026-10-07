@@ -3,7 +3,6 @@
 import logging
 
 from fightsim.controllers.battle import Battle
-from fightsim.common.attribute_type import AttributeType
 from fightsim.common.spells import Spell
 from fightsim.models.model import Model
 from fightsim.views.view import View
@@ -32,14 +31,8 @@ class Controller:
     def initial_update(self):
         self.update_player_info()
 
-    def update_enemy_info(self, value = None):
-        if value is not None:
-            self.model.set_enemy(value)
+    def update_enemy_info(self):
         self.view.update_enemy_info(self.model.enemy)
-        logger.info("Updated enemy to %s", value)
-
-    def get_chosen_magic(self):
-        return self.view.get_chosen_magic_from_menu()
 
     def _active_battle(self) -> Battle:
         if self.battle is None:
@@ -78,8 +71,7 @@ class Controller:
         self._active_battle().take_turn(self._active_battle().player_flees)
         self.refresh()
 
-    def cast_spell(self) -> None:
-        label = self.get_chosen_magic()
+    def cast_spell(self, label: str) -> None:
         if label not in Spell:
             self.view.append_output("You must select a spell first.\n")
             return
@@ -95,26 +87,36 @@ class Controller:
         self.view.update_player_info(self.model.player)
         logger.info("Player info updated in the view.")
 
-    def update_player_attribute(self, attribute_type, value=None):
-        """ Generic method to update player attributes """
-        update_methods = {
-            AttributeType.WEAPON: self.model.player.equip_weapon,
-            AttributeType.ARMOR: self.model.player.equip_armor,
-            AttributeType.SHIELD: self.model.player.equip_shield,
-            AttributeType.LEVEL: self.model.player.level_up,
-            AttributeType.NAME: self.model.player.change_name,
-            AttributeType.HERB: self.model.player.add_herb
-        }
+    # Setup actions
 
-        if attribute_type in update_methods:
-            if attribute_type == AttributeType.HERB:
-                if update_methods[attribute_type]():
-                    self.view.append_output("Buying an herb.")
-                else:
-                    self.view.append_output("You have the maximum number of herbs.")
-            else:
-                update_methods[attribute_type](value)
-            self.update_player_info()
-            logger.info("Updated %s to %s", attribute_type, value)
+    def change_name(self, name: str) -> None:
+        self.model.player.change_name(name)
+        self.update_player_info()
+
+    def set_level(self, level: int) -> None:
+        self.model.player.level_up(level)
+        self.update_player_info()
+
+    def equip_weapon(self, name: str) -> None:
+        self.model.player.equip_weapon(name)
+        self.update_player_info()
+
+    def equip_armor(self, name: str) -> None:
+        self.model.player.equip_armor(name)
+        self.update_player_info()
+
+    def equip_shield(self, name: str) -> None:
+        self.model.player.equip_shield(name)
+        self.update_player_info()
+
+    def buy_herb(self) -> None:
+        if self.model.player.add_herb():
+            self.view.append_output("Buying an herb.")
         else:
-            raise ValueError(f"Unknown attribute type: {attribute_type}")
+            self.view.append_output("You have the maximum number of herbs.")
+        self.update_player_info()
+
+    def select_enemy(self, name: str) -> None:
+        self.model.set_enemy(name)
+        self.update_enemy_info()
+        logger.info("Selected enemy %s", name)

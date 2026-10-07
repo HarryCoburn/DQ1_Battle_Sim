@@ -1,5 +1,7 @@
 import tkinter as tk
 from functools import partial
+from typing import Optional
+from fightsim.views.actions import ViewActions
 
 # Menu placeholders; neither is a Spell, so casting with one selected is refused
 SELECT_SPELL = "Select Spell"
@@ -11,28 +13,24 @@ class BattleFrame(tk.Frame):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.controller = None
-        self.attack_btn = None
-        self.herb_btn = None
-        self.run_btn = None
-        self.cast_btn = None
+        self.actions: Optional[ViewActions] = None
         self.magic_option_var = tk.StringVar(self)
-        self.magic_menu = None
-
-    def set_controller(self, controller):
-        """ Sets controller as the controller for BattleFrame and continues setup of BattleFrame """
-        self.controller = controller
         self.create_widgets()
+
+    def bind_actions(self, actions: ViewActions):
+        """ Sets the actions the battle buttons call """
+        self.actions = actions
 
     def create_widgets(self):
         """Create and layout widgets for battle."""
-        self.attack_btn = tk.Button(self, text="Attack", command=self.controller.attack)
+        self.attack_btn = tk.Button(self, text="Attack", command=lambda: self.actions.attack())
         self.attack_btn.grid(row=0, column=0, padx=5, pady=5)
-        self.herb_btn = tk.Button(self, text="Use Herb", command=self.controller.use_herb)
+        self.herb_btn = tk.Button(self, text="Use Herb", command=lambda: self.actions.use_herb())
         self.herb_btn.grid(row=1, column=0, padx=5, pady=5)
-        self.run_btn = tk.Button(self, text="Run", command=self.controller.flee)
+        self.run_btn = tk.Button(self, text="Run", command=lambda: self.actions.flee())
         self.run_btn.grid(row=2, column=0, padx=5, pady=5)
-        self.cast_btn = tk.Button(self, text="Cast", command=self.controller.cast_spell)
+        self.cast_btn = tk.Button(self, text="Cast",
+                                  command=lambda: self.actions.cast_spell(self.magic_option_var.get()))
         self.cast_btn.grid(row=3, column=0, padx=5, pady=5)
 
         self.magic_menu = tk.OptionMenu(self, self.magic_option_var, NO_MAGIC)
