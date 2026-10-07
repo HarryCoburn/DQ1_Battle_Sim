@@ -35,8 +35,6 @@ class Player:
     armor: Item = field(default_factory=lambda: items[ItemType.ARMOR]["Naked"])
     shield: Item = field(default_factory=lambda: items[ItemType.SHIELD]["No Shield"])
     herb_count: int = 0
-    reduce_hurt_damage: bool = False
-    reduce_fire_damage: bool = False
     is_spellstopped: bool = False
     leveler: _Levelling = field(default_factory=_Levelling)
     sleep_turns: int = 0
@@ -113,8 +111,16 @@ class Player:
         Sets a new armor on the player. Raises ValueError if it is not found.
         """
         self.armor = self._find_item(ItemType.ARMOR, armor_name)
-        self.reduce_hurt_damage = self.armor.reduce_hurt_damage
-        self.reduce_fire_damage = self.armor.reduce_fire_damage
+
+    @property
+    def reduce_hurt_damage(self) -> bool:
+        """True if the armor reduces damage from Hurt and Hurtmore."""
+        return self.armor.reduce_hurt_damage
+
+    @property
+    def reduce_fire_damage(self) -> bool:
+        """True if the armor reduces damage from breath attacks."""
+        return self.armor.reduce_fire_damage
 
     def equip_shield(self, shield_name: str):
         """

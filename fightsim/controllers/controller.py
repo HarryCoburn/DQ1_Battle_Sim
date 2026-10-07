@@ -54,6 +54,7 @@ class Controller:
 
     def end_battle(self):
         """Cleans up after the battle is done and resets the simulator"""
+        self.battle = None
         self.model.reset_after_battle()
         self.update_enemy_info()
         self.update_player_info()

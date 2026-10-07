@@ -8,7 +8,7 @@ class Model:
     """ Model class for the MVC pattern """
     def __init__(self, player: Player | None = None, enemy: Enemy | None = None):
         self.player: Player = player if player is not None else Player()
-        self.enemy: Enemy | None = enemy if enemy is not None else Enemy.create_dummy()
+        self.enemy: Enemy | None = enemy  # None until one is chosen
 
     def __repr__(self):
         props = vars(self)

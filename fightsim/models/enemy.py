@@ -41,12 +41,6 @@ class Enemy:
     def fall_asleep(self):
         self.sleep_turns = FALL_ASLEEP_TURNS
 
-    @classmethod
-    def create_dummy(cls):
-        """Creates a dummy enemy with neutral stats"""
-        return cls(name="Dummy", strength=0, agility=0, base_hp=(1, 1), sleep_resist=0,
-                   stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
-
     def is_defeated(self):
         """ Returns True if the enemy is defeated """
         return self.current_hp <= 0
