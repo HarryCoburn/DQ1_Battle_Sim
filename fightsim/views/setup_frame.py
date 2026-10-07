@@ -1,6 +1,7 @@
 import tkinter as tk
 from fightsim.models.items import weapon_names, armor_names, shield_names
 from fightsim.models.enemy import enemy_names
+from fightsim.models.player import MIN_LEVEL, MAX_LEVEL
 from fightsim.views.actions import ViewActions
 from typing import Optional
 
@@ -36,7 +37,7 @@ class SetupFrame(tk.Frame):
         tk.Entry(self, textvariable=self.name_var, width=20).grid(row=0, column=1, sticky="w", pady=5)
 
         tk.Label(self, text="Level:").grid(row=1, column=0, sticky="e", padx=5)
-        self.level_spinbox = tk.Spinbox(self, from_=1, to=30, increment=1, width=5,
+        self.level_spinbox = tk.Spinbox(self, from_=MIN_LEVEL, to=MAX_LEVEL, increment=1, width=5,
                                         textvariable=self.level_var,
                                         wrap=True,
                                         validate='key',
@@ -115,7 +116,7 @@ class SetupFrame(tk.Frame):
             return True
         try:
             val = int(p)
-            if 1 <= val <= 30:
+            if MIN_LEVEL <= val <= MAX_LEVEL:
                 return True
             else:
                 return False

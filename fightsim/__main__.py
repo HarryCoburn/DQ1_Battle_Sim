@@ -7,9 +7,9 @@ from pathlib import Path
 from random import Random
 
 from fightsim.controllers.controller import Controller
-from fightsim.models.enemy import enemy_dummy_factory
+from fightsim.models.enemy import Enemy
 from fightsim.models.model import Model
-from fightsim.models.player import player_factory
+from fightsim.models.player import Player
 from fightsim.views.view import View
 
 LOGGING_CONFIG = Path(__file__).parent / "logging.ini"
@@ -18,8 +18,8 @@ logger = logging.getLogger("fightsim.main")
 
 def build_app() -> Controller:
     model = Model(
-        player=player_factory(),
-        enemy=enemy_dummy_factory(),
+        player=Player(),
+        enemy=Enemy.create_dummy(),
     )
     view = View()
     rng = Random()

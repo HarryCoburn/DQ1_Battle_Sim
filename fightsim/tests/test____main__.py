@@ -9,13 +9,13 @@ class TestBuildApp(unittest.TestCase):
     @patch('fightsim.__main__.Controller')
     @patch('fightsim.__main__.View')
     @patch('fightsim.__main__.Model')
-    @patch('fightsim.__main__.player_factory')
-    @patch('fightsim.__main__.enemy_dummy_factory')
-    def test_build_app_wires_model_view_and_controller(self, MockEnemyFactory, MockPlayerFactory,
+    @patch('fightsim.__main__.Player')
+    @patch('fightsim.__main__.Enemy.create_dummy')
+    def test_build_app_wires_model_view_and_controller(self, MockEnemyFactory, MockPlayer,
                                                        MockModel, MockView, MockController):
         controller = build_app()
 
-        MockModel.assert_called_once_with(player=MockPlayerFactory.return_value,
+        MockModel.assert_called_once_with(player=MockPlayer.return_value,
                                           enemy=MockEnemyFactory.return_value)
         MockView.assert_called_once_with()
 

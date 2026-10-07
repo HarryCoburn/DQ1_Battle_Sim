@@ -4,12 +4,14 @@ Player class
 
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
-from ..common.spells import Spell
-from .player_leveling import _Levelling
+from fightsim.common.spells import Spell
+from fightsim.models.player_leveling import _Levelling
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
 MAX_HERBS: int = 6
+MIN_LEVEL: int = 1
+MAX_LEVEL: int = 30
 
 # Level at which the player learns each spell
 SPELL_LEVELS: dict[Spell, int] = {
@@ -38,7 +40,7 @@ class Player:
     reduce_hurt_damage: bool = False
     reduce_fire_damage: bool = False
     is_spellstopped: bool = False
-    leveler: _Levelling = _Levelling()
+    leveler: _Levelling = field(default_factory=_Levelling)
     sleep_turns: int = 0
 
 
@@ -56,8 +58,12 @@ class Player:
         self.sleep_turns = SLEEP_COUNT
 
     def __post_init__(self):
-        if not 1 <= self.level <= 30:
-            raise ValueError("Level must be within 1 to 30")
+        self._check_level(self.level)
+
+    @staticmethod
+    def _check_level(level: int) -> None:
+        if not MIN_LEVEL <= level <= MAX_LEVEL:
+            raise ValueError(f"Level must be within {MIN_LEVEL} to {MAX_LEVEL}, got {level}")
 
     def defense(self):
         """
@@ -81,7 +87,9 @@ class Player:
     def level_up(self, value):
         """
         Sets the new level and then recalculates the stats of the player based on the new level value.
+        Raises ValueError if the level is out of range.
         """
+        self._check_level(value)
         self.level = value
         self.recalculate_stats()
 
@@ -98,23 +106,30 @@ class Player:
 
     def equip_weapon(self, weapon_name: str):
         """
-        Sets a new weapon on the player. Keeps the same weapon if it is not found.
+        Sets a new weapon on the player. Raises ValueError if it is not found.
         """
-        self.weapon = items[ItemType.WEAPON.value].get(weapon_name, self.weapon)
+        self.weapon = self._find_item(ItemType.WEAPON, weapon_name)
 
     def equip_armor(self, armor_name: str):
         """
-        Sets a new armor on the player. Keeps the same armor if it is not found.
+        Sets a new armor on the player. Raises ValueError if it is not found.
         """
-        self.armor = items[ItemType.ARMOR.value].get(armor_name, self.armor)
+        self.armor = self._find_item(ItemType.ARMOR, armor_name)
         self.reduce_hurt_damage = self.armor.reduce_hurt_damage
         self.reduce_fire_damage = self.armor.reduce_fire_damage
 
     def equip_shield(self, shield_name: str):
         """
-        Sets a new shield on the player. Keeps the same shield if it is not found.
+        Sets a new shield on the player. Raises ValueError if it is not found.
         """
-        self.shield = items[ItemType.SHIELD.value].get(shield_name, self.shield)
+        self.shield = self._find_item(ItemType.SHIELD, shield_name)
+
+    @staticmethod
+    def _find_item(item_type: ItemType, name: str) -> Item:
+        try:
+            return items[item_type.value][name]
+        except KeyError:
+            raise ValueError(f"Unknown {item_type.value} name: {name!r}") from None
 
     @staticmethod
     def damage_range(attack, agility):
@@ -167,10 +182,3 @@ class Player:
         self.herb_count = 0
         self.wake()
         self.is_spellstopped = False
-
-
-def player_factory():
-    """
-    Returns a player
-    """
-    return Player()

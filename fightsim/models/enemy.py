@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
-from typing import List
-from .enemy_data import enemy_dict
+from fightsim.models.enemy_data import enemy_dict
+from fightsim.common.messages import EnemyActions
 
-from ..common.messages import EnemyActions
+# Sleep counter set by the Sleep spell. Each enemy turn counts it down first, so the
+# enemy is certain to sleep through its next turn and then rolls to wake each turn after.
+FALL_ASLEEP_TURNS: int = 2
 
 
 # Enemy Class
@@ -11,16 +13,15 @@ class Enemy:
     name: str
     strength: int
     agility: int
-    base_hp: List[int]
+    base_hp: tuple[int, int]
     dodge: int
     max_hp: int = 0
     current_hp: int = 0
-    sleep_count: int = 0
     is_spellstopped: bool = False
     sleep_resist: int = 0
     stopspell_resist: int = 15
     hurt_resist: int = 0
-    pattern: List[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
+    pattern: list[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
     run: int = 0
     void_critical_hit: bool = False
     sleep_turns: int = 0
@@ -39,12 +40,12 @@ class Enemy:
         self.sleep_turns = 1
 
     def fall_asleep(self):
-        self.sleep_turns = 2
+        self.sleep_turns = FALL_ASLEEP_TURNS
 
     @classmethod
     def create_dummy(cls):
         """Creates a dummy enemy with neutral stats"""
-        return cls(name="Dummy", strength=0, agility=0, base_hp=[1, 1], sleep_resist=0,
+        return cls(name="Dummy", strength=0, agility=0, base_hp=(1, 1), sleep_resist=0,
                    stopspell_resist=0, hurt_resist=0, dodge=0, pattern=[], run=0)
 
     def is_defeated(self):
@@ -92,7 +93,3 @@ enemy_names = list(_enemies_by_name)
 def create_enemy(name: str) -> Enemy:
     """ Builds a fresh Enemy from enemy_dict by display name. Raises KeyError if not found. """
     return Enemy(**_enemies_by_name[name])
-
-
-def enemy_dummy_factory():
-    return Enemy.create_dummy()
