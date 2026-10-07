@@ -4,7 +4,7 @@ from typing import Optional
 from fightsim.common.messages import ObserverMessages
 from ..common.eventmanager import EventManager
 from fightsim.models.player import Player # For type checking
-from fightsim.models.enemy import Enemy, enemy_instances # For type checking
+from fightsim.models.enemy import Enemy, create_enemy
 
 
 
@@ -50,19 +50,15 @@ class Model:
             self.enemy = None
             self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
         else:
-            print("Searching for enemy")
-            """Set the current enemy based on a key."""
-            key = self.find_key_by_value(enemy_instances, enemy_name)
-            print(f"The key is {key}")
-            enemy_instance = enemy_instances.get(key)
-            print(f"The enemy_instance is is {enemy_instance}")
-            if enemy_instance:
-                self.enemy = enemy_instance
-                self.enemy.set_model(self)
-                self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
-            else:
+            """Set the current enemy to a fresh instance by name."""
+            try:
+                self.enemy = create_enemy(enemy_name)
+            except KeyError:
                 print("Selected an enemy that doesn't exist nor the default message. This should not happen!")
                 self.enemy = None
+                return
+            self.enemy.set_model(self)
+            self.observed.notify(ObserverMessages.ENEMY_CHANGE)  # Notify observers about the change
 
     def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
         """Change the player's HP by a delta amount."""
@@ -106,7 +102,9 @@ class Model:
         self.observed.notify(ObserverMessages.OUTPUT_CHANGE, output)
 
     def reset_after_battle(self):
-        self.enemy.current_hp = self.enemy.max_hp
+        if self.enemy is not None:
+            self.enemy = create_enemy(self.enemy.name)
+            self.enemy.set_model(self)
         self.player.restore()
 
 

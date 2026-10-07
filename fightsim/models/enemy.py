@@ -87,11 +87,16 @@ class Enemy:
         return ((x - y // 2) // 4), ((x - y // 2) // 2)
 
 
-# Create enemy objects
-enemy_instances = {k: Enemy(**v) for k, v in enemy_dict.items()}
-
 # Create enemy names
-enemy_names = [enemy.name for enemy in enemy_instances.values()]
+enemy_names = [v['name'] for v in enemy_dict.values()]
+
+
+def create_enemy(name: str) -> Enemy:
+    """ Builds a fresh Enemy from enemy_dict by display name. Raises KeyError if not found. """
+    for key, value in enemy_dict.items():
+        if value['name'] == name:
+            return Enemy(**enemy_dict[key])
+    raise KeyError(name)
 
 
 def enemy_dummy_factory():
