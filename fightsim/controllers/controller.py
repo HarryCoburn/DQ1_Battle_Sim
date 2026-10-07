@@ -1,6 +1,7 @@
 # controller.py - Core controller for the simulation
 
 import logging
+
 from fightsim.common.messages import ObserverMessages
 from fightsim.controllers.battle import Battle
 from fightsim.common.attribute_type import AttributeType
@@ -11,49 +12,6 @@ from fightsim.views.view import View
 # Module-level logger
 logger = logging.getLogger(__name__)
 
-class ObserverManager:
-    def __init__(self, observer):
-        self.observer = observer
-
-
-    def attach_observers(self, controller, messages):
-        for message in messages:
-            self.observer.attach(controller, message)
-            logger.debug(f"Attached controller to model with message: {message}")
-
-class PlayerManager:
-    def __init__(self, model, view):
-        self.model = model
-        self.view = view
-
-
-    def update_player_attribute(self, attribute_type, value=None):
-        """ Generic method to update player attributes """
-        update_methods = {
-            AttributeType.WEAPON: self.model.player.equip_weapon,
-            AttributeType.ARMOR: self.model.player.equip_armor,
-            AttributeType.SHIELD: self.model.player.equip_shield,
-            AttributeType.LEVEL: self.model.player.level_up,
-            AttributeType.NAME: self.model.player.change_name,
-            AttributeType.HERB: self.model.buy_herb
-        }
-
-        if attribute_type in update_methods:
-            if attribute_type == AttributeType.HERB:
-                update_methods[attribute_type]()
-            else:
-                update_methods[attribute_type](value)
-            self.update_player_info()
-            logger.info(f"Updated {attribute_type} to {value}")
-        else:
-            raise AttributeError(f"Unknown attribute type: {attribute_type}")
-
-
-    def update_player_info(self):
-        """Updates the view with current player information from the model."""
-        self.view.update_player_info(self.model.player)
-        logger.info("Player info updated in the view.")
-
 class Controller:
     """ Main controller class"""
 
@@ -61,8 +19,6 @@ class Controller:
         self.model = model
         self.view = view
         self.rng = rng
-        self.observer_manager = ObserverManager(observer)
-        self.player_manager = PlayerManager(model, view)
         self.observer = observer
         self.battle: Battle | None = None
         self.messages = [
@@ -79,15 +35,14 @@ class Controller:
 
     def setup_observers(self):
         """ Attach the controller as an observer to model events """
-        self.observer_manager.attach_observers(self, self.messages)
+        self.attach_observers(self, self.messages)
 
     def initialize_view(self):
         self.model.text("DQ1 Battle Sim")
         logger.info("View initialized with welcome message.")
 
     def initial_update(self):
-        self.player_manager.update_player_info()
-
+        self.update_player_info()
 
     def update(self, property_name, data=None):
         if property_name == ObserverMessages.OUTPUT_CHANGE:
@@ -95,26 +50,23 @@ class Controller:
         if property_name == ObserverMessages.OUTPUT_CLEAR:
             self.view.clear_output()
         if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
-            self.view.battle_frame.update_player_magic_menu()
+            self.view.update_magic_menu()
 
     def update_enemy_info(self, value = None):
         if value is not None:
             self.model.set_enemy(value)
         self.view.update_enemy_info(self.model.enemy)
-        logger.info(f"Updated enemy to {value}")
+        logger.info("Updated enemy to %s", value)
 
     def get_chosen_magic(self):
-        return self.view.battle_frame.magic_option_var.get()
+        return self.view.get_chosen_magic_from_menu()
 
     def switch_battle_frame(self):
-        self.view.show_frame(self.view.battle_frame)
+        self.view.show_battle_screen()
 
     def clear_output(self):
         """ Clear the output var"""
         self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
-
-    def enable_main_frame_text(self):
-        self.view.main_frame.txt["state"] = 'normal'
 
     def _active_battle(self) -> Battle:
         if self.battle is None:
@@ -122,7 +74,7 @@ class Controller:
         return self.battle
 
     def prepare_battle(self):
-        self.player_manager.update_player_info()
+        self.update_player_info()
         self.switch_battle_frame()
         self.clear_output()
 
@@ -135,7 +87,6 @@ class Controller:
             on_end=self.end_battle,
         )
         self.prepare_battle()
-        self.enable_main_frame_text()
         self.battle.start_fight()
 
     def end_battle(self):
@@ -144,10 +95,9 @@ class Controller:
         self.model.player.current_hp = self.model.player.max_hp
         self.model.player.current_mp = self.model.player.max_mp
         self.model.player.herb_count = 0
-        self.view.main_frame.txt["state"] = "disabled"
         self.update_enemy_info()
-        self.player_manager.update_player_info()
-        self.view.show_frame(self.view.setup_frame)
+        self.update_player_info()
+        self.view.show_setup_screen()
 
     def attack(self) -> None:
         self._active_battle().take_turn(self._active_battle().player_attack)
@@ -172,3 +122,34 @@ class Controller:
     def refresh(self) -> None:
         self.view.update_player_info(self.model.player)
         self.view.update_enemy_info(self.model.enemy)
+
+    def update_player_info(self):
+        """Updates the view with current player information from the model."""
+        self.view.update_player_info(self.model.player)
+        logger.info("Player info updated in the view.")
+
+    def update_player_attribute(self, attribute_type, value=None):
+        """ Generic method to update player attributes """
+        update_methods = {
+            AttributeType.WEAPON: self.model.player.equip_weapon,
+            AttributeType.ARMOR: self.model.player.equip_armor,
+            AttributeType.SHIELD: self.model.player.equip_shield,
+            AttributeType.LEVEL: self.model.player.level_up,
+            AttributeType.NAME: self.model.player.change_name,
+            AttributeType.HERB: self.model.buy_herb
+        }
+
+        if attribute_type in update_methods:
+            if attribute_type == AttributeType.HERB:
+                update_methods[attribute_type]()
+            else:
+                update_methods[attribute_type](value)
+            self.update_player_info()
+            logger.info("Updated %s to %s", attribute_type, value)
+        else:
+            raise ValueError(f"Unknown attribute type: {attribute_type}")
+
+    def attach_observers(self, controller, messages):
+        for message in messages:
+            self.observer.attach(controller, message)
+            logger.debug("Attached controller to model with message: %s", message)

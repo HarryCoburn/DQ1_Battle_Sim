@@ -6,14 +6,17 @@ import logging
 from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
-from fightsim.controllers.controller import Controller
-from typing import Optional, Dict, Union, Type
+from typing import Optional, Dict, Union, Type, TYPE_CHECKING
 
+
+if TYPE_CHECKING:
+    from fightsim.controllers.controller import Controller
 
 class View(tk.Tk):
     """
     View class for the application
     """
+    controller: Controller | None = None
     name_text: tk.StringVar
     level_change: tk.StringVar
     chosen_weapon: tk.StringVar
@@ -26,7 +29,6 @@ class View(tk.Tk):
     setup_frame: Optional[SetupFrame]
     battle_frame: Optional[BattleFrame]
     main_frame: Optional[MainFrame]
-    controller: Optional['Controller'] = None
     changeable_frames: Dict[Type[Union[SetupFrame, BattleFrame]], Optional[tk.Frame]]
 
     def __init__(self, *args, **kwargs):
@@ -118,3 +120,17 @@ class View(tk.Tk):
     def clear_output(self):
         """ Clears the output widget in main_frame """
         self.main_frame.clear_output()
+
+    def update_magic_menu(self):
+        self.battle_frame.update_player_magic_menu()
+
+    def get_chosen_magic_from_menu(self):
+        return self.battle_frame.magic_option_var.get()
+
+    def show_battle_screen(self) -> None:
+        self.main_frame.txt["state"] = "normal"
+        self.show_frame(self.battle_frame)
+
+    def show_setup_screen(self) -> None:
+        self.main_frame.txt["state"] = "disabled"
+        self.show_frame(self.setup_frame)
