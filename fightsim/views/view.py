@@ -132,5 +132,5 @@ class View(tk.Tk):
         self.show_frame(self._battle_frame)
 
     def show_setup_screen(self) -> None:
-        self.__main_frame.txt["state"] = "disabled"
+        self._main_frame.txt["state"] = "disabled"
         self.show_frame(self._setup_frame)

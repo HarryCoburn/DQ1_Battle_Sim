@@ -72,8 +72,8 @@ class SetupFrame(tk.Frame):
                               sticky="ew",
                               padx=5,
                               pady=5)
-        self.enemy_menu = tk.OptionMenu(self, self.enemy_var, "Select Enemy", *enemy_names,
-                                        command=lambda value: self.controller.update_enemy_info(value))
+        self.enemy_menu = tk.OptionMenu(self, self.enemy_var, *enemy_names,
+                                        command=self.on_enemy_selected)
         self.enemy_menu.grid(row=5, column=0,
                              columnspan=2, sticky="ew",
                              padx=5, pady=5)
@@ -81,7 +81,7 @@ class SetupFrame(tk.Frame):
         self.buy_herb_button = tk.Button(self, text="Buy Herb",
                                          command=lambda: self.controller.update_player_attribute(AttributeType.HERB))
         self.buy_herb_button.grid(row=6, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_battle)
+        self.start_fight_button = tk.Button(self, text="FIGHT!", command=self.controller.start_battle, state="disabled")
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
 
     def set_traces(self):
@@ -90,6 +90,11 @@ class SetupFrame(tk.Frame):
                                         value=self.level_var: self.controller.update_player_attribute(AttributeType.LEVEL, value.get()))
         self.name_var.trace("w", lambda name, index, mode, value=self.name_var: self.controller.update_player_attribute(
             AttributeType.NAME, value.get()))
+
+    def on_enemy_selected(self, name:str) -> None:
+        """Pass the chosen enemy to the controller and allow the fight to start."""
+        self.controller.update_enemy_info(name)
+        self.start_fight_button.config(state="normal")
 
     @staticmethod
     def level_validate(p):
