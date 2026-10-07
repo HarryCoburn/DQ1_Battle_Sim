@@ -68,8 +68,10 @@ class Enemy:
 
 
 
-    def take_damage(self, damage):
-        self.current_hp -= damage
+    def take_damage(self, amount: int) -> int:
+        dealt = min(amount, self.current_hp)
+        self.current_hp -= dealt
+        return dealt
 
     def heal(self, amount: int) -> int:
         healed = min(amount, self.max_hp - self.current_hp)

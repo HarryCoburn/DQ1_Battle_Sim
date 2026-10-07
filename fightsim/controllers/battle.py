@@ -331,8 +331,8 @@ class Battle:
 
     def enemy_attack(self) -> None:
         damage = self.rng.randint(*self.enemy.attack_range(self.player.defense()))
-        dealt = self.player.take_damage(damage)
-        self.log(f"The {self.enemy.name} attacks! You are hit for {dealt} damage.\n")
+        self.player.take_damage(damage)
+        self.log(f"The {self.enemy.name} attacks! You are hit for {damage} damage.\n")
 
     def enemy_deals_damage(self, action: EnemyActions) -> None:
         """Hurt, Hurtmore and the breath attacks."""
@@ -342,8 +342,8 @@ class Battle:
 
         protected = self.player.reduce_fire_damage if attack.is_breath else self.player.reduce_hurt_damage
         damage = self.rng.randint(*(attack.reduced if protected else attack.normal))
-        dealt = self.player.take_damage(damage)
-        self.log(f"The {self.enemy.name} {attack.verb}! You are hurt for {dealt} damage!\n")
+        self.player.take_damage(damage)
+        self.log(f"The {self.enemy.name} {attack.verb}! You are hurt for {damage} damage!\n")
 
     def enemy_casts_heal(self, action: EnemyActions) -> None:
         verb = f"casts {action.name.title()}"
