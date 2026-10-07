@@ -147,9 +147,16 @@ class Battle:
         crit = self.did_player_critical_hit()
         dodge = self.enemy_did_dodge()
         damage = self.roll_player_damage(crit)
-        self.player.attack_msg(crit, dodge, damage, self.enemy.name)
-        if crit or not dodge:
+        if crit:
+            self.log("\nYou attack with an excellent attack!!\n")
+        else:
+            self.log("\nYou attack!\n")
+
+        if dodge and not crit:
+            self.log(f"But the {self.enemy.name} dodged your attack!\n")
+        else:
             self.enemy.take_damage(damage)
+            self.log(f"You hit the {self.enemy.name} for {damage} points of damage!\n")
         return True
 
     # Player uses an herb

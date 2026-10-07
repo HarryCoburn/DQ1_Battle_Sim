@@ -169,20 +169,6 @@ class Player:
     def consume_mp(self, cost):
         self.current_mp -= cost
 
-    def attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
-        """
-        Display attack messages for the player.
-        """
-        if did_crit:
-            self.model.text(f"\nYou attack with an excellent attack!!\n")
-        else:
-            self.model.text(f"\nYou attack!\n")
-
-        if did_dodge and not did_crit:
-            self.model.text(f"But the {enemy_name} dodged your attack!\n")
-        else:
-            self.model.text(f"You hit {enemy_name} for {damage_dealt} points of damage!\n")
-
     def restore(self):
         self.current_hp = self.max_hp
         self.current_mp = self.max_mp
