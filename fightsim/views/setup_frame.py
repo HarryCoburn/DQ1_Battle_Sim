@@ -46,6 +46,7 @@ class SetupFrame(tk.Frame):
                                         validate='key',
                                         validatecommand=(self.register(self.level_validate), '%P'))
         self.level_spinbox.grid(row=1, column=1, sticky="w", pady=5)
+        self.level_spinbox.bind("<FocusOut>", lambda event: self.refill_level())
 
         self.weapon_menu = tk.OptionMenu(self, self.weapon_var, *weapon_names,
                                          command=lambda value: self.controller.update_player_attribute(AttributeType.WEAPON, value))
@@ -85,11 +86,22 @@ class SetupFrame(tk.Frame):
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
 
     def set_traces(self):
-        self.level_var.trace("w",
-                             lambda name, index, mode,
-                                        value=self.level_var: self.controller.update_player_attribute(AttributeType.LEVEL, value.get()))
+        self.level_var.trace("w", lambda name, index, mode: self.on_level_changed())
         self.name_var.trace("w", lambda name, index, mode, value=self.name_var: self.controller.update_player_attribute(
             AttributeType.NAME, value.get()))
+
+    def on_level_changed(self) -> None:
+        """Pass the level to the controller, skipping edits that leave the box empty."""
+        try:
+            level = self.level_var.get()
+        except tk.TclError:
+            return
+        self.controller.update_player_attribute(AttributeType.LEVEL, level)
+
+    def refill_level(self) -> None:
+        """Put the player's current level back in the box if it was left empty."""
+        if self.level_spinbox.get() == "":
+            self.level_var.set(self.controller.model.player.level)
 
     def on_enemy_selected(self, name:str) -> None:
         """Pass the chosen enemy to the controller and allow the fight to start."""
