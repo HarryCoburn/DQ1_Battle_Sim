@@ -7,7 +7,9 @@ from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
 from fightsim.views.actions import ViewActions
-from typing import Optional, Dict, Union, Type
+from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 class View(tk.Tk):
     """
@@ -19,13 +21,12 @@ class View(tk.Tk):
     chosen_armor: tk.StringVar
     chosen_shield: tk.StringVar
     chosen_enemy: tk.StringVar
-    curr_frame: Optional[tk.Frame]
+    _curr_frame: Optional[tk.Frame]
     ctrl_container: Optional[tk.Frame]
     main_container: Optional[tk.Frame]
     _setup_frame: Optional[SetupFrame]
     _battle_frame: Optional[BattleFrame]
     _main_frame: Optional[MainFrame]
-    changeable_frames: Dict[Type[Union[SetupFrame, BattleFrame]], Optional[tk.Frame]]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,7 +43,7 @@ class View(tk.Tk):
         _main_frame = Main output with player, enemy, and output labels
         """
 
-        self.curr_frame = None
+        self._curr_frame = None
 
         self.ctrl_container = tk.Frame(self, height=768, width=256, bg="blue")
         # self.ctrl_container.pack_propagate(False)
@@ -59,12 +60,10 @@ class View(tk.Tk):
         self._battle_frame = BattleFrame(self.ctrl_container)
 
         self._setup_frame = SetupFrame(self.ctrl_container, width=240, height=600, padx=20)
-        self._setup_frame.pack(expand=True)
 
-        self.changeable_frames = {
-            SetupFrame: self._setup_frame,
-            BattleFrame: self._battle_frame
-        }
+    def report_callback_exception(self, exc, val, tb):
+        """ Logs errors raised in button and other Tk callbacks instead of printing them to stderr """
+        logger.error("Unhandled exception in Tk callback", exc_info=(exc, val, tb))
 
     def configure_window(self):
         """ Configure main window properties """
@@ -77,24 +76,21 @@ class View(tk.Tk):
         """ Gives the frames the actions their controls call """
         self._battle_frame.bind_actions(actions)
         self._setup_frame.bind_actions(actions)
-        # Initialize and display frames
-        self.show_frame(self._setup_frame)
+        self.show_setup_screen()
 
-    def show_frame(self, new_frame: Union[tk.Frame, None]) -> None:
-        """
-        Displays the given frame, hiding the current one.
+    def show_setup_screen(self) -> None:
+        """ Shows the pre-battle setup controls """
+        self._swap_controls(self._setup_frame)
 
-        Parameters:
-        cont (tk.Frame): The Tkinter frame to be displayed.
+    def show_battle_screen(self) -> None:
+        """ Shows the battle controls """
+        self._swap_controls(self._battle_frame)
 
-        Does not return a value but changes the visible frame in the application window.
-        """
-        if new_frame not in self.changeable_frames.values():
-            logging.error(f"Attempted to show an unmanaged frame: {new_frame}")
-            return
-        if self.curr_frame is not None:
-            self.curr_frame.pack_forget()
-        self.curr_frame = new_frame
+    def _swap_controls(self, new_frame: tk.Frame) -> None:
+        """ Hides the current control frame and packs new_frame in its place """
+        if self._curr_frame is not None:
+            self._curr_frame.pack_forget()
+        self._curr_frame = new_frame
         new_frame.pack(fill='x', expand=True)
         logging.debug(f"Switched to frame: {new_frame}")
 
@@ -115,9 +111,3 @@ class View(tk.Tk):
     def clear_output(self):
         """ Clears the output widget in _main_frame """
         self._main_frame.clear_output()
-
-    def show_battle_screen(self) -> None:
-        self.show_frame(self._battle_frame)
-
-    def show_setup_screen(self) -> None:
-        self.show_frame(self._setup_frame)
