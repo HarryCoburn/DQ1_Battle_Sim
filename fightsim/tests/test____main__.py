@@ -25,6 +25,7 @@ class TestBuildApp(unittest.TestCase):
         self.assertIsInstance(rng, Random)
 
         MockView.return_value.bind_actions.assert_called_once_with(MockController.return_value)
+        MockView.return_value.show_setup_screen.assert_called_once_with()
         MockController.return_value.initial_update.assert_called_once_with()
         self.assertIs(controller, MockController.return_value)
 
