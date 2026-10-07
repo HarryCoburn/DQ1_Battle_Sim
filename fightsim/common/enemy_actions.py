@@ -1,3 +1,6 @@
+"""
+enemy_actions.py - The actions an enemy can take, and the entries of its attack pattern.
+"""
 from enum import Enum, auto
 from typing import NamedTuple
 

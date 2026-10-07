@@ -1,5 +1,6 @@
-# model.py - Default model for the simulation
-
+"""
+model.py - The current player and enemy.
+"""
 from fightsim.models.player import Player
 from fightsim.models.enemy import Enemy, create_enemy
 

@@ -1,3 +1,6 @@
+"""
+player_leveling.py - Player stats by level, adjusted by the name formula.
+"""
 # Base stats for each level: strength, agility, max HP, max MP. Row 0 is level 1.
 LEVEL_STATS: tuple[tuple[int, int, int, int], ...] = (
     (4, 4, 15, 0),

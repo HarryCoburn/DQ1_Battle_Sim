@@ -8,7 +8,8 @@ from typing import NamedTuple
 
 from fightsim.common.enemy_actions import EnemyActions
 from fightsim.common.spells import Spell
-from fightsim.models.player import CRIT_CHANCE
+from fightsim.models.enemy import Enemy
+from fightsim.models.player import CRIT_CHANCE, Player
 
 class EnemyDamage(NamedTuple):
     normal: tuple[int,int]
@@ -59,7 +60,8 @@ class Battle:
     Main battle controller
     """
 
-    def __init__(self, player, enemy, log: Callable[[str], None], rng: random.Random, on_end: Callable[[], None]) -> None:
+    def __init__(self, player: Player, enemy: Enemy, log: Callable[[str], None], rng: random.Random,
+                 on_end: Callable[[], None]) -> None:
 
         self.player = player
         self.enemy = enemy
@@ -132,7 +134,7 @@ class Battle:
         return True
 
     def did_player_critical_hit(self):
-        return self.rng.randint(1, CRIT_CHANCE) == 1 and self.enemy.void_critical_hit is False
+        return self.rng.randint(1, CRIT_CHANCE) == 1 and not self.enemy.void_critical_hit
 
     def roll_player_damage(self, critical_hit: bool) -> int:
         attack = self.player.attack_num()

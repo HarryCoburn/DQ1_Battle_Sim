@@ -1,3 +1,6 @@
+"""
+battle_frame.py - Battle controls: attack, herb, run and spell casting.
+"""
 import tkinter as tk
 from functools import partial
 from fightsim.common.spells import Spell

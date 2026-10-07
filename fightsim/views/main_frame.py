@@ -1,6 +1,9 @@
+"""
+main_frame.py - The player and enemy status labels and the battle log.
+"""
+import inspect
 import tkinter as tk
 import tkinter.scrolledtext as scrolledtext
-import inspect
 
 
 class MainFrame(tk.Frame):
@@ -9,7 +12,7 @@ class MainFrame(tk.Frame):
     """
 
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent)
 
         top_spacer = tk.Frame(self, height=12)
         top_spacer.pack(fill='both', expand=True)

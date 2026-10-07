@@ -1,3 +1,6 @@
+"""
+Tests for the entry point: wiring in build_app() and exit codes from main().
+"""
 import unittest
 from random import Random
 from unittest.mock import patch, MagicMock
@@ -21,7 +24,10 @@ class TestBuildApp(unittest.TestCase):
         self.assertIs(view, MockView.return_value)
         self.assertIsInstance(rng, Random)
 
+        MockView.return_value.show_player.assert_called_once_with(MockModel.return_value.player)
         MockView.return_value.bind_actions.assert_called_once_with(MockController.return_value)
+        calls = [name for name, *_ in MockView.return_value.method_calls]
+        self.assertLess(calls.index('show_player'), calls.index('bind_actions'))
         MockView.return_value.show_setup_screen.assert_called_once_with()
         MockController.return_value.initial_update.assert_called_once_with()
         self.assertIs(controller, MockController.return_value)

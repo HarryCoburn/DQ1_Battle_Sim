@@ -1,12 +1,20 @@
-# view.py - Holds the view for the MVC program
-
+"""
+view.py - The main window: the output area plus the setup and battle controls.
+"""
 from __future__ import annotations
-import tkinter as tk
+
 import logging
+import tkinter as tk
+from typing import TYPE_CHECKING
+
 from fightsim.views.setup_frame import SetupFrame
 from fightsim.views.battle_frame import BattleFrame
 from fightsim.views.main_frame import MainFrame
 from fightsim.views.actions import ViewActions
+
+if TYPE_CHECKING:
+    from fightsim.models.enemy import Enemy
+    from fightsim.models.player import Player
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +78,10 @@ class View(tk.Tk):
         self.geometry("820x620+50+50")
         self.resizable(width=True, height=True)
 
+    def show_player(self, player: Player) -> None:
+        """ Fills the setup controls from the player; call before bind_actions() """
+        self._setup_frame.show_player(player)
+
     def bind_actions(self, actions: ViewActions):
         """ Gives the frames the actions their controls call """
         self._battle_frame.bind_actions(actions)
@@ -91,20 +103,20 @@ class View(tk.Tk):
         new_frame.pack(fill='x', expand=True)
         logger.debug("Switched to frame: %s", new_frame)
 
-    def update_player_info(self, player_info):
+    def update_player_info(self, player: Player) -> None:
         """ Refreshes the player label in _main_frame, the magic menu in _battle_frame and the level in _setup_frame """
-        self._main_frame.update_player_label(player_info)
-        self._battle_frame.update_magic_menu(player_info.player_magic)
-        self._setup_frame.set_player_level(player_info.level)
+        self._main_frame.update_player_label(player)
+        self._battle_frame.update_magic_menu(player.player_magic)
+        self._setup_frame.set_player_level(player.level)
 
-    def update_enemy_info(self, enemy_info):
+    def update_enemy_info(self, enemy: Enemy | None) -> None:
         """ Refreshes the enemy label in _main_frame """
-        self._main_frame.update_enemy_label(enemy_info)
+        self._main_frame.update_enemy_label(enemy)
 
-    def append_output(self, message):
+    def append_output(self, message: str) -> None:
         """ Adds message to the output widget in _main_frame """
         self._main_frame.append_output(message)
 
-    def clear_output(self):
+    def clear_output(self) -> None:
         """ Clears the output widget in _main_frame """
         self._main_frame.clear_output()

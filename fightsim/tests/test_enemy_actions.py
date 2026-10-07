@@ -1,3 +1,6 @@
+"""
+Tests for the EnemyActions enum.
+"""
 import unittest
 from fightsim.common.enemy_actions import EnemyActions
 

@@ -1,3 +1,6 @@
+"""
+items.py - Weapons, armor and shields, and their stats.
+"""
 from dataclasses import dataclass
 from enum import Enum
 

@@ -1,3 +1,6 @@
+"""
+enemy_data.py - Stats and attack patterns for every enemy.
+"""
 from fightsim.common.enemy_actions import EnemyActions, PatternEntry
 
 # See enemy.py for default values and what is required for a valid enemy entry.

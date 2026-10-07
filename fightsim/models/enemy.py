@@ -1,3 +1,6 @@
+"""
+enemy.py - The Enemy class and building fresh enemies by name.
+"""
 import random
 from dataclasses import dataclass, field
 from fightsim.common.enemy_actions import PatternEntry
@@ -42,7 +45,7 @@ class Enemy(Combatant):
         return self.current_hp / self.max_hp < 0.25
 
     def attack_range(self, hero_defense):
-        """ Enemy makes a successful attack. Returns a damage amount. """
+        """ Returns the (min, max) damage range of this enemy's attack against the given defense. """
         if hero_defense > self.strength:
             return self.weak_damage_range(self.strength)
         else:
