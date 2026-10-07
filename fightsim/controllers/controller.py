@@ -129,12 +129,15 @@ class Controller:
             AttributeType.SHIELD: self.model.player.equip_shield,
             AttributeType.LEVEL: self.model.player.level_up,
             AttributeType.NAME: self.model.player.change_name,
-            AttributeType.HERB: self.model.buy_herb
+            AttributeType.HERB: self.model.player.add_herb
         }
 
         if attribute_type in update_methods:
             if attribute_type == AttributeType.HERB:
-                update_methods[attribute_type]()
+                if update_methods[attribute_type]():
+                    self.model.text("Buying an herb.")
+                else:
+                    self.model.text("You have the maximum number of herbs.")
             else:
                 update_methods[attribute_type](value)
             self.update_player_info()

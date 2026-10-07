@@ -65,15 +65,6 @@ class Model:
             self.player.current_hp = self.player.max_hp
         self.observed.notify(ObserverMessages.PLAYER_HP_CHANGE)  # Notify observers about the specific change
 
-    def buy_herb(self):
-        """Handles incrementing the herb count"""
-        if self.player.herb_count < 6:
-            self.text("Buying an herb.")
-            self.player.herb_count += 1
-            return True
-        self.text("You have the maximum number of herbs.")
-        return False
-
     def notify_armor_change(self):
         """ Notify there's been a change in armor """
         self.observed.notify(ObserverMessages.ARMOR_CHANGE)

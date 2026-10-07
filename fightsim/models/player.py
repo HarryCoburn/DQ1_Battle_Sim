@@ -10,6 +10,7 @@ from .player_leveling import _Levelling
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
+MAX_HERBS: int = 6
 
 @dataclass
 class Player:
@@ -162,6 +163,13 @@ class Player:
         healed = min(amount, self.max_hp - self.current_hp)
         self.current_hp += healed
         return healed
+
+    def add_herb(self) -> bool:
+        """Adds an herb unless the player already has the maximum. Returns True if one was added."""
+        if self.herb_count >= MAX_HERBS:
+            return False
+        self.herb_count += 1
+        return True
 
     def consume_herb(self):
         self.herb_count -= 1
