@@ -187,6 +187,8 @@ class Player:
         self.current_hp = self.max_hp
         self.current_mp = self.max_mp
         self.herb_count = 0
+        self.wake()
+        self.is_spellstopped = False
 
 
 def player_factory():
