@@ -50,7 +50,9 @@ class BattleFrame(tk.Frame):
 
         # Ensure there's a default list of magic spells
         player_magic = self.controller.model.player.player_magic or ["No Magic Available"]
-        self.magic_option_var.set(player_magic[0])
+        # Keep the current selection if it's still available
+        if self.magic_option_var.get() not in player_magic:
+            self.magic_option_var.set(player_magic[0])
 
         for magic in player_magic:
             menu.add_command(label=magic, command=partial(self.set_magic_option, magic))
