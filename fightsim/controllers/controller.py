@@ -35,7 +35,9 @@ class Controller:
 
     def setup_observers(self):
         """ Attach the controller as an observer to model events """
-        self.attach_observers(self, self.messages)
+        for message in self.messages:
+            self.observer.attach(self, message)
+            logger.debug("Attached controller to model with message: %s", message)
 
     def initialize_view(self):
         self.model.text("DQ1 Battle Sim")
@@ -61,9 +63,6 @@ class Controller:
     def get_chosen_magic(self):
         return self.view.get_chosen_magic_from_menu()
 
-    def switch_battle_frame(self):
-        self.view.show_battle_screen()
-
     def clear_output(self):
         """ Clear the output var"""
         self.observer.notify(ObserverMessages.OUTPUT_CLEAR)
@@ -73,11 +72,6 @@ class Controller:
             raise RuntimeError("Battle action called with no battle in progress")
         return self.battle
 
-    def prepare_battle(self):
-        self.update_player_info()
-        self.switch_battle_frame()
-        self.clear_output()
-
     def start_battle(self) -> None:
         self.battle = Battle(
             player=self.model.player,
@@ -86,7 +80,9 @@ class Controller:
             rng=self.rng,
             on_end=self.end_battle,
         )
-        self.prepare_battle()
+        self.update_player_info()
+        self.view.show_battle_screen()
+        self.clear_output()
         self.battle.start_fight()
 
     def end_battle(self):
@@ -148,8 +144,3 @@ class Controller:
             logger.info("Updated %s to %s", attribute_type, value)
         else:
             raise ValueError(f"Unknown attribute type: {attribute_type}")
-
-    def attach_observers(self, controller, messages):
-        for message in messages:
-            self.observer.attach(controller, message)
-            logger.debug("Attached controller to model with message: %s", message)
