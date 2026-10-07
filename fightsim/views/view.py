@@ -128,9 +128,7 @@ class View(tk.Tk):
         return self._battle_frame.magic_option_var.get()
 
     def show_battle_screen(self) -> None:
-        self._main_frame.txt["state"] = "normal"
         self.show_frame(self._battle_frame)
 
     def show_setup_screen(self) -> None:
-        self._main_frame.txt["state"] = "disabled"
         self.show_frame(self._setup_frame)

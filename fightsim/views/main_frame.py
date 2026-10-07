@@ -115,3 +115,4 @@ class MainFrame(tk.Frame):
         """Erases all output in the main output"""
         self.txt["state"] = 'normal'
         self.txt.delete(1.0, tk.END)
+        self.txt["state"] = 'disabled'
