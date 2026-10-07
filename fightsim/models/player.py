@@ -31,9 +31,9 @@ class Player:
     max_hp: int = 15
     current_mp: int = 0
     max_mp: int = 0
-    weapon: Item = field(default_factory=lambda: items[ItemType.WEAPON.value]["Unarmed"])
-    armor: Item = field(default_factory=lambda: items[ItemType.ARMOR.value]["Naked"])
-    shield: Item = field(default_factory=lambda: items[ItemType.SHIELD.value]["No Shield"])
+    weapon: Item = field(default_factory=lambda: items[ItemType.WEAPON]["Unarmed"])
+    armor: Item = field(default_factory=lambda: items[ItemType.ARMOR]["Naked"])
+    shield: Item = field(default_factory=lambda: items[ItemType.SHIELD]["No Shield"])
     herb_count: int = 0
     reduce_hurt_damage: bool = False
     reduce_fire_damage: bool = False
@@ -125,7 +125,7 @@ class Player:
     @staticmethod
     def _find_item(item_type: ItemType, name: str) -> Item:
         try:
-            return items[item_type.value][name]
+            return items[item_type][name]
         except KeyError:
             raise ValueError(f"Unknown {item_type.value} name: {name!r}") from None
 

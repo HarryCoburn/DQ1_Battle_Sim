@@ -12,28 +12,12 @@ class ItemType(Enum):
 class Item:
     name: str
     modifier: int
-    item_type: ItemType
     reduce_hurt_damage: bool = False
     reduce_fire_damage: bool = False
 
-    def describe(self) -> str:
-        return f"{self.name} (Modifier: {self.modifier})"
-
-
-def create_item(item_type: ItemType, item_name: str, item_data: dict) -> Item:
-    if item_name not in ITEM_DATA[item_type.value]:
-        raise ValueError(f"Unknown item: {item_name} for type: {item_type}")
-    return Item(
-        name=item_name,
-        modifier=item_data["modifier"],
-        item_type=item_type,
-        reduce_hurt_damage=item_data.get("reduce_hurt_damage", False),
-        reduce_fire_damage=item_data.get("reduce_fire_damage", False)
-    )
-
 
 ITEM_DATA = {
-    ItemType.WEAPON.value: {
+    ItemType.WEAPON: {
         "Unarmed": {
             "modifier": 0
         },
@@ -59,7 +43,7 @@ ITEM_DATA = {
             "modifier": 40
         }
     },
-    ItemType.ARMOR.value: {
+    ItemType.ARMOR: {
         "Naked": {
             "modifier": 0
         },
@@ -88,7 +72,7 @@ ITEM_DATA = {
             "reduce_fire_damage": True
         }
     },
-    ItemType.SHIELD.value: {
+    ItemType.SHIELD: {
         "No Shield": {
             "modifier": 0
         },
@@ -105,14 +89,12 @@ ITEM_DATA = {
 }
 
 
-items = {
-    item_type.value: {
-        name: create_item(item_type, name, data) for name, data in ITEM_DATA[item_type.value].items()
-    }
-    for item_type in ItemType
+items: dict[ItemType, dict[str, Item]] = {
+    item_type: {name: Item(name=name, **data) for name, data in by_name.items()}
+    for item_type, by_name in ITEM_DATA.items()
 }
 
-weapon_names = [item.name for item in items[ItemType.WEAPON.value].values()]
-armor_names = [item.name for item in items[ItemType.ARMOR.value].values()]
-shield_names = [item.name for item in items[ItemType.SHIELD.value].values()]
+weapon_names = list(items[ItemType.WEAPON])
+armor_names = list(items[ItemType.ARMOR])
+shield_names = list(items[ItemType.SHIELD])
 

@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
-from fightsim.models.enemy_data import enemy_dict
-from fightsim.common.enemy_actions import EnemyActions
+from fightsim.models.enemy_data import ENEMIES
 
 # Sleep counter set by the Sleep spell. Each enemy turn counts it down first, so the
 # enemy is certain to sleep through its next turn and then rolls to wake each turn after.
@@ -21,7 +20,7 @@ class Enemy:
     sleep_resist: int = 0
     stopspell_resist: int = 15
     hurt_resist: int = 0
-    pattern: list[dict] = field(default_factory=lambda: [{'id': EnemyActions.ATTACK, 'weight': 100}])
+    pattern: list[dict] = field(default_factory=list)  # empty: the enemy only attacks
     run: int = 0
     void_critical_hit: bool = False
     sleep_turns: int = 0
@@ -86,10 +85,10 @@ class Enemy:
 
 
 # Enemy stats keyed by display name, and the names in menu order
-_enemies_by_name = {v['name']: v for v in enemy_dict.values()}
+_enemies_by_name = {v['name']: v for v in ENEMIES}
 enemy_names = list(_enemies_by_name)
 
 
 def create_enemy(name: str) -> Enemy:
-    """ Builds a fresh Enemy from enemy_dict by display name. Raises KeyError if not found. """
+    """ Builds a fresh Enemy from ENEMIES by display name. Raises KeyError if not found. """
     return Enemy(**_enemies_by_name[name])
