@@ -33,17 +33,17 @@ class Model:
     def __repr__(self):
         props = vars(self)
         return '\n'.join(f"{key}: {value}" for key, value in props.items())
-    
+
     @staticmethod
     def find_key_by_value(d, value_to_find):
         """
         Find key by value in a dictionary. Used for item and enemy lookups.
         """
-        for key, value in d.items():            
+        for key, value in d.items():
             if value.name == value_to_find:
                 return key
         return None
-    
+
     def set_enemy(self, enemy_name):
         print(f"Entering model.set_enemy, receiving {enemy_name}")
         if enemy_name == "Select Enemy":
@@ -63,7 +63,7 @@ class Model:
             else:
                 print("Selected an enemy that doesn't exist nor the default message. This should not happen!")
                 self.enemy = None
-        
+
     def change_player_hp(self, delta_hp):  # TODO, what if this hits zero? Maybe set up another subscriber.
         """Change the player's HP by a delta amount."""
         self.player.current_hp += delta_hp
@@ -75,15 +75,15 @@ class Model:
         """Handles incrementing the herb count"""
         if self.player.herb_count < 6:
             self.text("Buying an herb.")
-            self.player.herb_count += 1            
+            self.player.herb_count += 1
             return True
         self.text("You have the maximum number of herbs.")
-        return False     
+        return False
 
     def notify_armor_change(self):
         """ Notify there's been a change in armor """
         self.observed.notify(ObserverMessages.ARMOR_CHANGE)
-    
+
     def notify_weapon_change(self):
         """ Notify there's been a change in weapon """
         self.observed.notify(ObserverMessages.WEAPON_CHANGE)
@@ -91,7 +91,7 @@ class Model:
     def notify_shield_change(self):
         """ Notify there's been a change in shield """
         self.observed.notify(ObserverMessages.SHIELD_CHANGE)
-   
+
     def text(self, output):
         """ Notify there is a message for the output window. """
         self.observed.notify(ObserverMessages.OUTPUT_CHANGE, output)
@@ -101,10 +101,14 @@ class Model:
         self.observed.notify(ObserverMessages.OUTPUT_CLEAR)
 
     def clear_and_set_output(self, output):
-        """ Clear out the output var, then add something new. Blanks the output window """        
+        """ Clear out the output var, then add something new. Blanks the output window """
         self.observed.notify(ObserverMessages.OUTPUT_CLEAR)
         self.observed.notify(ObserverMessages.OUTPUT_CHANGE, output)
-                
+
+    def reset_after_battle(self):
+        self.enemy.current_hp = self.enemy.max_hp
+        self.player.restore()
+
 
 if __name__ == '__main__':
     model = Model()

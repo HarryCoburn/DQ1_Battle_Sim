@@ -87,10 +87,7 @@ class Controller:
 
     def end_battle(self):
         """Cleans up after the battle is done and resets the simulator"""
-        self.model.enemy.current_hp = self.model.enemy.max_hp
-        self.model.player.current_hp = self.model.player.max_hp
-        self.model.player.current_mp = self.model.player.max_mp
-        self.model.player.herb_count = 0
+        self.model.reset_after_battle()
         self.update_enemy_info()
         self.update_player_info()
         self.view.show_setup_screen()

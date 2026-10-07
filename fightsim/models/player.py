@@ -86,7 +86,7 @@ class Player:
 
     def recalculate_stats(self):
 
-        self.strength, self.agility, self.max_hp, self.max_hp = self.leveler.adjust_stats(self.level, self.name)
+        self.strength, self.agility, self.max_hp, self.max_mp = self.leveler.adjust_stats(self.level, self.name)
         self.current_hp = self.max_hp
         self.current_mp = self.max_mp
         self.build_p_magic_list()
@@ -167,7 +167,7 @@ class Player:
         self.herb_count -= 1
 
     def consume_mp(self, cost):
-        self.current_hp -= cost
+        self.current_mp -= cost
 
     def attack_msg(self, did_crit, did_dodge, damage_dealt, enemy_name):
         """
@@ -182,6 +182,11 @@ class Player:
             self.model.text(f"But the {enemy_name} dodged your attack!\n")
         else:
             self.model.text(f"You hit {enemy_name} for {damage_dealt} points of damage!\n")
+
+    def restore(self):
+        self.current_hp = self.max_hp
+        self.current_mp = self.max_mp
+        self.herb_count = 0
 
 
 def player_factory():
