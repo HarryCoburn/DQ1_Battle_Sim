@@ -1,45 +1,47 @@
 from math import floor
 
+# Base stats for each level: strength, agility, max HP, max MP. Row 0 is level 1.
+LEVEL_STATS: tuple[tuple[int, int, int, int], ...] = (
+    (4, 4, 15, 0),
+    (5, 4, 22, 0),
+    (7, 6, 24, 5),
+    (7, 8, 31, 16),
+    (12, 10, 35, 20),
+    (16, 10, 38, 24),
+    (18, 17, 40, 26),
+    (22, 20, 46, 29),
+    (30, 22, 50, 36),
+    (35, 31, 54, 40),
+    (40, 35, 62, 50),
+    (48, 40, 63, 58),
+    (52, 48, 70, 64),
+    (60, 55, 78, 70),
+    (68, 64, 86, 72),
+    (72, 70, 92, 95),
+    (72, 78, 100, 100),
+    (85, 84, 115, 108),
+    (87, 86, 130, 115),
+    (92, 88, 138, 128),
+    (95, 90, 149, 135),
+    (97, 90, 158, 146),
+    (99, 94, 165, 153),
+    (103, 98, 170, 161),
+    (113, 100, 174, 161),
+    (117, 105, 180, 168),
+    (125, 107, 189, 175),
+    (130, 115, 195, 180),
+    (135, 120, 200, 190),
+    (140, 130, 210, 200),
+)
+
+MIN_LEVEL: int = 1
+MAX_LEVEL: int = len(LEVEL_STATS)
+
 
 class _Levelling:
     """
     Controls how the player levels up and down and recalculates stats.
     """
-    def __init__(self):
-        # level_stats holds the base leveling data for the player
-        self.level_stats = [
-            [4, 4, 15, 0],
-            [5, 4, 22, 0],
-            [7, 6, 24, 5],
-            [7, 8, 31, 16],
-            [12, 10, 35, 20],
-            [16, 10, 38, 24],
-            [18, 17, 40, 26],
-            [22, 20, 46, 29],
-            [30, 22, 50, 36],
-            [35, 31, 54, 40],
-            [40, 35, 62, 50],
-            [48, 40, 63, 58],
-            [52, 48, 70, 64],
-            [60, 55, 78, 70],
-            [68, 64, 86, 72],
-            [72, 70, 92, 95],
-            [72, 78, 100, 100],
-            [85, 84, 115, 108],
-            [87, 86, 130, 115],
-            [92, 88, 138, 128],
-            [95, 90, 149, 135],
-            [97, 90, 158, 146],
-            [99, 94, 165, 153],
-            [103, 98, 170, 161],
-            [113, 100, 174, 161],
-            [117, 105, 180, 168],
-            [125, 107, 189, 175],
-            [130, 115, 195, 180],
-            [135, 120, 200, 190],
-            [140, 130, 210, 200]
-        ]
-        self.name_sum = 0
 
     @staticmethod
     def calculate_slow_progression(name_sum, stat) -> int:
@@ -63,10 +65,10 @@ class _Levelling:
 
     def progress_mods(self, name):
         """
-        Calculate name_sum and progression modifier
+        Calculate name_sum from the first four letters, and the progression path (0-3) it selects
         """
-        letters = name[0:4]
-        return sum(map(self.calculate_letter_stat, letters)), floor(self.name_sum % 4)
+        name_sum = sum(map(self.calculate_letter_stat, name[0:4]))
+        return name_sum, name_sum % 4
 
     def adjust_stats(self, level, name):
         """
@@ -75,7 +77,7 @@ class _Levelling:
         The function reads the new level, recalculates the name_sum and progression path
         Then uses the right level_base to adjust the stats of the player.
         """
-        level_base = self.level_stats[level - 1]
+        level_base = LEVEL_STATS[level - 1]
         name_sum, progression = self.progress_mods(name)
         # Four types of progression
         if progression == 0:

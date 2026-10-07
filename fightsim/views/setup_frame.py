@@ -1,7 +1,7 @@
 import tkinter as tk
 from fightsim.models.items import weapon_names, armor_names, shield_names
 from fightsim.models.enemy import enemy_names
-from fightsim.models.player import MIN_LEVEL, MAX_LEVEL
+from fightsim.models.player_leveling import MIN_LEVEL, MAX_LEVEL
 from fightsim.views.actions import ViewActions
 from typing import Optional
 
@@ -84,8 +84,8 @@ class SetupFrame(tk.Frame):
         self.start_fight_button.grid(row=7, column=0, columnspan=2, sticky="ew", padx=5, pady=10)
 
     def set_traces(self):
-        self.level_var.trace("w", lambda name, index, mode: self.on_level_changed())
-        self.name_var.trace("w", lambda name, index, mode: self.actions.change_name(self.name_var.get()))
+        self.level_var.trace_add("write", lambda name, index, mode: self.on_level_changed())
+        self.name_var.trace_add("write", lambda name, index, mode: self.actions.change_name(self.name_var.get()))
 
     def on_level_changed(self) -> None:
         """Pass the level on, skipping edits that leave the box empty."""
@@ -110,16 +110,6 @@ class SetupFrame(tk.Frame):
         self.start_fight_button.config(state="normal")
 
     @staticmethod
-    def level_validate(p):
-        """ Validate the input to the level spinbox to see if it's within range """
-        if p == "":
-            return True
-        try:
-            val = int(p)
-            if MIN_LEVEL <= val <= MAX_LEVEL:
-                return True
-            else:
-                return False
-        except ValueError:
-            # non-numeric input
-            return False
+    def level_validate(p: str) -> bool:
+        """ Allows an empty box or a whole number within the level range """
+        return p == "" or (p.isdigit() and MIN_LEVEL <= int(p) <= MAX_LEVEL)

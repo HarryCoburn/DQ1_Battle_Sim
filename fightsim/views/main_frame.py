@@ -10,14 +10,12 @@ class MainFrame(tk.Frame):
 
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.configure(bg='purple')
-        self.parent = parent
 
-        top_spacer = tk.Frame(self, height=12, bg='purple')
+        top_spacer = tk.Frame(self, height=12)
         top_spacer.pack(fill='both', expand=True)
 
         # Container for labels to align them nicely centered vertically
-        label_container = tk.Frame(self, bg='purple')
+        label_container = tk.Frame(self)
         label_container.pack(fill='x')  # Horizontal packing within the frame, not expanded
 
         # Player Label
@@ -47,13 +45,12 @@ class MainFrame(tk.Frame):
         self.enemy_label.pack(side='left', fill='none', padx=10)  # Pack next to the player label
 
         # Bottom spacer
-        bottom_spacer = tk.Frame(self, height=1, bg='purple')
+        bottom_spacer = tk.Frame(self, height=1)
         bottom_spacer.pack(fill='both', expand=True)
 
         # Output window
         self.txt = scrolledtext.ScrolledText(
             master=self,
-            undo=True,
             font=('consolas', '12'),
             width=40,
             wrap=tk.WORD
@@ -65,7 +62,6 @@ class MainFrame(tk.Frame):
         """
         Updates the player label
         """
-        print("Trying to update the label.")
         self.player_label["text"] = inspect.cleandoc(f"""\
               Name: {player_info.name}
               Level: {player_info.level}
@@ -86,12 +82,12 @@ class MainFrame(tk.Frame):
           """)
 
     def update_enemy_label(self, enemy_info):
+        """
+        Updates the enemy label
+        """
         if enemy_info is None:
             self.enemy_label["text"] = "Enemy not selected."
         else:
-            """
-            Updates enemy label
-            """
             self.enemy_label["text"] = inspect.cleandoc(f"""\
                 Name: {enemy_info.name}
                 HP: {enemy_info.current_hp}
@@ -103,7 +99,7 @@ class MainFrame(tk.Frame):
     def append_output(self, message):
         """Appends output to the main output window"""
         self.txt.configure(state='normal')  # Enable text widget for editing
-        self.txt.insert(tk.END, message + "\n")  # Append new message
+        self.txt.insert(tk.END, message + "\n")  # The view owns line breaks; messages carry none
         self.txt.configure(state='disabled')  # Disable text widget to prevent editing
         self.txt.see(tk.END)  # Auto-scroll to the end
 

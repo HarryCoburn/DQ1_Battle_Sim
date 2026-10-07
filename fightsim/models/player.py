@@ -5,13 +5,11 @@ Player class
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
 from fightsim.common.spells import Spell
-from fightsim.models.player_leveling import _Levelling
+from fightsim.models.player_leveling import _Levelling, MIN_LEVEL, MAX_LEVEL
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
 MAX_HERBS: int = 6
-MIN_LEVEL: int = 1
-MAX_LEVEL: int = 30
 
 # Level at which the player learns each spell
 SPELL_LEVELS: dict[Spell, int] = {

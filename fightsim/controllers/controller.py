@@ -73,7 +73,7 @@ class Controller:
 
     def cast_spell(self, label: str) -> None:
         if label not in Spell:
-            self.view.append_output("You must select a spell first.\n")
+            self.view.append_output("You must select a spell first.")
             return
         self._active_battle().take_turn(lambda: self._active_battle().player_cast_magic(Spell(label)))
         self.refresh()
