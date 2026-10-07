@@ -26,7 +26,7 @@ def build_app() -> Controller:
     )
     view = View()
     rng = Random()
-    controller = Controller(model, view, event_manager, rng)
+    controller = Controller(model, view, rng)
     view.set_controller(controller)
     controller.initial_update()
     return controller

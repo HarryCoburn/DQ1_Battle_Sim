@@ -4,13 +4,23 @@ Player class
 
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
-from ..common.messages import ObserverMessages
-from typing import List, Optional
+from ..common.spells import Spell
+from typing import Optional
 from .player_leveling import _Levelling
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
 MAX_HERBS: int = 6
+
+# Level at which the player learns each spell
+SPELL_LEVELS: dict[Spell, int] = {
+    Spell.HEAL: 3,
+    Spell.HURT: 4,
+    Spell.SLEEP: 7,
+    Spell.STOPSPELL: 10,
+    Spell.HEALMORE: 17,
+    Spell.HURTMORE: 19,
+}
 
 @dataclass
 class Player:
@@ -25,7 +35,6 @@ class Player:
     weapon: Item = field(default_factory=lambda: items[ItemType.WEAPON.value]["Unarmed"])
     armor: Item = field(default_factory=lambda: items[ItemType.ARMOR.value]["Naked"])
     shield: Item = field(default_factory=lambda: items[ItemType.SHIELD.value]["No Shield"])
-    player_magic: List[str] = field(default_factory=list)
     herb_count: int = 0
     reduce_hurt_damage: bool = False
     reduce_fire_damage: bool = False
@@ -49,7 +58,6 @@ class Player:
         self.sleep_turns = SLEEP_COUNT
 
     def __post_init__(self):
-        self.player_magic = []
         if not 1 <= self.level <= 30:
             raise ValueError("Level must be within 1 to 30")
 
@@ -90,27 +98,11 @@ class Player:
         self.strength, self.agility, self.max_hp, self.max_mp = self.leveler.adjust_stats(self.level, self.name)
         self.current_hp = self.max_hp
         self.current_mp = self.max_mp
-        self.build_p_magic_list()
 
-    def build_p_magic_list(self):
-        """
-        Create a list of available spells based on level
-        """
-        self.player_magic = []
-        if self.level >= 3:
-            self.player_magic.append("Select Spell")
-            self.player_magic.append("Heal")
-        if self.level >= 4:
-            self.player_magic.append("Hurt")
-        if self.level >= 7:
-            self.player_magic.append("Sleep")
-        if self.level >= 10:
-            self.player_magic.append("Stopspell")
-        if self.level >= 17:
-            self.player_magic.append("Healmore")
-        if self.level >= 19:
-            self.player_magic.append("Hurtmore")
-        self.model.observed.notify(ObserverMessages.UPDATE_PLAYER_MAGIC)
+    @property
+    def player_magic(self) -> list[Spell]:
+        """Spells the player knows at the current level."""
+        return [spell for spell, level in SPELL_LEVELS.items() if self.level >= level]
 
     def equip_weapon(self, weapon_name: str):
         """

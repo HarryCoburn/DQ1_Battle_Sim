@@ -11,7 +11,6 @@ class ObserverMessages(Enum):
     SHIELD_CHANGE = auto()
     ARMOR_CHANGE = auto()
     RESET_GAME = auto()
-    UPDATE_PLAYER_MAGIC = auto()
 
     def description(self):
         descriptions = {
@@ -21,7 +20,6 @@ class ObserverMessages(Enum):
             ObserverMessages.SHIELD_CHANGE: "The player's shield has changed.",
             ObserverMessages.ARMOR_CHANGE: "The player's armor has changed.",
             ObserverMessages.RESET_GAME: "Resets the game.",
-            ObserverMessages.UPDATE_PLAYER_MAGIC: "Updates the player magic menu"
         }
         return descriptions.get(self, "No description available.")
 

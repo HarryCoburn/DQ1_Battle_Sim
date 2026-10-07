@@ -107,7 +107,7 @@ class View(tk.Tk):
     def update_player_info(self, player_info):
         """ Refreshes the player label in _main_frame and the magic menu in _battle_frame """
         self._main_frame.update_player_label(player_info)
-        self._battle_frame.update_player_magic_menu()
+        self._battle_frame.update_player_magic_menu(player_info.player_magic)
 
     def update_enemy_info(self, enemy_info):
         """ Refreshes the enemy label in _main_frame """
@@ -121,8 +121,6 @@ class View(tk.Tk):
         """ Clears the output widget in _main_frame """
         self._main_frame.clear_output()
 
-    def update_magic_menu(self):
-        self._battle_frame.update_player_magic_menu()
 
     def get_chosen_magic_from_menu(self):
         return self._battle_frame.magic_option_var.get()

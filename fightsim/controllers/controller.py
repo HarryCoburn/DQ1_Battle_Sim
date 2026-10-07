@@ -2,7 +2,6 @@
 
 import logging
 
-from fightsim.common.messages import ObserverMessages
 from fightsim.controllers.battle import Battle
 from fightsim.common.attribute_type import AttributeType
 from fightsim.common.spells import Spell
@@ -15,27 +14,16 @@ logger = logging.getLogger(__name__)
 class Controller:
     """ Main controller class"""
 
-    def __init__(self, model: Model, view: View, observer, rng):
+    def __init__(self, model: Model, view: View, rng):
         self.model = model
         self.view = view
         self.rng = rng
-        self.observer = observer
         self.battle: Battle | None = None
-        self.messages = [
-            ObserverMessages.UPDATE_PLAYER_MAGIC
-        ]
 
-        self.setup_observers()
         self.initialize_view()
 
     def run(self) -> None:
         self.view.mainloop()
-
-    def setup_observers(self):
-        """ Attach the controller as an observer to model events """
-        for message in self.messages:
-            self.observer.attach(self, message)
-            logger.debug("Attached controller to model with message: %s", message)
 
     def initialize_view(self):
         self.view.append_output("DQ1 Battle Sim")
@@ -43,10 +31,6 @@ class Controller:
 
     def initial_update(self):
         self.update_player_info()
-
-    def update(self, property_name, data=None):
-        if property_name == ObserverMessages.UPDATE_PLAYER_MAGIC:
-            self.view.update_magic_menu()
 
     def update_enemy_info(self, value = None):
         if value is not None:
