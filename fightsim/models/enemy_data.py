@@ -1,4 +1,4 @@
-from fightsim.common.enemy_actions import EnemyActions
+from fightsim.common.enemy_actions import EnemyActions, PatternEntry
 
 # See enemy.py for default values and what is required for a valid enemy entry.
 # A pattern lists the enemy's special actions in the order they are tried; each has a
@@ -42,7 +42,7 @@ ENEMIES = [
         'stopspell_resist': 0,
         'dodge': 1,
         'pattern': [
-            {'id': EnemyActions.HURT, 'weight': 50}
+            PatternEntry(EnemyActions.HURT, 50)
         ]
     },
     {
@@ -53,7 +53,7 @@ ENEMIES = [
         'stopspell_resist': 0,
         'dodge': 1,
         'pattern': [
-            {'id': EnemyActions.HURT, 'weight': 50}
+            PatternEntry(EnemyActions.HURT, 50)
         ]
     },
     {
@@ -78,7 +78,7 @@ ENEMIES = [
         'stopspell_resist': 0,
         'dodge': 6,
         'pattern': [
-            {'id': EnemyActions.HURT, 'weight': 75}
+            PatternEntry(EnemyActions.HURT, 75)
         ]
     },
     {
@@ -98,8 +98,8 @@ ENEMIES = [
         'stopspell_resist': 0,
         'dodge': 6,
         'pattern': [
-            {'id': EnemyActions.HEAL, 'weight': 25},
-            {'id': EnemyActions.HURT, 'weight': 50}
+            PatternEntry(EnemyActions.HEAL, 25),
+            PatternEntry(EnemyActions.HURT, 50)
         ]
     },
     {
@@ -118,8 +118,8 @@ ENEMIES = [
         'stopspell_resist': 1,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.SLEEP, 'weight': 25},
-            {'id': EnemyActions.HURT, 'weight': 50}
+            PatternEntry(EnemyActions.SLEEP, 25),
+            PatternEntry(EnemyActions.HURT, 50)
         ]
     },
     {
@@ -146,7 +146,7 @@ ENEMIES = [
         'stopspell_resist': 0,
         'dodge': 4,
         'pattern': [
-            {'id': EnemyActions.HEAL, 'weight': 25}
+            PatternEntry(EnemyActions.HEAL, 25)
         ]
     },
     {
@@ -158,7 +158,7 @@ ENEMIES = [
         'hurt_resist': 15,
         'dodge': 1,
         'pattern': [
-            {'id': EnemyActions.HURT, 'weight': 75}
+            PatternEntry(EnemyActions.HURT, 75)
         ]
     },
     {
@@ -170,8 +170,8 @@ ENEMIES = [
         'stopspell_resist': 1,
         'dodge': 4,
         'pattern': [
-            {'id': EnemyActions.SLEEP, 'weight': 25},
-            {'id': EnemyActions.HURT, 'weight': 75}
+            PatternEntry(EnemyActions.SLEEP, 25),
+            PatternEntry(EnemyActions.HURT, 75)
         ]
     },
     {
@@ -183,7 +183,7 @@ ENEMIES = [
         'stopspell_resist': 7,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.STOPSPELL, 'weight': 50}
+            PatternEntry(EnemyActions.STOPSPELL, 50)
         ]
     },
     {
@@ -195,8 +195,8 @@ ENEMIES = [
         'stopspell_resist': 0,
         'dodge': 4,
         'pattern': [
-            {'id': EnemyActions.HEAL, 'weight': 75},
-            {'id': EnemyActions.HURT, 'weight': 25}
+            PatternEntry(EnemyActions.HEAL, 75),
+            PatternEntry(EnemyActions.HURT, 25)
         ]
     },
     {
@@ -208,7 +208,7 @@ ENEMIES = [
         'stopspell_resist': 2,
         'dodge': 1,
         'pattern': [
-            {'id': EnemyActions.STOPSPELL, 'weight': 50}
+            PatternEntry(EnemyActions.STOPSPELL, 50)
         ],
         'run': 1
     },
@@ -240,7 +240,7 @@ ENEMIES = [
         'hurt_resist': 3,
         'dodge': 4,
         'pattern': [
-            {'id': EnemyActions.HEAL, 'weight': 75}
+            PatternEntry(EnemyActions.HEAL, 75)
         ],
         'run': 1
     },
@@ -272,7 +272,7 @@ ENEMIES = [
         'stopspell_resist': 7,
         'dodge': 1,
         'pattern': [
-            {'id': EnemyActions.STOPSPELL, 'weight': 50}
+            PatternEntry(EnemyActions.STOPSPELL, 50)
         ],
         'run': 1
     },
@@ -283,7 +283,7 @@ ENEMIES = [
         'base_hp': (44, 58),
         'dodge': 0,
         'pattern': [
-            {'id': EnemyActions.SLEEP, 'weight': 50}
+            PatternEntry(EnemyActions.SLEEP, 50)
         ],
         'run': 1
     },
@@ -315,7 +315,7 @@ ENEMIES = [
         'hurt_resist': 2,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.FIRE, 'weight': 25}
+            PatternEntry(EnemyActions.FIRE, 25)
         ],
         'run': 2
     },
@@ -329,8 +329,8 @@ ENEMIES = [
         'hurt_resist': 1,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.HEALMORE, 'weight': 75},
-            {'id': EnemyActions.FIRE, 'weight': 25}
+            PatternEntry(EnemyActions.HEALMORE, 75),
+            PatternEntry(EnemyActions.FIRE, 25)
         ],
         'run': 2
     },
@@ -344,7 +344,7 @@ ENEMIES = [
         'hurt_resist': 15,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.HURTMORE, 'weight': 50}
+            PatternEntry(EnemyActions.HURTMORE, 50)
         ],
         'run': 2
     },
@@ -358,7 +358,7 @@ ENEMIES = [
         'hurt_resist': 1,
         'dodge': 1,
         'pattern': [
-            {'id': EnemyActions.SLEEP, 'weight': 25}
+            PatternEntry(EnemyActions.SLEEP, 25)
         ],
         'run': 2
     },
@@ -371,7 +371,7 @@ ENEMIES = [
         'hurt_resist': 7,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.FIRE, 'weight': 25}
+            PatternEntry(EnemyActions.FIRE, 25)
         ],
         'run': 2
     },
@@ -395,8 +395,8 @@ ENEMIES = [
         'hurt_resist': 1,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.HEALMORE, 'weight': 75},
-            {'id': EnemyActions.HURTMORE, 'weight': 25}
+            PatternEntry(EnemyActions.HEALMORE, 75),
+            PatternEntry(EnemyActions.HURTMORE, 25)
         ],
         'run': 3
     },
@@ -410,8 +410,8 @@ ENEMIES = [
         'hurt_resist': 15,
         'dodge': 2,
         'pattern': [
-            {'id': EnemyActions.SLEEP, 'weight': 25},
-            {'id': EnemyActions.FIRE, 'weight': 25}
+            PatternEntry(EnemyActions.SLEEP, 25),
+            PatternEntry(EnemyActions.FIRE, 25)
         ],
         'run': 3
     },
@@ -424,8 +424,8 @@ ENEMIES = [
         'hurt_resist': 15,
         'dodge': 0,
         'pattern': [
-            {'id': EnemyActions.STOPSPELL, 'weight': 25},
-            {'id': EnemyActions.HURTMORE, 'weight': 75}
+            PatternEntry(EnemyActions.STOPSPELL, 25),
+            PatternEntry(EnemyActions.HURTMORE, 75)
         ],
         'run': 3,
         'void_critical_hit': True
@@ -439,7 +439,7 @@ ENEMIES = [
         'hurt_resist': 15,
         'dodge': 0,
         'pattern': [
-            {'id': EnemyActions.STRONGFIRE, 'weight': 50}
+            PatternEntry(EnemyActions.STRONGFIRE, 50)
         ],
         'run': 3,
         "void_critical_hit": True

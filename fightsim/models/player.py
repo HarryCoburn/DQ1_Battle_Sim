@@ -5,7 +5,8 @@ Player class
 from dataclasses import dataclass, field
 from fightsim.models.items import Item, ItemType, items
 from fightsim.common.spells import Spell
-from fightsim.models.player_leveling import _Levelling, MIN_LEVEL, MAX_LEVEL
+from fightsim.models.combatant import Combatant
+from fightsim.models.player_leveling import adjust_stats, MIN_LEVEL, MAX_LEVEL
 
 CRIT_CHANCE: int = 32
 SLEEP_COUNT: int = 6
@@ -22,7 +23,7 @@ SPELL_LEVELS: dict[Spell, int] = {
 }
 
 @dataclass
-class Player:
+class Player(Combatant):
     name: str = "Rollo"
     level: int = 1
     strength: int = 4
@@ -36,19 +37,8 @@ class Player:
     shield: Item = field(default_factory=lambda: items[ItemType.SHIELD]["No Shield"])
     herb_count: int = 0
     is_spellstopped: bool = False
-    leveler: _Levelling = field(default_factory=_Levelling)
     sleep_turns: int = 0
 
-
-    @property
-    def is_asleep(self) -> bool:
-        return self.sleep_turns > 0
-
-    def advance_sleep(self):
-        self.sleep_turns -= 1
-
-    def wake(self):
-        self.sleep_turns = 0
 
     def fall_asleep(self):
         self.sleep_turns = SLEEP_COUNT
@@ -80,7 +70,7 @@ class Player:
         self.name = name
         self.recalculate_stats()
 
-    def level_up(self, value):
+    def set_level(self, value):
         """
         Sets the new level and then recalculates the stats of the player based on the new level value.
         Raises ValueError if the level is out of range.
@@ -90,8 +80,7 @@ class Player:
         self.recalculate_stats()
 
     def recalculate_stats(self):
-
-        self.strength, self.agility, self.max_hp, self.max_mp = self.leveler.adjust_stats(self.level, self.name)
+        self.strength, self.agility, self.max_hp, self.max_mp = adjust_stats(self.level, self.name)
         self.current_hp = self.max_hp
         self.current_mp = self.max_mp
 
@@ -150,22 +139,6 @@ class Player:
         min must be at least 0, max can be no lower than 1
         """
         return max((attack // 2), 0), max(attack, 1)
-
-    def is_defeated(self):
-        """
-        Returns if the player is defeated
-        """
-        return self.current_hp <= 0
-
-    def take_damage(self, amount: int) -> int:
-        dealt = min(amount, self.current_hp)
-        self.current_hp -= dealt
-        return dealt
-
-    def heal(self, amount: int) -> int:
-        healed = min(amount, self.max_hp - self.current_hp)
-        self.current_hp += healed
-        return healed
 
     def add_herb(self) -> bool:
         """Adds an herb unless the player already has the maximum. Returns True if one was added."""

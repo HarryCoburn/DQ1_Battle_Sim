@@ -1,5 +1,3 @@
-from math import floor
-
 # Base stats for each level: strength, agility, max HP, max MP. Row 0 is level 1.
 LEVEL_STATS: tuple[tuple[int, int, int, int], ...] = (
     (4, 4, 15, 0),
@@ -38,70 +36,45 @@ MIN_LEVEL: int = 1
 MAX_LEVEL: int = len(LEVEL_STATS)
 
 
-class _Levelling:
+# Letter values for the name formula: a letter is worth the index of the group it is in.
+# Characters in no group are worth 0.
+LETTER_GROUPS: tuple[str, ...] = (
+    "gwM", "hxN", "iyO", "jzP", "kAQ", "lBR", "mCS", "nDT", "oEU", "pFV", "aqGW",
+    "brHX", "csIY", "dtJZ", "euK", "fvL",
+)
+
+
+def letter_value(letter: str) -> int:
+    for index, group in enumerate(LETTER_GROUPS):
+        if letter in group:
+            return index
+    return 0
+
+
+def progress_mods(name: str) -> tuple[int, int]:
+    """Returns name_sum from the first four letters, and the progression path (0-3) it selects."""
+    name_sum = sum(map(letter_value, name[:4]))
+    return name_sum, name_sum % 4
+
+
+def slow_progression(name_sum: int, stat: int) -> int:
+    """A stat on the slower track: 90% of its base, plus a bonus of 0-3 from the name."""
+    return stat * 9 // 10 + (name_sum // 4) % 4
+
+
+def adjust_stats(level: int, name: str) -> tuple[int, int, int, int]:
     """
-    Controls how the player levels up and down and recalculates stats.
+    Returns strength, agility, max HP and max MP for a level and name.
+    The name's progression path picks which two stats grow on the slower track.
     """
-
-    @staticmethod
-    def calculate_slow_progression(name_sum, stat) -> int:
-        """
-        Formula for the slower progression of stats. Takes the name_sum and the stat base for a particular level
-        and calculates the true value using this formula.
-        """
-        return floor(stat * (9 / 10) + (floor(name_sum / 4) % 4))
-
-    @staticmethod
-    def calculate_letter_stat(ltr):
-        """
-        Calculates letter values of the name for stat calculations
-        """
-        ltr_clusters = ["gwM", "hxN", "iyO", "jzP", "kAQ", "lBR", "mCS", "nDT", "oEU", "pFV", "aqGW",
-                        "brHX", "csIY", "dtJZ", "euK", "fvL"]
-        for index, cluster in enumerate(ltr_clusters):
-            if ltr in cluster:
-                return index
-        return 0
-
-    def progress_mods(self, name):
-        """
-        Calculate name_sum from the first four letters, and the progression path (0-3) it selects
-        """
-        name_sum = sum(map(self.calculate_letter_stat, name[0:4]))
-        return name_sum, name_sum % 4
-
-    def adjust_stats(self, level, name):
-        """
-        Main level up function
-
-        The function reads the new level, recalculates the name_sum and progression path
-        Then uses the right level_base to adjust the stats of the player.
-        """
-        level_base = LEVEL_STATS[level - 1]
-        name_sum, progression = self.progress_mods(name)
-        # Four types of progression
-        if progression == 0:
-            strength = self.calculate_slow_progression(name_sum, level_base[0])
-            agility = self.calculate_slow_progression(name_sum, level_base[1])
-            max_hp = level_base[2]
-            max_mp = level_base[3]
-        elif progression == 1:
-            strength = level_base[0]
-            agility = self.calculate_slow_progression(name_sum, level_base[1])
-            max_hp = level_base[2]
-            max_mp = self.calculate_slow_progression(name_sum, level_base[3])
-        elif progression == 2:
-            strength = self.calculate_slow_progression(name_sum, level_base[0])
-            agility = level_base[1]
-            max_hp = self.calculate_slow_progression(name_sum, level_base[2])
-            max_mp = level_base[3]
-        else:
-            strength = level_base[0]
-            agility = level_base[1]
-            max_hp = self.calculate_slow_progression(name_sum, level_base[2])
-            max_mp = self.calculate_slow_progression(name_sum, level_base[3])
-        return strength, agility, max_hp, max_mp
-
-        # self.curr_hp = self.max_hp
-        # self.curr_mp = self.max_mp
-        # self.build_p_magic_list()
+    strength, agility, max_hp, max_mp = LEVEL_STATS[level - 1]
+    name_sum, progression = progress_mods(name)
+    if progression == 0:
+        strength, agility = slow_progression(name_sum, strength), slow_progression(name_sum, agility)
+    elif progression == 1:
+        agility, max_mp = slow_progression(name_sum, agility), slow_progression(name_sum, max_mp)
+    elif progression == 2:
+        strength, max_hp = slow_progression(name_sum, strength), slow_progression(name_sum, max_hp)
+    else:
+        max_hp, max_mp = slow_progression(name_sum, max_hp), slow_progression(name_sum, max_mp)
+    return strength, agility, max_hp, max_mp

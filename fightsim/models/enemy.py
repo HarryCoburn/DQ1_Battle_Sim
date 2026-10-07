@@ -1,4 +1,7 @@
+import random
 from dataclasses import dataclass, field
+from fightsim.common.enemy_actions import PatternEntry
+from fightsim.models.combatant import Combatant
 from fightsim.models.enemy_data import ENEMIES
 
 # Sleep counter set by the Sleep spell. Each enemy turn counts it down first, so the
@@ -6,9 +9,8 @@ from fightsim.models.enemy_data import ENEMIES
 FALL_ASLEEP_TURNS: int = 2
 
 
-# Enemy Class
 @dataclass
-class Enemy:
+class Enemy(Combatant):
     name: str
     strength: int
     agility: int
@@ -20,20 +22,10 @@ class Enemy:
     sleep_resist: int = 0
     stopspell_resist: int = 15
     hurt_resist: int = 0
-    pattern: list[dict] = field(default_factory=list)  # empty: the enemy only attacks
+    pattern: list[PatternEntry] = field(default_factory=list)  # empty: the enemy only attacks
     run: int = 0
     void_critical_hit: bool = False
     sleep_turns: int = 0
-
-    @property
-    def is_asleep(self) -> bool:
-        return self.sleep_turns > 0
-
-    def advance_sleep(self):
-        self.sleep_turns -= 1
-
-    def wake(self):
-        self.sleep_turns = 0
 
     def stay_asleep(self):
         self.sleep_turns = 1
@@ -41,9 +33,10 @@ class Enemy:
     def fall_asleep(self):
         self.sleep_turns = FALL_ASLEEP_TURNS
 
-    def is_defeated(self):
-        """ Returns True if the enemy is defeated """
-        return self.current_hp <= 0
+    def roll_hp(self, rng: random.Random) -> None:
+        """Rolls this fight's HP from base_hp and starts at full health."""
+        self.max_hp = rng.randint(*self.base_hp)
+        self.current_hp = self.max_hp
 
     def trigger_healing(self):
         return self.current_hp / self.max_hp < 0.25
@@ -54,18 +47,6 @@ class Enemy:
             return self.weak_damage_range(self.strength)
         else:
             return self.normal_damage_range(self.strength, hero_defense)
-
-
-
-    def take_damage(self, amount: int) -> int:
-        dealt = min(amount, self.current_hp)
-        self.current_hp -= dealt
-        return dealt
-
-    def heal(self, amount: int) -> int:
-        healed = min(amount, self.max_hp - self.current_hp)
-        self.current_hp += healed
-        return healed
 
     @staticmethod
     def weak_damage_range(x):

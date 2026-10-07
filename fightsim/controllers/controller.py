@@ -95,7 +95,7 @@ class Controller:
         self.update_player_info()
 
     def set_level(self, level: int) -> None:
-        self.model.player.level_up(level)
+        self.model.player.set_level(level)
         self.update_player_info()
 
     def equip_weapon(self, name: str) -> None:

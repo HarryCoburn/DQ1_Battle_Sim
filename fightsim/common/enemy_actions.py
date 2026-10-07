@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import NamedTuple
 
 
 class EnemyActions(Enum):
@@ -14,3 +15,9 @@ class EnemyActions(Enum):
     HEALMORE = auto()
     HURTMORE = auto()
     STRONGFIRE = auto()
+
+
+class PatternEntry(NamedTuple):
+    """One special action in an enemy's pattern, tried with a weight% chance."""
+    action: EnemyActions
+    weight: int

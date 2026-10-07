@@ -72,8 +72,7 @@ class Battle:
 
     def start_fight(self):
         """Starts the battle loop"""
-        self.enemy.max_hp = self.rng.randint(*self.enemy.base_hp)
-        self.enemy.current_hp = self.enemy.max_hp
+        self.enemy.roll_hp(self.rng)
         self.log(f"You are fighting the {self.enemy.name}!")
 
         if self.does_enemy_surprise():
@@ -308,9 +307,9 @@ class Battle:
                 return True
 
     def enemy_choose_attack(self) -> EnemyActions:
-        for item in self.enemy.pattern:
-            if self.rng.randint(1, 100) <= item["weight"] and self.enemy_can_use(item["id"]):
-                return item["id"]
+        for entry in self.enemy.pattern:
+            if self.rng.randint(1, 100) <= entry.weight and self.enemy_can_use(entry.action):
+                return entry.action
         return EnemyActions.ATTACK
 
     def perform_enemy_action(self) -> None:
